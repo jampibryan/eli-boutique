@@ -14,5 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         // Llama al seeder TipoGeneroSeeder
         $this->call(TipoGeneroSeeder::class);
+
+        // Llama al seeder ClienteSeeder
+        $this->call(ClienteSeeder::class);
     }
 }
