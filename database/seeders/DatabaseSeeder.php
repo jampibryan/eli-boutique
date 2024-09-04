@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\Colaborador;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -23,5 +25,11 @@ class DatabaseSeeder extends Seeder
 
         // Llama al seeder Producto
         $this->call(ProductoSeeder::class);
+        
+        // Llama al seeder Cargo
+        $this->call(CargoSeeder::class);
+
+        // Llama al seeder Colaborador
+        $this->call(ColaboradorSeeder::class);
     }
 }

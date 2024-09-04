@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ProductoController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,3 +38,5 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/cliente', [ClienteController::class, 'index'])->name('cliente.index');
 
 Route::get('/producto', [ProductoController::class, 'index'])->name('producto.index');
+
+Route::get('/colaborador', [ColaboradorController::class, 'index'])->name('colaborador.index');
