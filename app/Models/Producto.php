@@ -23,4 +23,9 @@ class Producto extends Model
         // Define la relación inversa de muchos a uno con el modelo CategoriaProducto.
         // Un Producto o varios pueden pertenecen a una sola CategoriaProducto.
     }
+
+    public function getImagenPAttribute($value)
+    {
+        return asset('storage/' . $value); // Ruta completa de la imagen
+    }
 }

@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProducto;
+use App\Models\CategoriaProducto;
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+ 
     public function index()
     {
         $productos = Producto::all();
@@ -17,51 +19,79 @@ class ProductoController extends Controller
         return view('producto.index', compact('productos'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
+    // Muestra el formulario para crear un nuevo recurso. No hace cambios en la base de datos.
     public function create()
     {
-        //
+        $categorias = CategoriaProducto::all();
+        return view('producto.create', compact('categorias'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    // Maneja la lógica para guardar el nuevo recurso en la base de datos después de que el    formulario ha sido enviado.
+    public function store(StoreProducto $request)
     {
-        //
+        
+        // Guardar la imagen en la carpeta 'public/productos' y obtener la ruta
+        if ($request->hasFile('imagenP')) {
+            $path = $request->file('imagenP')->store('productos', 'public');
+        }
+
+        // Crear el producto con los datos del formulario
+        $producto = Producto::create([
+            'categoria_producto_id' => $request->categoria_producto_id,
+            'imagenP' => $path, // Guardar la ruta de la imagen
+            'descripcionP' => $request->descripcionP,
+            'precioP' => $request->precioP,
+            'stockP' => $request->stockP,
+        ]);
+
+        return redirect()->route('productos.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
+ 
     public function show(string $id)
     {
-        //
+        $producto = Producto::find($id);
+
+        return view('productos.show', compact('producto'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+ 
+    public function edit(Producto $producto)
     {
-        //
+        $categorias = CategoriaProducto::all(); // Obtén todas las categorías para el formulario
+        return view('producto.edit', compact('producto', 'categorias'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+    public function update(StoreProducto $request, Producto $producto)
     {
-        //
+        
+        // Verifica si se ha subido una nueva imagen
+        if ($request->hasFile('imagenP')) {
+            // Elimina la imagen anterior si existe
+            if ($producto->imagenP && Storage::disk('public')->exists($producto->imagenP)) {
+                Storage::disk('public')->delete($producto->imagenP);
+                Log::info('Imagen eliminada: ' . $producto->imagenP);
+            }
+
+            // Guarda la nueva imagen y actualiza la ruta
+            $producto->imagenP = $request->file('imagenP')->store('productos', 'public');
+        }
+
+        // Actualizar el resto de los campos
+        // $producto->update($request->all());
+
+        $producto->update($request->only(['categoria_producto_id', 'descripcionP', 'precioP', 'stockP']));
+
+        return redirect()->route('productos.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    public function destroy(Producto $producto)
     {
-        //
+        $producto->delete();
+        return redirect()->route('productos.index');
     }
 }

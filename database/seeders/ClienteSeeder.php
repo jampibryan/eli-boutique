@@ -14,21 +14,22 @@ class ClienteSeeder extends Seeder
     public function run(): void
     {
         Cliente::create([
-            'nombreCliente'   => 'Juan',
-            'apellidoCliente' => 'Pérez',
+            'nombreCliente'   => 'Ricky',
+            'apellidoCliente' => 'Zubiate Castro',
             'dniCliente'      => '12345678',
-            'correoCliente'   => 'juan.perez@example.com',
+            'correoCliente'   => 'ricky.zubiate@gmail.com',
             'telefonoCliente' => '987654321',
             'tipo_genero_id'  => 1,
         ]);
 
         Cliente::create([
             'nombreCliente'   => 'Ana',
-            'apellidoCliente' => 'Gómez',
+            'apellidoCliente' => 'Gómez Huamán',
             'dniCliente'      => '87654321',
-            'correoCliente'   => 'ana.gomez@example.com',
+            'correoCliente'   => 'ana.gomez@gmail.com',
             'telefonoCliente' => '123456789',
             'tipo_genero_id'  => 2,
         ]);
     }
 }
+

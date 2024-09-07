@@ -8,6 +8,7 @@
 
 @section('content')
     <p>Welcome to this beautiful admin panel.</p>
+    <a href="{{route('clientes.create')}}" class="btn btn-danger d-flex justify-content-center" >CREAR CLIENTE</a>
 
     <table class="table table-dark table-striped mt-4">
         <thead>
@@ -33,7 +34,14 @@
                 <td>{{$cliente->dniCliente}}</td>
                 <td>{{$cliente->correoCliente}}</td>
                 <td>{{$cliente->telefonoCliente}}</td>
-                <td>Editar | Borrar</td>
+                <td>
+                    <a href="{{route('clientes.edit', $cliente)}}" class="btn btn-info">Editar</a>
+                    <form action="{{route('clientes.destroy', $cliente)}}" method="post">
+                        @csrf
+                        @method('delete')
+                        <button class="btn btn-danger mt-1">Eliminar</button>
+                    </form>
+                </td>   
     
             </tr>
             @endforeach

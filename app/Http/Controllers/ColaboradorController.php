@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreColaborador;
+use App\Models\Cargo;
 use App\Models\Colaborador;
+use App\Models\TipoGenero;
 use Illuminate\Http\Request;
 
 class ColaboradorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         $colaboradores = Colaborador::all();
@@ -17,51 +18,49 @@ class ColaboradorController extends Controller
         return view('colaborador.index', compact('colaboradores'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
-        //
+        $cargos = Cargo::all();
+        $generos = TipoGenero::all();
+
+        return view('colaborador.create', compact('cargos', 'generos'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    public function store(StoreColaborador $request)
     {
-        //
+        $colaborador = Colaborador::create($request->all());
+
+        return redirect()->route('colaboradores.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
+ 
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Colaborador $colaboradore)
     {
-        //
+        $cargos = Cargo::all();
+        $generos = TipoGenero::all();
+        $colaborador = $colaboradore;
+        return view('colaborador.edit', compact('colaborador', 'cargos', 'generos'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+ 
+    public function update(StoreColaborador $request, Colaborador $colaboradore)
     {
-        //
+        $colaboradore->update($request->all());
+        
+        return redirect()->route('colaboradores.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    public function destroy(Colaborador $colaboradore)
     {
-        //
+        $colaboradore->delete();
+        return redirect()->route('colaboradores.index');
     }
 }

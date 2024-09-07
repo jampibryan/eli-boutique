@@ -13,14 +13,16 @@ class Colaborador extends Model
     protected $table = 'colaboradores';
 
     protected $fillable = [
+        'cargo_id',
         'nombreColab',
         'apellidosColab',
+        'tipo_genero_id',
         'dniColab',
         'edadColab',
+        'correoColab',
         'telefonoColab',
-        'cargo_id',
-        'tipo_genero_id',
     ];
+
 
     public function cargo()
     {

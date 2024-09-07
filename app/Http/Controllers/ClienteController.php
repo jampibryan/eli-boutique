@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCliente;
 use App\Models\Cliente;
+use App\Models\TipoGenero;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -24,15 +26,19 @@ class ClienteController extends Controller
      */
     public function create()
     {
-        //
+        $generos = TipoGenero::all();
+
+        return view('cliente.create', compact('generos'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCliente $request)
     {
-        //
+        $cliente = Cliente::create($request->all());
+
+        return redirect()->route('clientes.index');
     }
 
     /**
@@ -48,15 +54,18 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        //
+        $generos = TipoGenero::all();
+        return view('cliente.edit', compact('cliente', 'generos'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Cliente $cliente)
+    public function update(StoreCliente $request, Cliente $cliente)
     {
-        //
+        $cliente->update($request->all());
+        
+        return redirect()->route('clientes.index');
     }
 
     /**
@@ -64,6 +73,7 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
-        //
+        $cliente->delete();
+        return redirect()->route('clientes.index');
     }
 }

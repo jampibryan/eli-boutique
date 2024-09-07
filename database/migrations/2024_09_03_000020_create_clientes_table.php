@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id(); // Crea una columna id auto-incremental como clave primaria
             $table->string('nombreCliente');
             $table->string('apellidoCliente');
-            $table->string('dniCliente');
-            $table->string('correoCliente');
+            $table->string('dniCliente')->unique();
+            $table->string('correoCliente')->unique();
             $table->string('telefonoCliente');
             $table->foreignId('tipo_genero_id')->constrained()->onDelete('cascade');
             // Columna para la clave foránea que referencia a la tabla tipo_generos

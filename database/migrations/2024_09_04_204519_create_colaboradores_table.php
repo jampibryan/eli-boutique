@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('apellidosColab');
             $table->string('dniColab')->unique();
             $table->integer('edadColab');
+            $table->string('correoColab')->unique();
             $table->string('telefonoColab');
 
             // Llaves foráneas
