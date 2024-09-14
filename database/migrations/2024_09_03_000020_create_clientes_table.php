@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('apellidoCliente');
             $table->string('dniCliente')->unique();
             $table->string('correoCliente')->unique();
-            $table->string('telefonoCliente');
+            $table->string('telefonoCliente')->unique();
             $table->foreignId('tipo_genero_id')->constrained()->onDelete('cascade');
             // Columna para la clave foránea que referencia a la tabla tipo_generos
             // `constrained()` automáticamente establece la relación con la columna `id` en la tabla `tipo_generos`

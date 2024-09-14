@@ -18,7 +18,6 @@ class ColaboradorController extends Controller
         return view('colaborador.index', compact('colaboradores'));
     }
 
-
     public function create()
     {
         $cargos = Cargo::all();

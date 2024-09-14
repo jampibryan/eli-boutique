@@ -21,18 +21,27 @@
                 </option>
             @endforeach
         </select>
+        @error('cargo_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Nombre -->
     <div class="mb-3">
         <label for="nombreColab" class="form-label">Nombre</label>
         <input id="nombreColab" name="nombreColab" type="text" class="form-control" value="{{ $colaborador->nombreColab }}">
+        @error('nombreColab')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Apellidos -->
     <div class="mb-3">
         <label for="apellidosColab" class="form-label">Apellidos</label>
         <input id="apellidosColab" name="apellidosColab" type="text" class="form-control" value="{{ $colaborador->apellidosColab }}">
+        @error('apellidosColab')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Tipo Genero -->
@@ -45,18 +54,28 @@
                 </option>
             @endforeach
         </select>
+        @error('tipo_genero_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
     </div>
     
     <!-- DNI -->
     <div class="mb-3">
         <label for="dniColab" class="form-label">DNI</label>
         <input id="dniColab" name="dniColab" type="text" class="form-control" value="{{ $colaborador->dniColab }}">
+        @error('dniColab')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
     
     <!-- Edad -->
     <div class="mb-3">
-        <label for="edadColab" class="form-label">EDAD</label>
+        <label for="edadColab" class="form-label">Edad</label>
         <input id="edadColab" name="edadColab" type="number" class="form-control" value="{{ $colaborador->edadColab }}">
+        @error('edadColab')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Correo -->
@@ -70,7 +89,7 @@
     
     <!-- Teléfono -->
     <div class="mb-3">
-        <label for="telefonoColab" class="form-label">TELÉFONO</label>
+        <label for="telefonoColab" class="form-label">Teléfono</label>
         <input id="telefonoColab" name="telefonoColab" type="text" class="form-control" value="{{ $colaborador->telefonoColab }}">
     </div>
 

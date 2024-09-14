@@ -25,11 +25,17 @@ class DatabaseSeeder extends Seeder
 
         // Llama al seeder Producto
         $this->call(ProductoSeeder::class);
-        
+
         // Llama al seeder Cargo
         $this->call(CargoSeeder::class);
 
         // Llama al seeder Colaborador
         $this->call(ColaboradorSeeder::class);
+        // ------
+        // Llama al seeder TipoProveedor
+        $this->call(TipoProveedorSeeder::class);
+
+        // Llama al seeder Proveedor
+        $this->call(ProveedorSeeder::class);
     }
 }

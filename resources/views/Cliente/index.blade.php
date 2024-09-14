@@ -7,7 +7,6 @@
 @stop
 
 @section('content')
-    <p>Welcome to this beautiful admin panel.</p>
     <a href="{{route('clientes.create')}}" class="btn btn-danger d-flex justify-content-center" >CREAR CLIENTE</a>
 
     <table class="table table-dark table-striped mt-4">

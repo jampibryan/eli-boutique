@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('dniColab')->unique();
             $table->integer('edadColab');
             $table->string('correoColab')->unique();
-            $table->string('telefonoColab');
+            $table->string('telefonoColab')->unique();
 
             // Llaves foráneas
             $table->foreignId('cargo_id')->constrained()->onDelete('cascade');
