@@ -37,5 +37,8 @@ class DatabaseSeeder extends Seeder
 
         // Llama al seeder Proveedor
         $this->call(ProveedorSeeder::class);
+
+        // Llama al seeder Comprobante
+        $this->call(ComprobanteSeeder::class);
     }
 }
