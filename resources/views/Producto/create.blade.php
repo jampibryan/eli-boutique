@@ -3,7 +3,7 @@
 @section('title', 'Productos')
 
 @section('content_header')
-    <h1>Crear un Producto</h1>
+    <h1>Registrar un Producto</h1>
 @stop
 
 @section('content')
@@ -11,7 +11,7 @@
    
     <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data"> <!-- Habilitar la subida de archivos -->
         @csrf
-
+        
         <!-- Categoría -->
         <div class="mb-3">
             <label for="categoria_producto_id" class="form-label">Categoría</label>

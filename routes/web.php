@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -50,3 +52,6 @@ Route::resource('proveedores', ProveedorController::class);
 // edit($id): Muestra el formulario para editar un producto existente.
 // update(Request $request, $id): Actualiza un producto existente.
 // destroy($id): Elimina un producto existente.
+
+
+Route::resource('ventas', VentaController::class);
