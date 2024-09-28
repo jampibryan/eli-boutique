@@ -11,12 +11,20 @@ class Pago extends Model
 
     protected $fillable = [
         'venta_id',
+        'comprobante_id',
         'importeRecibido',
         'vuelto',
     ];
 
+    // Un pago pertenece a una venta
     public function venta()
     {
         return $this->belongsTo(Venta::class);
+    }
+
+    // Un pago tiene un comprobante
+    public function comprobante()
+    {
+        return $this->belongsTo(Comprobante::class);
     }
 }

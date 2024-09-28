@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
-use App\Models\Comprobante;
 use App\Models\EstadoVenta;
 use App\Models\Producto;
 use App\Models\Venta;
@@ -17,7 +16,7 @@ class VentaController extends Controller
      */
     public function index()
     {
-        $ventas = Venta::with(['cliente', 'comprobante', 'estadoVenta', 'detalles', 'pagos'])->get();
+        $ventas = Venta::with(['cliente', 'estadoVenta', 'detalles', 'pagos'])->get();
         return view('venta.index', compact('ventas'));
     }
 
@@ -27,10 +26,9 @@ class VentaController extends Controller
     public function create()
     {
         $clientes = Cliente::all();
-        $comprobantes = Comprobante::all();
         $estadoVentas = EstadoVenta::all();
         $productos = Producto::all();
-        return view('venta.create', compact('clientes', 'comprobantes', 'estadoVentas', 'productos'));
+        return view('venta.create', compact('clientes', 'estadoVentas', 'productos'));
     }
 
     /**
@@ -38,36 +36,41 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación general de los campos
-        $validated = $request->validate([
-            'codigoVenta' => 'required|string|max:20|unique:ventas',
-            'cliente_id' => 'required|exists:clientes,id',
-            'comprobante_id' => 'required|exists:comprobantes,id',
-            'estado_venta_id' => 'required|exists:estado_ventas,id',
-            'productos' => 'required|array', // Se esperan productos
-            'productos.*.id' => 'required|exists:productos,id',
-            'productos.*.cantidad' => 'required|integer|min:1',
+        // Validar la solicitud
+        $request->validate([
+            'cliente_id' => 'required',
+            'productos' => 'required|array',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',
             'montoTotal' => 'required|numeric',
         ]);
-
-        // Crear la venta principal
-        $venta = Venta::create($validated);
-
-        // Crear los detalles de venta
+    
+        // Crear una nueva venta
+        $venta = new Venta();
+        $venta->cliente_id = $request->cliente_id;
+        $venta->subTotal = $request->subTotal;
+        $venta->IGV = $request->IGV;
+        $venta->montoTotal = $request->montoTotal;
+        $venta->save();
+    
+        // Registrar los productos en la venta
         foreach ($request->productos as $productoData) {
-            $producto = Producto::find($productoData['id']);
-            VentaDetalle::create([
-                'venta_id' => $venta->id,
-                'producto_id' => $producto->id,
-                'cantidad' => $productoData['cantidad'],
-                'precio_unitario' => $producto->precio,
-                'subtotal' => $productoData['cantidad'] * $producto->precio,
-            ]);
+            // Usa el modelo correcto para el detalle de la venta
+            $productoDetalle = new VentaDetalle(); // Asegúrate de que este modelo exista
+            $productoDetalle->venta_id = $venta->id;
+            $productoDetalle->producto_id = $productoData['id'];
+            $productoDetalle->cantidad = $productoData['cantidad'];
+            
+            // Asegúrate de que el precio_unitario se esté pasando desde el formulario
+            $productoSeleccionado = Producto::find($productoData['id']);
+            $productoDetalle->precio_unitario = $productoSeleccionado->precioP; // Asignar el precio unitario
+            $productoDetalle->subtotal = $productoData['cantidad'] * $productoSeleccionado->precioP; // Calcular subtotal
+        
+            $productoDetalle->save();
         }
-
-        return redirect()->route('ventas.index')->with('success', 'Venta creada con éxito.');
+    
+        // Redirigir al formulario de pago, pasando el ID de la venta
+        return redirect()->route('ventas.pagos.create', $venta->id)->with('success', 'Venta registrada con éxito.');
     }
 
     /**
@@ -85,10 +88,9 @@ class VentaController extends Controller
     public function edit(Venta $venta)
     {
         $clientes = Cliente::all();
-        $comprobantes = Comprobante::all();
         $estadoVentas = EstadoVenta::all();
         $productos = Producto::all();
-        return view('venta.edit', compact('venta', 'clientes', 'comprobantes', 'estadoVentas', 'productos'));
+        return view('venta.edit', compact('venta', 'clientes', 'estadoVentas', 'productos'));
     }
 
     /**
@@ -99,7 +101,6 @@ class VentaController extends Controller
         $validated = $request->validate([
             'codigoVenta' => 'required|string|max:20|unique:ventas,codigoVenta,' . $venta->id,
             'cliente_id' => 'required|exists:clientes,id',
-            'comprobante_id' => 'required|exists:comprobantes,id',
             'estado_venta_id' => 'required|exists:estado_ventas,id',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',

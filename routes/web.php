@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
+use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\VentaController;
@@ -55,3 +56,6 @@ Route::resource('proveedores', ProveedorController::class);
 
 
 Route::resource('ventas', VentaController::class);
+
+// Route::post('/ventas/{venta}/pago', [PagoController::class, 'procesarPago'])->name('ventas.pago');
+Route::resource('ventas.pagos', PagoController::class)->except(['index']);

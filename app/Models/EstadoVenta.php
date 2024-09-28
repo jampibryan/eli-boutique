@@ -10,4 +10,11 @@ class EstadoVenta extends Model
     use HasFactory;
  
     protected $fillable = ['descripcionEV'];
+
+    public function ventas()
+    {
+        return $this->hasMany(Venta::class, 'estado_venta_id');
+        // Define la relación de uno a muchos con el modelo Venta.
+        // Un EstadoVenta puede tener muchas ventas.
+    }
 }

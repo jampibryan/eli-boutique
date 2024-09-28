@@ -12,7 +12,6 @@ class Venta extends Model
     protected $fillable = [
         'codigoVenta',
         'cliente_id',
-        'comprobante_id',
         'estado_venta_id',
         'subTotal',
         'IGV',
@@ -22,22 +21,22 @@ class Venta extends Model
     protected static function booted()
     {
         static::creating(function ($venta) {
-            // Asigna el estado predeterminado "pendiente"
+            // Asigna el estado predeterminado "Pagado" si no está establecido
             if (!$venta->estado_venta_id) {
-                $estadoPendiente = EstadoVenta::where('descripcionEV', 'pendiente')->first();
-                $venta->estado_venta_id = $estadoPendiente->id;
+                $estadoPagado = EstadoVenta::where('descripcionEV', 'Pagado')->first();
+                $venta->estado_venta_id = $estadoPagado->id;
             }
+
+            // Generar el código de venta automáticamente
+            $ultimoCodigo = Venta::max('codigoVenta');
+            $nuevoCodigo = str_pad((int)$ultimoCodigo + 1, 7, '0', STR_PAD_LEFT);
+            $venta->codigoVenta = $nuevoCodigo;
         });
     }
 
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
-    }
-
-    public function comprobante()
-    {
-        return $this->belongsTo(Comprobante::class);
     }
 
     public function estadoVenta()

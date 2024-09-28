@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
-            $table->string('codigoVenta', 20)->unique();
-            $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
-            $table->foreignId('comprobante_id')->constrained()->onDelete('cascade');
-            $table->foreignId('estado_venta_id')->constrained()->onDelete('cascade');
+            $table->string('codigoVenta', 7)->unique();  // Tamaño ajustado a 7 caracteres
+            $table->foreignId('cliente_id')->constrained()->onDelete('cascade');  // Llave foránea a la tabla clientes
+            $table->foreignId('estado_venta_id')->constrained()->onDelete('cascade');  // Llave foránea a la tabla estados de venta
             $table->decimal('subTotal', 10, 2);
             $table->decimal('IGV', 10, 2);
             $table->decimal('montoTotal', 10, 2);

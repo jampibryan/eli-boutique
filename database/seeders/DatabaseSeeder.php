@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-use App\Models\Colaborador;
-use App\Models\EstadoVenta;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -32,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         // Llama al seeder Colaborador
         $this->call(ColaboradorSeeder::class);
-        // ------
+
         // Llama al seeder TipoProveedor
         $this->call(TipoProveedorSeeder::class);
 
@@ -43,6 +41,6 @@ class DatabaseSeeder extends Seeder
         $this->call(ComprobanteSeeder::class);
 
         // Llama al seeder Estado Venta
-        $this->call(EstadoVenta::class);
+        $this->call(EstadoVentaSeeder::class);
     }
 }

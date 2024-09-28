@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('venta_id')->constrained()->onDelete('cascade');
+            $table->foreignId('venta_id')->constrained()->onDelete('cascade'); // Llave foránea a la tabla ventas
+            $table->foreignId('comprobante_id')->constrained()->onDelete('cascade'); // Llave foránea a la tabla comprobantes
             $table->decimal('importeRecibido', 10, 2);
             $table->decimal('vuelto', 10, 2);
             $table->timestamps();

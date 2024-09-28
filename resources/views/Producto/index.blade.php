@@ -41,11 +41,11 @@
                             @method('delete')
                             <button class="btn btn-danger mt-1">Eliminar</button>
                         </form>
-                        <form action="{{ route('cart.add', $producto->id) }}" method="POST" class="d-inline">
+                        {{-- <form action="{{ route('cart.add', $producto->id) }}" method="POST" class="d-inline">
                             @csrf
                             <input type="hidden" name="id" value="{{ $producto->id }}">
                             <button class="btn btn-success mt-1">Añadir al Carrito</button>
-                        </form>
+                        </form> --}}
                     </td>
                 </tr>
             @endforeach
