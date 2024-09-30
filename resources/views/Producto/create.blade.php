@@ -6,9 +6,7 @@
     <h1>Registrar un Producto</h1>
 @stop
 
-@section('content')
-    <a href="{{route('productos.create')}}" class="btn btn-danger d-flex justify-content-center" >CREAR PRODUCTO</a>
-   
+@section('content')   
     <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data"> <!-- Habilitar la subida de archivos -->
         @csrf
         

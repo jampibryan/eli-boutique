@@ -11,12 +11,27 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
- 
-    public function index()
+    public function __construct()
     {
-        $productos = Producto::all();
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:gestionar productos', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+ 
+    public function index(Request $request)
+    {
+        // $productos = Producto::all();
 
-        return view('producto.index', compact('productos'));
+        $categorias = CategoriaProducto::all(); // Cargar todas las categorías
+        $categoriaId = $request->get('categoria'); // Obtener el id de la categoría desde la solicitud
+
+        // Filtrar productos por la categoría seleccionada
+        if ($categoriaId) {
+            $productos = Producto::where('categoria_producto_id', $categoriaId)->get(); // Filtrar por categoria_producto_id
+        } else {
+            $productos = Producto::all(); // Cargar todos los productos si no se filtra
+        }
+
+        return view('producto.index', compact('productos', 'categorias'));
     }
 
 
@@ -48,7 +63,7 @@ class ProductoController extends Controller
 
         return redirect()->route('productos.index');
     }
-
+    
  
     public function show(string $id)
     {

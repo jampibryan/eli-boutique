@@ -9,9 +9,12 @@ use Illuminate\Http\Request;
 
 class ProveedorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:gestionar proveedores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+
     public function index()
     {
         $proveedores = Proveedor::all();

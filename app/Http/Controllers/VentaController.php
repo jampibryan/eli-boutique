@@ -11,12 +11,15 @@ use Illuminate\Http\Request;
 
 class VentaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:gestionar ventas', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+
     public function index()
     {
-        $ventas = Venta::with(['cliente', 'estadoVenta', 'detalles', 'pagos'])->get();
+        $ventas = Venta::with(['cliente', 'estadoVenta', 'detalles', 'pago'])->get();
         return view('venta.index', compact('ventas'));
     }
 
@@ -70,7 +73,8 @@ class VentaController extends Controller
         }
     
         // Redirigir al formulario de pago, pasando el ID de la venta
-        return redirect()->route('ventas.pagos.create', $venta->id)->with('success', 'Venta registrada con éxito.');
+        // return redirect()->route('ventas.pagos.create', $venta->id)->with('success', 'Venta registrada con éxito.');
+        return redirect()->route('ventas.index')->with('success', 'Venta registrada con éxito.');
     }
 
     /**

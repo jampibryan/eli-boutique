@@ -7,6 +7,7 @@
 @stop
 
 @section('content')
+    <a href="{{ route('ventas.index') }}" class="btn btn-secondary mb-3">Cancelar</a>
 
     <form action="{{ route('ventas.store') }}" method="POST" id="formVenta">
         @csrf

@@ -45,6 +45,12 @@ Route::resource('clientes', ClienteController::class);
 Route::resource('productos', ProductoController::class);
 Route::resource('proveedores', ProveedorController::class);
 
+Route::resource('ventas', VentaController::class);
+Route::resource('ventas.pagos', PagoController::class)->except(['index']);
+
+
+
+
 
 // index(): Muestra una lista de productos.
 // create(): Muestra el formulario para crear un nuevo producto.
@@ -53,9 +59,3 @@ Route::resource('proveedores', ProveedorController::class);
 // edit($id): Muestra el formulario para editar un producto existente.
 // update(Request $request, $id): Actualiza un producto existente.
 // destroy($id): Elimina un producto existente.
-
-
-Route::resource('ventas', VentaController::class);
-
-// Route::post('/ventas/{venta}/pago', [PagoController::class, 'procesarPago'])->name('ventas.pago');
-Route::resource('ventas.pagos', PagoController::class)->except(['index']);

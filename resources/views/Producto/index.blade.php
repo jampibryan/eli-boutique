@@ -7,63 +7,54 @@
 @stop
 
 @section('content')
-    <a href="{{route('productos.create')}}" class="btn btn-danger d-flex justify-content-center" >CREAR PRODUCTO</a>
+    <a href="{{ route('productos.create') }}" class="btn btn-danger mb-3">REGISTRAR PRODUCTO</a>
 
-    <table class="table table-dark table-striped mt-4">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">IMAGEN</th>
-                <th scope="col">CATEGORIA</th>
-                <th scope="col">DESCRIPCION</th>
-                <th scope="col">PRECIO</th>
-                <th scope="col">STOCK</th>
-                <th scope="col">ACCIONES</th>
-            </tr>
-        </thead>
+    <!-- Formulario de búsqueda por categoría -->
+    <form method="GET" class="mb-3">
+        <div class="form-group">
+            <label for="categoria">Filtrar por Categoría:</label>
+            <select name="categoria" id="categoria" class="form-control" onchange="this.form.submit()">
+                <option value="">Todas las Categorías</option>
+                @foreach ($categorias as $categoria)
+                    <option value="{{ $categoria->id }}" {{ request('categoria') == $categoria->id ? 'selected' : '' }}>
+                        {{ $categoria->nombreCP }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </form>
 
-        <tbody>
-            @foreach ($productos as $producto)
-                <tr>
-                    <td>{{ $producto->id }}</td>
-                    <td>{{ $producto->categoriaProducto->nombreCP }}</td>
-                    <td>
-                        <img src="{{ $producto->imagenP }}" alt="Imagen del producto" width="100">
-
-                    </td>
-                    <td>{{ $producto->descripcionP }}</td>
-                    <td>{{ $producto->precioP }}</td>
-                    <td>{{ $producto->stockP }}</td>
-                    <td>
-                        <a href="{{route('productos.edit', $producto)}}" class="btn btn-info">Editar</a>
-                        <form action="{{route('productos.destroy', $producto)}}" method="post">
-                            @csrf
-                            @method('delete')
-                            <button class="btn btn-danger mt-1">Eliminar</button>
-                        </form>
-                        {{-- <form action="{{ route('cart.add', $producto->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            <input type="hidden" name="id" value="{{ $producto->id }}">
-                            <button class="btn btn-success mt-1">Añadir al Carrito</button>
-                        </form> --}}
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-
-    </table>
+    <div class="row">
+        @foreach ($productos as $producto)
+            <div class="col-md-6 mb-4">
+                <div class="card" style="height: 100%; padding: 10px;">
+                    <h5 class="card-title text-center mt-2 mb-2"><strong>{{ $producto->categoriaProducto->nombreCP }}</strong></h5>
+                    <img src="{{ $producto->imagenP }}" class="card-img-top" alt="Imagen del producto" style="height: 200px; width: 100%; object-fit: contain;">
+                    <div class="card-body p-2">
+                        <p class="card-text text-center mb-1"><strong>Descripción:</strong> {{ $producto->descripcionP }}</p>
+                        <p class="card-text text-center mb-1"><strong>Precio:</strong> S/. {{ number_format($producto->precioP, 2) }}</p>
+                        <p class="card-text text-center mb-2"><strong>Stock:</strong> {{ $producto->stockP }}</p>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ route('productos.edit', $producto) }}" class="btn btn-info btn-sm">Editar</a>
+                            <form action="{{ route('productos.destroy', $producto) }}" method="post">
+                                @csrf
+                                @method('delete')
+                                <button class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
 @stop
 
 @section('css')
-    {{-- Add here extra stylesheets --}}
-    {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
 @stop
 
 @section('js')
-    {{-- <script> console.log("Hi, I'm using the Laravel-AdminLTE package!"); </script> --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous">
     </script>

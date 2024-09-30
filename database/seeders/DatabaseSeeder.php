@@ -13,6 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+        ]);
+
         // Llama al seeder TipoGeneroSeeder
         $this->call(TipoGeneroSeeder::class);
 

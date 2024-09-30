@@ -21,10 +21,10 @@ class Venta extends Model
     protected static function booted()
     {
         static::creating(function ($venta) {
-            // Asigna el estado predeterminado "Pagado" si no está establecido
+            // Asigna el estado predeterminado "Pendiente" si no está establecido
             if (!$venta->estado_venta_id) {
-                $estadoPagado = EstadoVenta::where('descripcionEV', 'Pagado')->first();
-                $venta->estado_venta_id = $estadoPagado->id;
+                $estadoPendiente = EstadoVenta::where('descripcionEV', 'Pendiente')->first();
+                $venta->estado_venta_id = $estadoPendiente->id;
             }
 
             // Generar el código de venta automáticamente
@@ -49,8 +49,9 @@ class Venta extends Model
         return $this->hasMany(VentaDetalle::class);
     }
 
-    public function pagos()
+    public function pago()
     {
-        return $this->hasMany(Pago::class);
+        // return $this->hasMany(Pago::class);
+        return $this->hasOne(Pago::class);
     }
 }

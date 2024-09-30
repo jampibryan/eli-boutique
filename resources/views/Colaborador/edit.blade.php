@@ -13,7 +13,7 @@
 
     <!-- Cargo -->
     <div class="mb-3">
-        <label for="cargo_id" class="form-label">Categoría</label>
+        <label for="cargo_id" class="form-label">Cargo</label>
         <select id="cargo_id" name="cargo_id" class="form-control">
             @foreach($cargos as $cargo)
                 <option value="{{ $cargo->id }}" {{ $colaborador->cargo_id == $cargo->id ? 'selected' : '' }}>
@@ -46,7 +46,7 @@
 
     <!-- Tipo Genero -->
     <div class="mb-3">
-        <label for="tipo_genero_id" class="form-label">Categoría</label>
+        <label for="tipo_genero_id" class="form-label">Cargo</label>
         <select id="tipo_genero_id" name="tipo_genero_id" class="form-control">
             @foreach($generos as $genero)
                 <option value="{{ $genero->id }}" {{ $colaborador->tipo_genero_id == $genero->id ? 'selected' : '' }}>

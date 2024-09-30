@@ -12,9 +12,9 @@
 
     <!-- Cargo -->
     <div class="mb-3">
-        <label for="cargo_id" class="form-label">Categoría</label>
+        <label for="cargo_id" class="form-label">Cargo</label>
         <select id="cargo_id" name="cargo_id" class="form-control">
-            <option value="">Seleccionar categoría</option>
+            <option value="">Seleccionar cargo</option>
             @foreach($cargos as $cargo)
                 <option value="{{ $cargo->id }}" {{ old('cargo_id') == $cargo->id ? 'selected' : '' }}>
                     {{ $cargo->descripcionCargo }}

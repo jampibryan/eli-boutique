@@ -15,6 +15,7 @@ class EstadoVentaSeeder extends Seeder
     {
         // Inserta los registros en la tabla comprobante
         DB::table('estado_ventas')->insert([
+            ['descripcionEV' => 'Pendiente'],
             ['descripcionEV' => 'Pagado'],
             ['descripcionEV' => 'Anulado'],
         ]);

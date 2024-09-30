@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comprobante;
+use App\Models\EstadoVenta;
 use App\Models\Pago;
 use App\Models\Venta;
 use Illuminate\Http\Request;
 
 class PagoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         //
@@ -43,6 +42,15 @@ class PagoController extends Controller
 
         // Obtener la venta
         $venta = Venta::findOrFail($ventaId);
+
+        // Obtener el estado "Pagado"
+        $estadoPagado = EstadoVenta::where('descripcionEV', 'Pagado')->first();
+
+        // Actualizar el estado de la venta a "Pagado"
+        if ($estadoPagado) {
+            $venta->estado_venta_id = $estadoPagado->id;
+            $venta->save();
+        }
 
         // Calcular el vuelto
         $montoTotal = $venta->montoTotal;

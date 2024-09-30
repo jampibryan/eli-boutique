@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class ColaboradorController extends Controller
 {
+    public function __construct()
+    {
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:gestionar colaboradores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
 
     public function index()
     {

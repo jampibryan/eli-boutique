@@ -15,12 +15,12 @@ class CargoSeeder extends Seeder
     {
         // Inserta los registros en la tabla cargos
         DB::table('cargos')->insert([
-            ['descripcionCargo' => 'Administrador'],
             ['descripcionCargo' => 'Gerente'],
-            ['descripcionCargo' => 'Jefe'],
-            ['descripcionCargo' => 'Supervisor'],
-            ['descripcionCargo' => 'Asistente de venta'],
-            ['descripcionCargo' => 'Asistente de inventario'],
+            ['descripcionCargo' => 'Vendedor'],
+            ['descripcionCargo' => 'Administrador'],
+            // ['descripcionCargo' => 'Supervisor'],
+            // ['descripcionCargo' => 'Asistente de venta'],
+            // ['descripcionCargo' => 'Asistente de inventario'],
         ]);
     }
 }

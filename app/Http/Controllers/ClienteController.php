@@ -12,6 +12,13 @@ class ClienteController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function __construct()
+    {
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:gestionar clientes', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+    
     public function index()
     {
         $clientes = Cliente::all();
