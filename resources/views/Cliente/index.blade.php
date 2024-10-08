@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <a href="{{route('clientes.create')}}" class="btn btn-danger justify-content-center" >CREAR CLIENTE</a>
+    <a href="{{route('clientes.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR CLIENTE</a>
 
     {{-- @if(auth()->user()->can('gestionar clientes'))
         <a href="{{ route('clientes.create') }}" class="btn btn-danger justify-content-center">CREAR CLIENTE</a>
@@ -48,7 +48,7 @@
                             @method('delete')
                             <button class="btn btn-danger mt-1">Eliminar</button>
                         </form>
-                    </td>    
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

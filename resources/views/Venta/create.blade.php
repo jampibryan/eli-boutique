@@ -15,7 +15,6 @@
         <!-- Selección del Cliente -->
         <h4>Comprador</h4>
         <div class="form-group">
-            {{-- <label for="cliente_id" class="col-form-label">Seleccionar Cliente</label> --}}
             <select class="form-control" name="cliente_id" required>
                 <option value="">Seleccionar Cliente</option>
                 @foreach($clientes as $cliente)
@@ -28,18 +27,25 @@
         <h4>Seleccionar Productos</h4>
         <div id="detalleVenta" class="container-fluid">
             <!-- Producto base (template para clonar) -->
-            <div class="form-group row productoRow" id="productoTemplate" style="justify-content: center; align-items: center; gap: 15px;">
+            <div class="form-group row productoRow" id="productoTemplate" style="justify-content: center; align-items: center; gap:15px;">
                 <!-- Agrupar el label y select del producto -->
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <label for="producto_id" class="col-form-label" id="productoLabel"></label>
                     <select class="form-control productoSelect" name="productos[0][id]" required>
                         <option value="">Seleccionar Producto</option>
                         @foreach($productos as $producto)
-                            <option value="{{ $producto->id }}" data-precio="{{ $producto->precioP }}">
-                                {{ $producto->descripcionP }} (Precio: {{ $producto->precioP }})
+                            <option value="{{ $producto->id }}" data-precio="{{ $producto->precioP }}" data-stock="{{ $producto->stockP }}">
+                                {{ $producto->descripcionP }} (Precio: S/{{ $producto->precioP }})
+                                {{-- , Stock: {{ $producto->stockP }}) --}}
                             </option>
                         @endforeach
                     </select>
+                </div>
+        
+                <!-- Mostrar stock inicial -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="stockP" class="col-form-label">Stock Actual</label>
+                    <input type="number" class="form-control stockInput" name="productos[0][stockP]" value="0" readonly>
                 </div>
         
                 <!-- Agrupar el label y input de cantidad -->
@@ -76,17 +82,15 @@
             <input type="number" class="form-control" id="montoTotal" name="montoTotal" readonly>
         </div>
 
-        <!-- Botón para Proceder con el Pago -->
-        <button type="submit" class="btn btn-success">Proceder con el Pago</button>
-
+        <!-- Botón para registrar venta -->
+        <button type="submit" class="btn btn-success">Registrar venta</button>
     </form>
-
 @stop
 
 @section('js')
     <script>
         let productoIndex = 1;
-        
+
         // Al cargar la página, asignar "Producto 1" al primer label
         document.getElementById('productoLabel').innerText = 'Producto ' + productoIndex;
 
@@ -112,11 +116,22 @@
             // Habilitar el campo cantidad al seleccionar un producto
             const productoSelect = template.querySelector('.productoSelect');
             const cantidadInput = template.querySelector('.cantidadInput');
+            const stockInput = template.querySelector('.stockInput');
+
+            // Inicializa cantidad a 0 al agregar un nuevo producto
+            cantidadInput.value = 0; // Establece el valor inicial de cantidad a 0
+            cantidadInput.disabled = true; // Deshabilita el campo de cantidad por defecto
+            stockInput.value = 0; // Establece el stock a 0 al principio
+
             productoSelect.addEventListener('change', function () {
                 if (productoSelect.value) {
                     cantidadInput.disabled = false;  // Habilita el campo de cantidad
+                    cantidadInput.value = 0; // Establece el valor inicial de cantidad a 0
+                    stockInput.value = productoSelect.options[productoSelect.selectedIndex].getAttribute('data-stock');
                 } else {
                     cantidadInput.disabled = true;   // Deshabilita si no se ha seleccionado un producto
+                    cantidadInput.value = 0; // Resetea la cantidad a 0
+                    stockInput.value = 0; // Resetea el stock a 0
                 }
             });
 
@@ -128,18 +143,42 @@
         document.getElementById('detalleVenta').addEventListener('change', function (event) {
             if (event.target.classList.contains('productoSelect')) {
                 const cantidadInput = event.target.closest('.productoRow').querySelector('.cantidadInput');
+                const stockInput = event.target.closest('.productoRow').querySelector('.stockInput');
                 if (event.target.value !== "") {
                     // Habilitar y poner la cantidad en 1 si se selecciona un producto
                     cantidadInput.disabled = false;
                     cantidadInput.value = 1;
+                    stockInput.value = event.target.options[event.target.selectedIndex].getAttribute('data-stock'); // Muestra el stock inicial
                 } else {
                     // Si no hay producto seleccionado, desactivar y resetear la cantidad
                     cantidadInput.disabled = true;
                     cantidadInput.value = 0;
+                    stockInput.value = 0; // Resetea el stock a 0
                 }
                 calcularTotales();
             }
         });
+
+        // Validar la cantidad mientras se escribe
+        document.getElementById('detalleVenta').addEventListener('input', function (event) {
+            if (event.target.classList.contains('cantidadInput')) {
+                const row = event.target.closest('.productoRow');
+                
+                // Obtener el stock actual de la fila correspondiente
+                const stockActual = parseInt(row.querySelector('.stockInput').value);
+                
+                // Validar la cantidad ingresada
+                if (parseInt(event.target.value) > stockActual) {
+                    event.target.value = stockActual; // Ajustar al stock actual si excede
+                } else if (parseInt(event.target.value) < 1) {
+                    event.target.value = 1; // Ajustar a 1 si es menor que 1
+                }
+                
+                // Volver a calcular los totales
+                calcularTotales();
+            }
+        });
+        
 
         // Eliminar producto
         document.getElementById('detalleVenta').addEventListener('click', function (event) {
@@ -160,11 +199,21 @@
         function calcularTotales() {
             let subtotal = 0;
 
-            document.querySelectorAll('.productoSelect').forEach(function (selectElement, index) {
-                const cantidad = document.querySelectorAll('.cantidadInput')[index].value;
-                const precio = selectElement.options[selectElement.selectedIndex].getAttribute('data-precio');
+            document.querySelectorAll('.productoRow').forEach(function (row) {
+                const selectElement = row.querySelector('.productoSelect');
+                const cantidadInput = row.querySelector('.cantidadInput');
+                const stockInput = row.querySelector('.stockInput');
 
-                subtotal += cantidad * precio;
+                const cantidad = parseInt(cantidadInput.value) || 0; // Asegúrate de convertir a número
+                const precio = parseFloat(selectElement.options[selectElement.selectedIndex].getAttribute('data-precio')) || 0;
+
+                // Verifica que la cantidad no supere el stock
+                if (cantidad > parseInt(stockInput.value)) {
+                    alert('La cantidad seleccionada supera el stock disponible.');
+                    cantidadInput.value = stockInput.value; // Ajustar la cantidad a la máxima disponible
+                } else {
+                    subtotal += cantidad * precio;
+                }
             });
 
             const igv = subtotal * 0.18;
@@ -175,8 +224,5 @@
             document.getElementById('IGV').value = igv.toFixed(2);
             document.getElementById('montoTotal').value = montoTotal.toFixed(2);
         }
-
-        // Calcula los totales al cargar la página por si ya hay productos seleccionados
-        calcularTotales();
     </script>
 @stop

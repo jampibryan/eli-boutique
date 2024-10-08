@@ -20,7 +20,7 @@ class ColaboradorSeeder extends Seeder
                 'nombreColab' => 'Elyana',
                 'apellidosColab' => 'Mostacero Saucedo',
                 'tipo_genero_id' => 2,
-                'dniColab' => '27654321',
+                'dniColab' => '27654471',
                 'edadColab' => 36,
                 'correoColab' => 'elyana_mostacero@gmail.com',
                 'telefonoColab' => '912345678',

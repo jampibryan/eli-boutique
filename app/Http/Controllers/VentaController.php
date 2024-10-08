@@ -64,12 +64,16 @@ class VentaController extends Controller
             $productoDetalle->producto_id = $productoData['id'];
             $productoDetalle->cantidad = $productoData['cantidad'];
             
-            // Asegúrate de que el precio_unitario se esté pasando desde el formulario
+            // Obtener el producto seleccionado y su precio
             $productoSeleccionado = Producto::find($productoData['id']);
             $productoDetalle->precio_unitario = $productoSeleccionado->precioP; // Asignar el precio unitario
             $productoDetalle->subtotal = $productoData['cantidad'] * $productoSeleccionado->precioP; // Calcular subtotal
         
             $productoDetalle->save();
+
+            // Actualizar el stock del producto
+            $productoSeleccionado->stockP -= $productoData['cantidad'];
+            $productoSeleccionado->save();
         }
     
         // Redirigir al formulario de pago, pasando el ID de la venta
@@ -92,9 +96,20 @@ class VentaController extends Controller
     public function edit(Venta $venta)
     {
         $clientes = Cliente::all();
-        $estadoVentas = EstadoVenta::all();
+        // $estadoVentas = EstadoVenta::all();
         $productos = Producto::all();
-        return view('venta.edit', compact('venta', 'clientes', 'estadoVentas', 'productos'));
+
+        // Cargar los productos asociados a través de los detalles de la venta
+        $venta->load('detalles.producto');
+
+        // Calcular el stock inicial para cada detalle
+        foreach ($venta->detalles as $detalle) {
+            $producto = $detalle->producto;
+            $detalle->stock_inicial = $producto->stockP + $detalle->cantidad;
+        }
+        
+        // return view('venta.edit', compact('venta', 'clientes', 'estadoVentas', 'productos'));
+        return view('venta.edit', compact('venta', 'clientes', 'productos'));
     }
 
     /**
@@ -102,32 +117,91 @@ class VentaController extends Controller
      */
     public function update(Request $request, Venta $venta)
     {
+        // Validación de la venta y los productos
         $validated = $request->validate([
             'codigoVenta' => 'required|string|max:20|unique:ventas,codigoVenta,' . $venta->id,
             'cliente_id' => 'required|exists:clientes,id',
-            'estado_venta_id' => 'required|exists:estado_ventas,id',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',
             'montoTotal' => 'required|numeric',
+            'productos.*.id' => 'required|exists:productos,id',
+            'productos.*.cantidad' => 'required|numeric|min:1',
         ]);
 
-        $venta->update($validated);
+        // Obtener los detalles actuales de la venta
+        $detallesAntiguos = $venta->detalles;
 
-        // Actualizar detalles de la venta
-        VentaDetalle::where('venta_id', $venta->id)->delete();
+        // Crear un arreglo para almacenar las diferencias de stock
+        $diferenciasStock = [];
+
+        // Actualizar la venta con los datos principales
+        $venta->update([
+            'cliente_id' => $validated['cliente_id'],
+            'subTotal' => $validated['subTotal'],
+            'IGV' => $validated['IGV'],
+            'montoTotal' => $validated['montoTotal'],
+        ]);
+
+        // Almacenar IDs de productos existentes en la venta
+        $productoIdsActuales = $detallesAntiguos->pluck('producto_id')->toArray();
+
+        // Actualizar detalles de la venta con los nuevos productos seleccionados
         foreach ($request->productos as $productoData) {
             $producto = Producto::find($productoData['id']);
-            VentaDetalle::create([
-                'venta_id' => $venta->id,
-                'producto_id' => $producto->id,
-                'cantidad' => $productoData['cantidad'],
-                'precio_unitario' => $producto->precio,
-                'subtotal' => $productoData['cantidad'] * $producto->precio,
-            ]);
+
+            // Buscar el detalle de venta anterior
+            $detalleAntiguo = $detallesAntiguos->firstWhere('producto_id', $producto->id);
+            $cantidadAntigua = $detalleAntiguo ? $detalleAntiguo->cantidad : 0;
+
+            // Calcular la diferencia en la cantidad
+            $diferencia = $productoData['cantidad'] - $cantidadAntigua;
+
+            // Ajustar el stock del producto según la diferencia
+            if ($diferencia !== 0) {
+                $producto->stockP -= $diferencia; // Resta si es negativo, suma si es positivo
+                $producto->save();
+            }
+
+            // Crear o actualizar el detalle de la venta
+            if ($detalleAntiguo) {
+                // Actualizar el detalle existente
+                $detalleAntiguo->update([
+                    'cantidad' => $productoData['cantidad'],
+                    'precio_unitario' => $producto->precioP,
+                    'subtotal' => $productoData['cantidad'] * $producto->precioP,
+                ]);
+            } else {
+                // Crear un nuevo detalle si no existía
+                $venta->detalles()->create([
+                    'producto_id' => $producto->id,
+                    'cantidad' => $productoData['cantidad'],
+                    'precio_unitario' => $producto->precioP,
+                    'subtotal' => $productoData['cantidad'] * $producto->precioP,
+                ]);
+            }
         }
 
+        // Ahora, verifica qué productos han sido eliminados
+        $nuevosProductoIds = collect($request->productos)->pluck('id')->toArray();
+        $productosEliminados = array_diff($productoIdsActuales, $nuevosProductoIds);
+
+        // Actualiza el stock de los productos eliminados
+        foreach ($productosEliminados as $productoId) {
+            $detalleAntiguo = $detallesAntiguos->firstWhere('producto_id', $productoId);
+            if ($detalleAntiguo) {
+                $producto = Producto::find($productoId);
+                $producto->stockP += $detalleAntiguo->cantidad; // Regresa el stock al producto
+                $producto->save();
+
+                // Opcional: Eliminar el detalle de la venta si es necesario
+                $detalleAntiguo->delete();
+            }
+        }
+
+        // Redireccionar a la lista de ventas con un mensaje de éxito
         return redirect()->route('ventas.index')->with('success', 'Venta actualizada con éxito.');
     }
+
 
 
     /**
@@ -160,5 +234,16 @@ class VentaController extends Controller
             'IGV' => number_format($igv, 2),
             'montoTotal' => number_format($montoTotal, 2),
         ]);
+    }
+
+    public function anularVenta($id)
+    {
+        $venta = Venta::findOrFail($id); // Encuentra la venta por su ID
+        if ($venta->estadoVenta->descripcionEV !== 'Anulado') {
+            $venta->anular(); // Llama a la función anular en el modelo Venta
+            return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
+        } else {
+            return redirect()->route('ventas.index')->with('error', 'La venta ya está anulada.');
+        }
     }
 }

@@ -54,4 +54,23 @@ class Venta extends Model
         // return $this->hasMany(Pago::class);
         return $this->hasOne(Pago::class);
     }
+
+    public function anular()
+    {
+        // Cambiar el estado de la venta a "Anulado"
+        $estadoAnulado = EstadoVenta::where('descripcionEV', 'Anulado')->first();
+        if ($estadoAnulado) {
+            $this->estado_venta_id = $estadoAnulado->id;
+            $this->save();
+        }
+
+        // Devolver los productos al stock
+        foreach ($this->detalles as $detalle) {
+            $producto = $detalle->producto;
+            if ($producto) {
+                $producto->stockP += $detalle->cantidad; // Incrementar el stock del producto
+                $producto->save();
+            }
+        }
+    }
 }

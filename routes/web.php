@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -40,12 +40,16 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::resource('users', UserController::class);
+
 Route::resource('colaboradores', ColaboradorController::class);
 Route::resource('clientes', ClienteController::class);
 Route::resource('productos', ProductoController::class);
 Route::resource('proveedores', ProveedorController::class);
 
 Route::resource('ventas', VentaController::class);
+Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
+
 Route::resource('ventas.pagos', PagoController::class)->except(['index']);
 
 

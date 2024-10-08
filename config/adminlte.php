@@ -323,11 +323,20 @@ return [
         //     'label_color' => 'success',
         // ],
         [
+            'text' => 'Users',
+            'url' => 'users',
+            'icon' => 'far fa-fw fa-file',
+            'label' => 4,
+            'label_color' => 'success',
+            'can' => 'gestionar users',
+        ],
+        [
             'text' => 'Clientes',
             'url' => 'clientes',
             'icon' => 'far fa-fw fa-file',
             'label' => 4,
             'label_color' => 'success',
+            'can' => 'gestionar clientes',
         ],
         [
             'text' => 'Colaboradores',

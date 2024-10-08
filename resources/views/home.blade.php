@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <h3>Hola, bienvenido ADMIN</h3>
+    <h3>Hola, bienvenido</h3>
 @stop
 
 @section('css')

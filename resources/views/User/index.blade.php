@@ -1,45 +1,43 @@
 @extends('adminlte::page')
 
-@section('title', 'Proveedores')
+@section('title', 'Usuarios')
 
 @section('content_header')
-    <h1>Lista de proveedores</h1>
+    <h1>Lista de usuarios</h1>
 @stop
 
 @section('content')
-    <a href="{{route('proveedores.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR PROVEEDOR</a>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <a href="{{ route('users.create') }}" class="btn btn-primary">Crear Nuevo Usuario</a>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">
             <thead>
                 <tr>
                     <th scope="col">ID</th>
-                    <th scope="col">TIPO PROVEEDOR</th>
-                    <th scope="col">NOMBRE</th>
-                    <th scope="col">RUC</th>
-                    <th scope="col">DIRECCIÓN</th>
-                    <th scope="col">EMAIL</th>
-                    <th scope="col">TELÉFONO</th>
-                    <th scope="col">ACCIONES</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
         
             <tbody>
-                @foreach ($proveedores as $proveedor)
+                @foreach ($users as $user)
                 <tr>
-                    <td class="align-middle">{{$proveedor->id}}</td>
-                    <td class="align-middle">{{$proveedor->tipoProveedor->descripcionTE}}</td>
-                    <td class="align-middle">{{$proveedor->nombreProveedor}}</td>
-                    <td class="align-middle">{{$proveedor->RUC}}</td>
-                    <td class="align-middle">{{$proveedor->direccionProveedor}}</td>
-                    <td class="align-middle">{{$proveedor->correoProveedor}}</td>
-                    <td class="align-middle">{{$proveedor->telefonoProveedor}}</td>
+                    <td class="align-middle">{{$user->id}}</td>
+                    <td class="align-middle">{{$user->name}}</td>
+                    <td class="align-middle">{{$user->email}}</td>
                     <td class="align-middle">
-                        <a href="{{route('proveedores.edit', $proveedor)}}" class="btn btn-info">Editar</a>
-                        <form action="{{route('proveedores.destroy', $proveedor)}}" method="post">
+                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning">Editar</a>
+                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                             @csrf
-                            @method('delete')
-                            <button class="btn btn-danger mt-1">Eliminar</button>
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
                         </form>
                     </td>    
                 </tr>

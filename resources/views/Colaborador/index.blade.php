@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <a href="{{route('colaboradores.create')}}" class="btn btn-danger justify-content-center" >CREAR COLABORADOR</a>
+    <a href="{{route('colaboradores.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR COLABORADOR</a>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">

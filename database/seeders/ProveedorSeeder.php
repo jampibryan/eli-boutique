@@ -41,7 +41,7 @@ class ProveedorSeeder extends Seeder
             [
                 'tipo_proveedor_id' => 2,
                 'nombreProveedor' => 'María López',
-                'RUC' => '20123456789',
+                'RUC' => '20325464682',
                 'direccionProveedor' => 'Av. El Sol 321',
                 'correoProveedor' => 'maria_lopez@gmail.com',
                 'telefonoProveedor' => '994567890',
