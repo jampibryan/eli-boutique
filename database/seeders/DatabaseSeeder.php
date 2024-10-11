@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
         // Llama al seeder Comprobante
         $this->call(ComprobanteSeeder::class);
 
-        // Llama al seeder Estado Venta
-        $this->call(EstadoVentaSeeder::class);
+        // Llama al seeder Estado de transacción
+        $this->call(EstadoTransaccionSeeder::class);
     }
 }

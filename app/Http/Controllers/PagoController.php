@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comprobante;
-use App\Models\EstadoVenta;
+use App\Models\EstadoTransaccion;
 use App\Models\Pago;
 use App\Models\Venta;
 use Illuminate\Http\Request;
@@ -44,11 +44,11 @@ class PagoController extends Controller
         $venta = Venta::findOrFail($ventaId);
 
         // Obtener el estado "Pagado"
-        $estadoPagado = EstadoVenta::where('descripcionEV', 'Pagado')->first();
+        $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
 
-        // Actualizar el estado de la venta a "Pagado"
+        // Actualizar el estado de la transacción a "Pagado"
         if ($estadoPagado) {
-            $venta->estado_venta_id = $estadoPagado->id;
+            $venta->estado_transaccion_id = $estadoPagado->id;
             $venta->save();
         }
 

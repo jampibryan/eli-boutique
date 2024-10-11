@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
-use App\Models\EstadoVenta;
+use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
@@ -19,7 +19,7 @@ class VentaController extends Controller
 
     public function index()
     {
-        $ventas = Venta::with(['cliente', 'estadoVenta', 'detalles', 'pago'])->get();
+        $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago'])->get();
         return view('venta.index', compact('ventas'));
     }
 
@@ -29,7 +29,7 @@ class VentaController extends Controller
     public function create()
     {
         $clientes = Cliente::all();
-        $estadoVentas = EstadoVenta::all();
+        $estadoVentas = EstadoTransaccion::all();
         $productos = Producto::all();
         return view('venta.create', compact('clientes', 'estadoVentas', 'productos'));
     }
@@ -96,7 +96,7 @@ class VentaController extends Controller
     public function edit(Venta $venta)
     {
         $clientes = Cliente::all();
-        // $estadoVentas = EstadoVenta::all();
+        // $estadoVentas = EstadoTransaccion::all();
         $productos = Producto::all();
 
         // Cargar los productos asociados a través de los detalles de la venta
@@ -239,7 +239,7 @@ class VentaController extends Controller
     public function anularVenta($id)
     {
         $venta = Venta::findOrFail($id); // Encuentra la venta por su ID
-        if ($venta->estadoVenta->descripcionEV !== 'Anulado') {
+        if ($venta->estadoTransaccion->descripcionET !== 'Anulado') {
             $venta->anular(); // Llama a la función anular en el modelo Venta
             return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
         } else {

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigoVenta', 7)->unique();  // Tamaño ajustado a 7 caracteres
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');  // Llave foránea a la tabla clientes
-            $table->foreignId('estado_venta_id')->constrained()->onDelete('cascade');  // Llave foránea a la tabla estados de venta
+            $table->foreignId('estado_transaccion_id')->constrained('estado_transacciones')->onDelete('cascade');  // Llave foránea a la tabla estados de transacción
             $table->decimal('subTotal', 10, 2);
             $table->decimal('IGV', 10, 2);
             $table->decimal('montoTotal', 10, 2);

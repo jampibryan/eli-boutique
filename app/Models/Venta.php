@@ -12,7 +12,7 @@ class Venta extends Model
     protected $fillable = [
         'codigoVenta',
         'cliente_id',
-        'estado_venta_id',
+        'estado_transaccion_id',
         'subTotal',
         'IGV',
         'montoTotal',
@@ -22,9 +22,9 @@ class Venta extends Model
     {
         static::creating(function ($venta) {
             // Asigna el estado predeterminado "Pendiente" si no está establecido
-            if (!$venta->estado_venta_id) {
-                $estadoPendiente = EstadoVenta::where('descripcionEV', 'Pendiente')->first();
-                $venta->estado_venta_id = $estadoPendiente->id;
+            if (!$venta->estado_transaccion_id) {
+                $estadoPendiente = EstadoTransaccion::where('descripcionET', 'Pendiente')->first();
+                $venta->estado_transaccion_id = $estadoPendiente->id;
             }
 
             // Generar el código de venta automáticamente
@@ -39,9 +39,9 @@ class Venta extends Model
         return $this->belongsTo(Cliente::class);
     }
 
-    public function estadoVenta()
+    public function estadoTransaccion()
     {
-        return $this->belongsTo(EstadoVenta::class);
+        return $this->belongsTo(EstadoTransaccion::class);
     }
 
     public function detalles()
@@ -58,9 +58,9 @@ class Venta extends Model
     public function anular()
     {
         // Cambiar el estado de la venta a "Anulado"
-        $estadoAnulado = EstadoVenta::where('descripcionEV', 'Anulado')->first();
+        $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
         if ($estadoAnulado) {
-            $this->estado_venta_id = $estadoAnulado->id;
+            $this->estado_transaccion_id = $estadoAnulado->id;
             $this->save();
         }
 
