@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Compra;
 use App\Models\Comprobante;
 use App\Models\EstadoTransaccion;
 use App\Models\Pago;
@@ -19,54 +20,70 @@ class PagoController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create($ventaId)
+    public function create($ventaId, $type = 'venta')
     {
         // Obtén la venta y todos los comprobantes disponibles
-        $venta = Venta::findOrFail($ventaId);
+        if ($type === 'venta') {
+            $transaction = Venta::findOrFail($ventaId);
+        } else {
+            $transaction = Compra::findOrFail($ventaId);
+        }
+
         $comprobantes = Comprobante::all();
 
         // Retorna la vista de creación de pago con los datos necesarios
-        return view('pago.create', compact('venta', 'comprobantes'));
+        return view('pago.create', compact('transaction', 'comprobantes', 'type'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $ventaId)
+    public function store(Request $request, $ventaId, $type = 'venta')
     {
         // Validación de datos
         $request->validate([
             'comprobante_id' => 'required|exists:comprobantes,id',
-            'importeRecibido' => 'required|numeric|min:0',
+            'importe' => 'required|numeric|min:0',
         ]);
 
-        // Obtener la venta
-        $venta = Venta::findOrFail($ventaId);
-
-        // Obtener el estado "Pagado"
-        $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
-
-        // Actualizar el estado de la transacción a "Pagado"
-        if ($estadoPagado) {
-            $venta->estado_transaccion_id = $estadoPagado->id;
-            $venta->save();
+        if ($type === 'venta') {
+            $transaction = Venta::findOrFail($ventaId);
+            $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
+    
+            if ($estadoPagado) {
+                $transaction->estado_transaccion_id = $estadoPagado->id;
+                $transaction->save();
+            }
+    
+            // Calcular el vuelto solo si es una venta
+            $montoTotal = $transaction->montoTotal;
+            $importe = $request->input('importe');
+            $vuelto = $importe - $montoTotal;
+        } else {
+            $transaction = Compra::findOrFail($ventaId);
+            $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first(); // Obtener el estado "Pagado"
+            
+            if ($estadoPagado) {
+                $transaction->estado_transaccion_id = $estadoPagado->id; // Cambiar el estado de la compra a "Pagado"
+                $transaction->save();
+            }
+    
+            $vuelto = null; // No se necesita para compras
         }
 
-        // Calcular el vuelto
-        $montoTotal = $venta->montoTotal;
-        $importeRecibido = $request->input('importeRecibido');
-        $vuelto = $importeRecibido - $montoTotal;
 
         // Crear el pago
         $pago = new Pago();
-        $pago->venta_id = $venta->id;
+        $pago->venta_id = $type === 'venta' ? $transaction->id : null;
+        $pago->compra_id = $type === 'compra' ? $transaction->id : null;
         $pago->comprobante_id = $request->input('comprobante_id');
-        $pago->importeRecibido = $importeRecibido;
+        $pago->importe = $request->input('importe');
         $pago->vuelto = $vuelto;
         $pago->save();
 
-        // Redirigir con éxito
-        return redirect()->route('ventas.index')->with('success', 'Pago registrado con éxito.');
+        // Redirigir a la página correspondiente
+        $redirectRoute = $type === 'venta' ? 'ventas.index' : 'compras.index';
+        return redirect()->route($redirectRoute)->with('success', 'Pago registrado con éxito.');
     }
 
     /**

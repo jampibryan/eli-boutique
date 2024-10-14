@@ -7,11 +7,15 @@
 @stop
 
 @section('content')
-    <a href="{{ route('productos.create') }}" class="btn btn-danger mb-3">REGISTRAR PRODUCTO</a>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{{ route('productos.create') }}" class="btn btn-danger">REGISTRAR PRODUCTO</a>
+        <a href="{{ route('productos.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+    </div>
 
     <!-- Formulario de búsqueda por categoría -->
     <form method="GET" class="mb-3">
-        <div class="form-group">
+        <div class="form-group col-md-3"">
             <label for="categoria">Filtrar por Categoría:</label>
             <select name="categoria" id="categoria" class="form-control" onchange="this.form.submit()">
                 <option value="">Todas las Categorías</option>

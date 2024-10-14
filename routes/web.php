@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
+use App\Http\Controllers\CompraController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
@@ -47,10 +48,21 @@ Route::resource('clientes', ClienteController::class);
 Route::resource('productos', ProductoController::class);
 Route::resource('proveedores', ProveedorController::class);
 
+// VENTAS
 Route::resource('ventas', VentaController::class);
 Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
 
-Route::resource('ventas.pagos', PagoController::class)->except(['index']);
+// Route::resource('ventas.pagos', PagoController::class)->except(['index']);
+
+// COMPRAS
+Route::resource('compras', CompraController::class);
+Route::post('/compras/{id}/anular', [CompraController::class, 'anularCompra'])->name('compras.anular');
+Route::post('/compras/{compra}/recibir', [CompraController::class, 'recibirPedido'])->name('compras.recibir');
+
+// Route::resource('compras.pagos', PagoController::class)->except(['index']);
+
+Route::get('pagos/create/{id}/{type}', [PagoController::class, 'create'])->name('pagos.create');
+Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('pagos.store');
 
 
 

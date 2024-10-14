@@ -29,9 +29,10 @@ class VentaController extends Controller
     public function create()
     {
         $clientes = Cliente::all();
-        $estadoVentas = EstadoTransaccion::all();
+        // $estadoVentas = EstadoTransaccion::all();
         $productos = Producto::all();
-        return view('venta.create', compact('clientes', 'estadoVentas', 'productos'));
+        return view('venta.create', compact('clientes', 'productos'));
+        // return view('venta.create', compact('clientes', 'estadoVentas', 'productos'));
     }
 
     /**
@@ -96,11 +97,10 @@ class VentaController extends Controller
     public function edit(Venta $venta)
     {
         $clientes = Cliente::all();
-        // $estadoVentas = EstadoTransaccion::all();
         $productos = Producto::all();
 
         // Cargar los productos asociados a través de los detalles de la venta
-        $venta->load('detalles.producto');
+        // $venta->load('detalles.producto');
 
         // Calcular el stock inicial para cada detalle
         foreach ($venta->detalles as $detalle) {

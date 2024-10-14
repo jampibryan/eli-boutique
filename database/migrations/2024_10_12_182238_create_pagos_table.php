@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('venta_id')->constrained()->onDelete('cascade'); // Llave foránea a la tabla ventas
+            $table->foreignId('venta_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('compra_id')->nullable()->constrained()->onDelete('cascade');
+
             $table->foreignId('comprobante_id')->constrained()->onDelete('cascade'); // Llave foránea a la tabla comprobantes
-            $table->decimal('importeRecibido', 10, 2);
-            $table->decimal('vuelto', 10, 2);
+            $table->decimal('importe', 10, 2);
+            $table->decimal('vuelto', 10, 2)->nullable();
             $table->timestamps();
         });
     }

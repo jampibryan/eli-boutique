@@ -7,14 +7,11 @@
 @stop
 
 @section('content')
-    <a href="{{route('clientes.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR CLIENTE</a>
 
-    {{-- @if(auth()->user()->can('gestionar clientes'))
-        <a href="{{ route('clientes.create') }}" class="btn btn-danger justify-content-center">CREAR CLIENTE</a>
-    @endif
-     --}}
-     {{-- Esta línea de código se utiliza para mostrar un botón "Agregar Cliente" solo si el usuario autenticado tiene el permiso gestionar clientes. Esto es parte de la lógica de autorización de tu aplicación y asegura que solo los usuarios con el permiso adecuado puedan ver y utilizar esa funcionalidad. --}}
-
+    <div class="d-flex justify-content-between">
+        <a href="{{ route('clientes.create') }}" class="btn btn-danger">REGISTRAR CLIENTE</a>
+        <a href="{{ route('clientes.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+    </div>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">

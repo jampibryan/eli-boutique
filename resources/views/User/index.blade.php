@@ -3,7 +3,7 @@
 @section('title', 'Usuarios')
 
 @section('content_header')
-    <h1>Lista de usuarios</h1>
+    <h1>Lista de Usuarios</h1>
 @stop
 
 @section('content')
@@ -13,7 +13,7 @@
         </div>
     @endif
 
-    <a href="{{ route('users.create') }}" class="btn btn-primary">Crear Nuevo Usuario</a>
+    <a href="{{ route('users.create') }}" class="btn btn-primary">CREAR NUEVO USUARIO</a>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">

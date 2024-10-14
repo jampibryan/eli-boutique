@@ -7,7 +7,11 @@
 @stop
 
 @section('content')
-    <a href="{{route('colaboradores.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR COLABORADOR</a>
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ route('colaboradores.create') }}" class="btn btn-danger">REGISTRAR COLABORADOR</a>
+        <a href="{{ route('colaboradores.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+    </div>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">

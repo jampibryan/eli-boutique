@@ -7,7 +7,11 @@
 @stop
 
 @section('content')
-    <a href="{{route('proveedores.create')}}" class="btn btn-danger justify-content-center" >REGISTRAR PROVEEDOR</a>
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ route('proveedores.create') }}" class="btn btn-danger">REGISTRAR PROVEEDOR</a>
+        <a href="{{ route('proveedores.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+    </div>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">

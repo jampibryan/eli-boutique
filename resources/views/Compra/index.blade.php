@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Ventas')
+@section('title', 'Compras')
 
 @section('content_header')
-    <h1>Lista de ventas</h1>
+    <h1>Lista de compras</h1>
 @stop
 
 @section('content')
@@ -13,60 +13,75 @@
     @endif
 
     <div class="d-flex justify-content-between">
-        <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
-        <a href="{{ route('ventas.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        <div>
+            <a href="{{ route('compras.create') }}" class="btn btn-danger">REGISTRAR COMPRA</a>
+        </div>
+        <div>
+            <a href="{{ route('compras.index') }}" class="btn btn-secondary">GENERAR ORDEN DE COMPRA</a>
+            <a href="{{ route('compras.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        </div>
     </div>
 
     <div class="container mt-4">
         <table id="example" class="table table-dark table-striped text-center">
             <thead class="table-dark">
                 <tr>
-                    <th scope="col" class="align-middle">Código Venta</th>
-                    <th scope="col" class="align-middle">Cliente</th>
+                    <th scope="col" class="align-middle">Código Compra</th>
+                    <th scope="col" class="align-middle">Proveedor</th>
                     <th scope="col" class="align-middle">Fecha</th>
                     <th scope="col" class="align-middle">Hora</th>
-                    <th scope="col" class="align-middle">Comprobante</th>
                     <th scope="col" class="align-middle">Estado</th>
+                    <th scope="col" class="align-middle">Comprobante</th>
                     <th scope="col" class="align-middle">Monto Total</th>
                     <th scope="col" class="align-middle">Acciones</th>
+                    {{-- @if ($compras->firstWhere('estadoTransaccion.descripcionET', 'Pagado'))
+                    @endif --}}
                 </tr>
             </thead>
             <tbody>
-                @foreach($ventas as $venta)
+                @foreach($compras as $compra)
                     @php
                         // Definir variables temporales para el comprobante y el estado
-                        $comprobanteDescripcion = $venta->pago->comprobante->descripcionCOM ?? 'Sin comprobante';
-                        $estadoDescripcion = $venta->estadoTransaccion->descripcionET;
+                        $comprobanteDescripcion = $compra->pago->comprobante->descripcionCOM ?? 'Sin comprobante';
+                        $estadoDescripcion = $compra->estadoTransaccion->descripcionET;
+                        $pagoCompra = $compra->pago->importe ?? 0;
                     @endphp
                     <tr>
-                        <td class="align-middle">{{ $venta->codigoVenta }}</td>
-                        <td class="align-middle">{{ $venta->cliente->nombreCliente}} {{ $venta->cliente->apellidoCliente}}</td>
-                        <td class="align-middle">{{ \Carbon\Carbon::parse($venta->created_at)->format('d/m/Y') }}</td>
-                        <td class="align-middle">{{ \Carbon\Carbon::parse($venta->created_at)->format('h:i A') }}</td>
-                        <td class="align-middle">{{ $comprobanteDescripcion}}</td>
+                        <td class="align-middle">{{ $compra->codigoCompra }}</td>
+                        <td class="align-middle">{{ $compra->proveedor->nombreProveedor }}</td>
+                        <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y') }}</td>
+                        <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('h:i A') }}</td>
                         <td class="align-middle">{{ $estadoDescripcion }}</td>
-                        <td class="align-middle">S/ {{ number_format($venta->montoTotal, 2) }}</td>
+                            
+                        <td class="align-middle">{{ $comprobanteDescripcion }}</td>
+                        <td class="align-middle">S/ {{ number_format($pagoCompra, 2) }}</td>
+
                         <td class="align-middle">
                             @if($estadoDescripcion == 'Pendiente')
                                 {{-- <a href="{{ route('ventas.show', $venta) }}" class="btn btn-info btn-sm">Ver</a> --}}
-                                <a href="{{ route('ventas.edit', $venta) }}" class="btn btn-info btn-sm">Editar</a>
-                                <a href="{{ route('pagos.create', [$venta->id, 'venta']) }}" class="btn btn-success btn-sm">Pagar</a>
+                                <a href="{{ route('compras.index', [$compra->id, 'compra']) }}" class="btn btn-secondary btn-sm">Orden de Compra</a>
+                                <a href="{{ route('compras.edit', $compra) }}" class="btn btn-info btn-sm mt-1">Editar</a>
+                                <a href="{{ route('pagos.create', [$compra->id, 'compra']) }}" class="btn btn-success btn-sm mt-1">Pagar</a>
 
-
-                                <form action="{{ route('ventas.anular', $venta->id) }}" method="POST" style="display:inline;" class="anular-form">
+                                <form action="{{ route('compras.anular', $compra->id) }}" method="POST" style="display:inline;" class="anular-form">
                                     @csrf
                                     <button type="button" class="btn btn-danger btn-sm mt-1" onclick="confirmAnular(this)">Anular</button>
                                 </form>
                             @elseif($estadoDescripcion == 'Pagado')
-                                <a href="{{ route('ventas.index', $venta) }}" class="btn btn-warning btn-sm">
-                                    Generar {{ $comprobanteDescripcion }}
+                                {{-- <a href="{{ route('compras.recibir', $compra) }}" class="btn btn-primary btn-sm">
+                                    Pedido recibido
+                                </a> --}}
+
+                                <form action="{{ route('compras.recibir', $compra) }}" method="POST" style="display:inline;" class="recibir-form">
+                                    @csrf
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="confirmRecibir(this)">Pedido Recibido</button>
+                                </form>
+                            @elseif($estadoDescripcion == 'Recibido')
+                                <a href="{{ route('compras.index', $compra) }}" class="btn btn-warning btn-sm">
+                                    Subir {{ $comprobanteDescripcion }}
                                 </a>
                             @endif
-                            {{-- <form action="{{ route('ventas.destroy', $venta) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar esta venta?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                            </form> --}}
+                
                         </td>
                     </tr>
                 @endforeach
@@ -147,7 +162,7 @@
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, anular venta!',
+            confirmButtonText: 'Sí, anular compra!',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -156,5 +171,29 @@
         });
     }
 </script>
+
+
+
+<script>
+    function confirmRecibir(button) {
+        const form = button.closest('.recibir-form');
+
+        Swal.fire({
+            title: '¿El pedido llegó a la tienda?',
+            text: "No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, llegó a la tienda!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit(); // Si el usuario confirma, se envía el formulario
+            }
+        });
+    }
+</script>
+
 @stop
 

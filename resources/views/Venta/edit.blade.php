@@ -148,15 +148,25 @@
             // Añadir el nuevo producto al detalle de venta
             document.getElementById('detalleVenta').appendChild(template);
 
-            // Añadir evento para actualizar el stock inicial al seleccionar un producto
+           // Añadir evento para actualizar el stock inicial al seleccionar un producto
             const selectElement = template.querySelector('.productoSelect');
             selectElement.addEventListener('change', function () {
                 const stockInicial = selectElement.options[selectElement.selectedIndex].getAttribute('data-stock');
-                template.querySelector('input[name="productos[' + (productoIndex - 1) + '][stock_inicial]"]').value = stockInicial || 0;
-                // Resetear cantidad a 1 si se selecciona un producto
-                template.querySelector('.cantidadInput').value = 1;
+                
+                // Comprobar si el valor seleccionado es vacío
+                if (selectElement.value === "") {
+                    // Vaciar stock inicial y cantidad si no se selecciona un producto
+                    template.querySelector('input[name="productos[' + (productoIndex - 1) + '][stock_inicial]"]').value = '';
+                    template.querySelector('.cantidadInput').value = '';
+                } else {
+                    // Asignar el stock inicial y establecer la cantidad a 1
+                    template.querySelector('input[name="productos[' + (productoIndex - 1) + '][stock_inicial]"]').value = stockInicial || 0;
+                    template.querySelector('.cantidadInput').value = 1;
+                }
+
                 calcularTotales();
             });
+
         });
 
         // Eliminar producto
