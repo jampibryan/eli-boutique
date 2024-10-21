@@ -22,8 +22,10 @@ class StoreProveedor extends FormRequest
     public function rules(): array
     {
         return [
-            'tipo_proveedor_id' => 'required',
+            // 'tipo_proveedor_id' => 'required',
+            'nombreEmpresa' => 'required',
             'nombreProveedor' => 'required',
+            'apellidoProveedor' => 'required',
             'RUC' => 'required|digits:11',
             'direccionProveedor' => 'required',
             'correoProveedor' => 'required|email',

@@ -10,7 +10,7 @@
 
     <div class="d-flex justify-content-between mb-3">
         <a href="{{ route('productos.create') }}" class="btn btn-danger">REGISTRAR PRODUCTO</a>
-        <a href="{{ route('productos.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
     </div>
 
     <!-- Formulario de búsqueda por categoría -->
@@ -35,6 +35,7 @@
                     <h5 class="card-title text-center mt-2 mb-2"><strong>{{ $producto->categoriaProducto->nombreCP }}</strong></h5>
                     <img src="{{ $producto->imagenP }}" class="card-img-top" alt="Imagen del producto" style="height: 200px; width: 100%; object-fit: contain;">
                     <div class="card-body p-2">
+                        <p class="card-text text-center mb-1"><strong>Código:</strong> {{ $producto->codigoP }}</p>
                         <p class="card-text text-center mb-1"><strong>Descripción:</strong> {{ $producto->descripcionP }}</p>
                         <p class="card-text text-center mb-1"><strong>Precio:</strong> S/. {{ number_format($producto->precioP, 2) }}</p>
                         <p class="card-text text-center mb-2"><strong>Stock:</strong> {{ $producto->stockP }}</p>

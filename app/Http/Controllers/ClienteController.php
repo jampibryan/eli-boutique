@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCliente;
 use App\Models\Cliente;
 use App\Models\TipoGenero;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class ClienteController extends Controller
 {
@@ -19,6 +20,18 @@ class ClienteController extends Controller
         $this->middleware('permission:gestionar clientes', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
     
+    public function pdfClientes()
+    {
+        
+        $clientes = Cliente::whereNotNull('id')->orderBy('apellidoCliente')->get();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('cliente.reporte', compact('clientes')));
+
+        // return $pdf->download(); //Descarga automática
+        return $pdf->stream('Reporte de Clientes.pdf'); //Abre una pestaña
+    }
+
     public function index()
     {
         $clientes = Cliente::all();
@@ -83,4 +96,5 @@ class ClienteController extends Controller
         $cliente->delete();
         return redirect()->route('clientes.index');
     }
+
 }

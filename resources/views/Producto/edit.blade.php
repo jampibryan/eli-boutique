@@ -11,6 +11,15 @@
     @csrf
     @method('PUT') <!-- Necesario para indicar que es una actualización -->
 
+     <!-- Código Producto -->
+    <div class="mb-3">
+        <label for="codigoP" class="form-label">Código Producto</label>
+        <input id="codigoP" name="codigoP" type="text" class="form-control" value="{{ $producto->codigoP }}">
+        @error('codigoP')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
     <!-- Categoría -->
     <div class="mb-3">
         <label for="categoria_producto_id" class="form-label">Categoría</label>

@@ -13,17 +13,19 @@ class Proveedor extends Model
     protected $table = 'proveedores';
 
     protected $fillable = [
-        'tipo_proveedor_id',
+        // 'tipo_proveedor_id',
+        'nombreEmpresa',
         'nombreProveedor',
+        'apellidoProveedor',
         'RUC',
         'direccionProveedor',
         'correoProveedor',
         'telefonoProveedor',
     ];
 
-    public function tipoProveedor()
-    {
-        return $this->belongsTo(TipoProveedor::class, 'tipo_proveedor_id');
-        // 'tipo_proveedor_id' es la columna en 'Proveedores' que se refiere a 'TipoProveedor'
-    }
+    // public function tipoProveedor()
+    // {
+    //     return $this->belongsTo(TipoProveedor::class, 'tipo_proveedor_id');
+    //     // 'tipo_proveedor_id' es la columna en 'Proveedores' que se refiere a 'TipoProveedor'
+    // }
 }

@@ -10,7 +10,7 @@
 
     <div class="d-flex justify-content-between">
         <a href="{{ route('clientes.create') }}" class="btn btn-danger">REGISTRAR CLIENTE</a>
-        <a href="{{ route('clientes.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        <a href="{{ route('clientes.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
     </div>
 
     <div class="container mt-4">

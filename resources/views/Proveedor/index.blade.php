@@ -10,7 +10,7 @@
 
     <div class="d-flex justify-content-between">
         <a href="{{ route('proveedores.create') }}" class="btn btn-danger">REGISTRAR PROVEEDOR</a>
-        <a href="{{ route('proveedores.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        <a href="{{ route('proveedores.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
     </div>
 
     <div class="container mt-4">
@@ -18,8 +18,10 @@
             <thead>
                 <tr>
                     <th scope="col">ID</th>
-                    <th scope="col">TIPO PROVEEDOR</th>
+                    {{-- <th scope="col">TIPO PROVEEDOR</th> --}}
+                    <th scope="col">EMPRESA</th>
                     <th scope="col">NOMBRE</th>
+                    <th scope="col">APELLIDOS</th>
                     <th scope="col">RUC</th>
                     <th scope="col">DIRECCIÓN</th>
                     <th scope="col">EMAIL</th>
@@ -32,8 +34,10 @@
                 @foreach ($proveedores as $proveedor)
                 <tr>
                     <td class="align-middle">{{$proveedor->id}}</td>
-                    <td class="align-middle">{{$proveedor->tipoProveedor->descripcionTE}}</td>
+                    {{-- <td class="align-middle">{{$proveedor->tipoProveedor->descripcionTE}}</td> --}}
+                    <td class="align-middle">{{$proveedor->nombreEmpresa}}</td>
                     <td class="align-middle">{{$proveedor->nombreProveedor}}</td>
+                    <td class="align-middle">{{$proveedor->apellidoProveedor}}</td>
                     <td class="align-middle">{{$proveedor->RUC}}</td>
                     <td class="align-middle">{{$proveedor->direccionProveedor}}</td>
                     <td class="align-middle">{{$proveedor->correoProveedor}}</td>

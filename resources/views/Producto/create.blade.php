@@ -9,6 +9,15 @@
 @section('content')   
     <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data"> <!-- Habilitar la subida de archivos -->
         @csrf
+
+        <!-- Código Producto -->
+        <div class="mb-3">
+            <label for="codigoP" class="form-label">Código Producto</label>
+            <input id="codigoP" name="codigoP" type="text" class="form-control" value="{{ old('codigoP') }}">
+            @error('codigoP')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
         
         <!-- Categoría -->
         <div class="mb-3">

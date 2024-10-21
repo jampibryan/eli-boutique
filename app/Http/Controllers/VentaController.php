@@ -3,18 +3,63 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\Colaborador;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class VentaController extends Controller
 {
     public function __construct()
     {
         // Aplicar middleware para verificar permisos
-        $this->middleware('permission:gestionar ventas', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+        $this->middleware('permission:gestionar ventas');
+    }
+
+    public function pdfVentas()
+    {
+        $ventas = Venta::whereNotNull('id')->get();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('venta.reporte', compact('ventas')));
+
+        // return $pdf->download(); //Descarga automática
+        return $pdf->stream('Reporte de Ventas.pdf'); //Abre una pestaña
+    }
+
+    public function pdfComprobante($id)
+    {
+        // Obtener la venta específica por ID
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago.comprobante'])
+            ->findOrFail($id);
+
+        // Obtener el colaborador específico (por ejemplo, el que tiene id = 1)
+        $colaborador = Colaborador::find(1);
+        
+        // Verificar el tipo de comprobante
+        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
+
+        // Generar el PDF utilizando la vista correspondiente
+        $pdf = App::make('dompdf.wrapper');
+
+        if ($tipoComprobante === 'Boleta') {
+            $pdf->loadHTML(view('venta.boletaV', compact('venta', 'colaborador')));
+            // Abrir el PDF en una nueva pestaña
+            return $pdf->stream('Boleta_' . $venta->codigoVenta . '.pdf');
+            
+        } elseif ($tipoComprobante === 'Factura') {
+            $pdf->loadHTML(view('venta.facturaV', compact('venta', 'colaborador')));
+            // Abrir el PDF en una nueva pestaña
+            return $pdf->stream('Factura_' . $venta->codigoVenta . '.pdf');
+
+        } else {
+            // Si no es ni boleta ni factura, puedes manejarlo como desees
+            // Por ejemplo, redirigir a una vista de error o cargar una vista por defecto
+            return abort(404, 'Comprobante no válido');
+        }
     }
 
     public function index()
@@ -29,10 +74,9 @@ class VentaController extends Controller
     public function create()
     {
         $clientes = Cliente::all();
-        // $estadoVentas = EstadoTransaccion::all();
         $productos = Producto::all();
         return view('venta.create', compact('clientes', 'productos'));
-        // return view('venta.create', compact('clientes', 'estadoVentas', 'productos'));
+
     }
 
     /**
@@ -246,4 +290,5 @@ class VentaController extends Controller
             return redirect()->route('ventas.index')->with('error', 'La venta ya está anulada.');
         }
     }
+
 }

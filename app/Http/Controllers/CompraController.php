@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Colaborador;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class CompraController extends Controller
 {
@@ -16,6 +18,33 @@ class CompraController extends Controller
         // Aplicar middleware para verificar permisos
         $this->middleware('permission:gestionar compras', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
+
+    public function pdfCompras()
+    {
+        $compras = Compra::whereNotNull('id')->get();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('compra.reporte', compact('compras')));
+
+        // return $pdf->download(); //Descarga automática
+        return $pdf->stream('Reporte de Compras.pdf'); //Abre una pestaña
+    }
+
+    public function pdfOrdenCompra(Compra $compra)
+    {
+        // Cargar las relaciones del proveedor y los detalles de la compra
+        $compra->load(['proveedor', 'detalles.producto']); 
+
+        // Obtener el colaborador específico (por ejemplo, el que tiene id = 1)
+        $colaborador = Colaborador::find(1); // Cambia 'Proveedor' por tu modelo de Colaborador si es diferente
+
+        // Pasar tanto la compra como el proveedor a la vista usando compact
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('compra.orden', compact('compra', 'colaborador'))); // Solo 'compra' ya incluye el proveedor cargado
+
+        return $pdf->stream('Orden de compra - ' . $compra->codigoCompra . '.pdf');
+    }
+
 
     public function index()
     {

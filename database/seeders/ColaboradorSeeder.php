@@ -23,7 +23,7 @@ class ColaboradorSeeder extends Seeder
                 'dniColab' => '27654471',
                 'edadColab' => 36,
                 'correoColab' => 'elyana_mostacero@gmail.com',
-                'telefonoColab' => '912345678',
+                'telefonoColab' => '982345678',
             ],
             [
                 'cargo_id' => 2,
@@ -43,7 +43,7 @@ class ColaboradorSeeder extends Seeder
                 'dniColab' => '84793754',
                 'edadColab' => 25,
                 'correoColab' => 'sofia_ramirez@gmail.com',
-                'telefonoColab' => '923456789',
+                'telefonoColab' => '963456789',
             ],
         ]);
     }

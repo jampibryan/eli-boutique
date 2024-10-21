@@ -14,7 +14,8 @@
 
     <div class="d-flex justify-content-between">
         <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
-        <a href="{{ route('ventas.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+        {{-- <a href="{{ route('ventas.index') }}" class="btn btn-primary">GENERAR REPORTE</a> --}}
+        <a href="{{ route('ventas.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
     </div>
 
     <div class="container mt-4">
@@ -58,7 +59,7 @@
                                     <button type="button" class="btn btn-danger btn-sm mt-1" onclick="confirmAnular(this)">Anular</button>
                                 </form>
                             @elseif($estadoDescripcion == 'Pagado')
-                                <a href="{{ route('ventas.index', $venta) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank" class="btn btn-warning btn-sm">
                                     Generar {{ $comprobanteDescripcion }}
                                 </a>
                             @endif

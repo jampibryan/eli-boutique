@@ -17,8 +17,8 @@
             <a href="{{ route('compras.create') }}" class="btn btn-danger">REGISTRAR COMPRA</a>
         </div>
         <div>
-            <a href="{{ route('compras.index') }}" class="btn btn-secondary">GENERAR ORDEN DE COMPRA</a>
-            <a href="{{ route('compras.index') }}" class="btn btn-primary">GENERAR REPORTE</a>
+            {{-- <a href="{{ route('compras.index') }}" class="btn btn-secondary">GENERAR ORDEN DE COMPRA</a> --}}
+            <a href="{{ route('compras.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
         </div>
     </div>
 
@@ -29,13 +29,11 @@
                     <th scope="col" class="align-middle">Código Compra</th>
                     <th scope="col" class="align-middle">Proveedor</th>
                     <th scope="col" class="align-middle">Fecha</th>
-                    <th scope="col" class="align-middle">Hora</th>
+                    {{-- <th scope="col" class="align-middle">Hora</th> --}}
                     <th scope="col" class="align-middle">Estado</th>
                     <th scope="col" class="align-middle">Comprobante</th>
                     <th scope="col" class="align-middle">Monto Total</th>
                     <th scope="col" class="align-middle">Acciones</th>
-                    {{-- @if ($compras->firstWhere('estadoTransaccion.descripcionET', 'Pagado'))
-                    @endif --}}
                 </tr>
             </thead>
             <tbody>
@@ -48,9 +46,9 @@
                     @endphp
                     <tr>
                         <td class="align-middle">{{ $compra->codigoCompra }}</td>
-                        <td class="align-middle">{{ $compra->proveedor->nombreProveedor }}</td>
+                        <td>{{ $compra->proveedor->nombreProveedor }} {{ $compra->proveedor->apellidoProveedor }}</td>
                         <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y') }}</td>
-                        <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('h:i A') }}</td>
+                        {{-- <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('h:i A') }}</td> --}}
                         <td class="align-middle">{{ $estadoDescripcion }}</td>
                             
                         <td class="align-middle">{{ $comprobanteDescripcion }}</td>
@@ -58,26 +56,22 @@
 
                         <td class="align-middle">
                             @if($estadoDescripcion == 'Pendiente')
-                                {{-- <a href="{{ route('ventas.show', $venta) }}" class="btn btn-info btn-sm">Ver</a> --}}
-                                <a href="{{ route('compras.index', [$compra->id, 'compra']) }}" class="btn btn-secondary btn-sm">Orden de Compra</a>
+                                <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank" class="btn btn-secondary btn-sm">Generar Orden de Compra</a>
                                 <a href="{{ route('compras.edit', $compra) }}" class="btn btn-info btn-sm mt-1">Editar</a>
                                 <a href="{{ route('pagos.create', [$compra->id, 'compra']) }}" class="btn btn-success btn-sm mt-1">Pagar</a>
-
+                                
                                 <form action="{{ route('compras.anular', $compra->id) }}" method="POST" style="display:inline;" class="anular-form">
                                     @csrf
                                     <button type="button" class="btn btn-danger btn-sm mt-1" onclick="confirmAnular(this)">Anular</button>
                                 </form>
                             @elseif($estadoDescripcion == 'Pagado')
-                                {{-- <a href="{{ route('compras.recibir', $compra) }}" class="btn btn-primary btn-sm">
-                                    Pedido recibido
-                                </a> --}}
-
                                 <form action="{{ route('compras.recibir', $compra) }}" method="POST" style="display:inline;" class="recibir-form">
                                     @csrf
                                     <button type="button" class="btn btn-primary btn-sm" onclick="confirmRecibir(this)">Pedido Recibido</button>
                                 </form>
                             @elseif($estadoDescripcion == 'Recibido')
-                                <a href="{{ route('compras.index', $compra) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('compras.index', [$compra->id, 'compra']) }}" class="btn btn-secondary btn-sm">Generar Orden de Compra</a>
+                                <a href="{{ route('compras.index', $compra) }}" class="btn btn-warning btn-sm mt-1">
                                     Subir {{ $comprobanteDescripcion }}
                                 </a>
                             @endif
@@ -196,4 +190,3 @@
 </script>
 
 @stop
-

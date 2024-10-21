@@ -12,7 +12,7 @@
     @method('PUT') <!-- Necesario para indicar que es una actualización -->
 
     <!-- Tipo Proveedor -->
-    <div class="mb-3">
+    {{-- <div class="mb-3">
         <label for="tipo_proveedor_id" class="form-label">Categoría</label>
         <select id="tipo_proveedor_id" name="tipo_proveedor_id" class="form-control">
             @foreach($tiposProv as $tipoProv)
@@ -24,6 +24,15 @@
         @error('tipo_proveedor_id')
             <small class="text-danger">{{ $message }}</small>
         @enderror
+    </div> --}}
+
+    <!-- Empresa -->
+    <div class="mb-3">
+        <label for="nombreEmpresa" class="form-label">Empresa</label>
+        <input id="nombreEmpresa" name="nombreEmpresa" type="text" class="form-control" value="{{ $proveedor->nombreEmpresa }}">
+        @error('nombreEmpresa')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Nombre -->
@@ -31,6 +40,15 @@
         <label for="nombreProveedor" class="form-label">Nombre</label>
         <input id="nombreProveedor" name="nombreProveedor" type="text" class="form-control" value="{{ $proveedor->nombreProveedor }}">
         @error('nombreProveedor')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>    
+
+    <!-- Apellidos -->
+    <div class="mb-3">
+        <label for="apellidoProveedor" class="form-label">Apellidos</label>
+        <input id="apellidoProveedor" name="apellidoProveedor" type="text" class="form-control" value="{{ $proveedor->apellidoProveedor }}">
+        @error('apellidoProveedor')
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>    

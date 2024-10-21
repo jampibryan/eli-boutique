@@ -25,6 +25,7 @@ class StoreProducto extends FormRequest
     {
 
         return [
+            'codigoP' => 'required',
             'categoria_producto_id' => 'required',
             'imagenP' => 'nullable|image', // Hacer que la imagen sea opcional
             'descripcionP' => 'required',

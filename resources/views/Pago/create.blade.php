@@ -27,25 +27,25 @@
         @if($type === 'venta')
         <!-- Monto Total de la Venta -->
         <div class="form-group">
-            <label for="montoTotal">Monto Total</label>
+            <label for="montoTotal">Monto Total S/</label>
             <input type="number" class="form-control" id="montoTotal" value="{{ $transaction->montoTotal }}" readonly>
         </div>
 
         <!-- Importe Recibido -->
         <div class="form-group">
-            <label for="importe">Importe Recibido</label>
+            <label for="importe">Importe Recibido S/</label>
             <input type="number" class="form-control" name="importe" id="importe" step="0.01" min="0" required>
         </div>
 
         <!-- Vuelto -->
         <div class="form-group">
-            <label for="vuelto">Vuelto</label>
+            <label for="vuelto">Vuelto S/</label>
             <input type="number" class="form-control" id="vuelto" name="vuelto" readonly>
         </div>
         @else
         <!-- Importe Recibido para Compra -->
         <div class="form-group">
-            <label for="importe">Importe Recibido</label>
+            <label for="importe">Importe Recibido S/</label>
             <input type="number" class="form-control" name="importe" id="importe" step="0.01" min="0" required>
         </div>
         @endif

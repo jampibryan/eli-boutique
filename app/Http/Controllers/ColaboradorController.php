@@ -7,6 +7,7 @@ use App\Models\Cargo;
 use App\Models\Colaborador;
 use App\Models\TipoGenero;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class ColaboradorController extends Controller
 {
@@ -14,6 +15,18 @@ class ColaboradorController extends Controller
     {
         // Aplicar middleware para verificar permisos
         $this->middleware('permission:gestionar colaboradores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+
+    public function pdfColaboradores()
+    {
+        
+        $colaboradores = Colaborador::whereNotNull('id')->get();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('colaborador.reporte', compact('colaboradores')));
+
+        // return $pdf->download(); //Descarga automática
+        return $pdf->stream('Reporte de Colaboradores.pdf'); //Abre una pestaña
     }
 
     public function index()

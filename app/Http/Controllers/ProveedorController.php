@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProveedor;
 use App\Models\Proveedor;
 use App\Models\TipoProveedor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class ProveedorController extends Controller
 {
@@ -13,6 +14,17 @@ class ProveedorController extends Controller
     {
         // Aplicar middleware para verificar permisos
         $this->middleware('permission:gestionar proveedores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+    }
+
+    public function pdfProveedores()
+    {
+        $proveedores = Proveedor::whereNotNull('id')->get();
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('proveedor.reporte', compact('proveedores')));
+
+        // return $pdf->download(); //Descarga automática
+        return $pdf->stream('Reporte de Proveedores.pdf'); //Abre una pestaña
     }
 
     public function index()
