@@ -108,8 +108,8 @@
                     <tr>
                         <td>{{ $detalle->cantidad }}</td>
                         <td>{{ $detalle->producto->descripcionP }}</td>
-                        <td>{{ number_format($detalle->precio_unitario, 2) }} S/.</td>
-                        <td>{{ number_format($detalle->subtotal, 2) }} S/.</td>
+                        <td>S/. {{ number_format($detalle->precio_unitario, 2) }} </td>
+                        <td>S/. {{ number_format($detalle->subtotal, 2) }} </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -118,7 +118,7 @@
 
         <div class="footer">
             <p>IGV: 18%</p>
-            <p>TOTAL: {{ number_format($venta->montoTotal, 2) }} S/.</p>
+            <p>TOTAL: S/. {{ number_format($venta->montoTotal, 2) }} </p>
         </div>
     </div>
 </body>

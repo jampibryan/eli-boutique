@@ -366,6 +366,27 @@ return [
             'icon' => 'fas fa-shopping-cart',
             'can' => 'gestionar compras',
         ],
+        // [
+        //     'text' => 'Gráficos',
+        //     'url' => 'reportes/index',
+        //     'icon' => 'fas fa-shopping-cart',
+        // ],
+        [
+            'text' => 'Reportes',
+            'icon' => 'fas fa-chart-pie',
+            'submenu' => [
+                [
+                    'text' => 'Reporte gráfico ventas',
+                    'url' => 'reportes/graficos/ventas',
+                    'icon' => 'fas fa-chart-line',
+                ],
+                [
+                    'text' => 'Reporte gráfico compras',
+                    'url' => 'reportes/graficos/compras',
+                    'icon' => 'fas fa-chart-bar',
+                ],
+            ],
+        ],
 
         // ['header' => 'account_settings'],
         // [

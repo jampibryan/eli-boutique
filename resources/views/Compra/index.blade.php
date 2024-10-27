@@ -70,10 +70,10 @@
                                     <button type="button" class="btn btn-primary btn-sm" onclick="confirmRecibir(this)">Pedido Recibido</button>
                                 </form>
                             @elseif($estadoDescripcion == 'Recibido')
-                                <a href="{{ route('compras.index', [$compra->id, 'compra']) }}" class="btn btn-secondary btn-sm">Generar Orden de Compra</a>
-                                <a href="{{ route('compras.index', $compra) }}" class="btn btn-warning btn-sm mt-1">
+                                <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank" class="btn btn-secondary btn-sm">Generar Orden de Compra</a>
+                                {{-- <a href="{{ route('compras.index', $compra) }}" class="btn btn-warning btn-sm mt-1">
                                     Subir {{ $comprobanteDescripcion }}
-                                </a>
+                                </a> --}}
                             @endif
                 
                         </td>

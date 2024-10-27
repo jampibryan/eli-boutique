@@ -6,6 +6,7 @@ use App\Http\Controllers\CompraController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteGraficoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,9 @@ Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('
 
 
 
+// Route::get('/reportes/index', [ReporteGraficoController::class, 'index'])->name('reportes.index');
+Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
+Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'compras'])->name('reporte.grafico.compras');
 
 
 
