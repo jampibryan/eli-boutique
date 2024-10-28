@@ -46,7 +46,7 @@
                     @endphp
                     <tr>
                         <td class="align-middle">{{ $compra->codigoCompra }}</td>
-                        <td>{{ $compra->proveedor->nombreProveedor }} {{ $compra->proveedor->apellidoProveedor }}</td>
+                        <td class="align-middle">{{ $compra->proveedor->nombreProveedor }} {{ $compra->proveedor->apellidoProveedor }}</td>
                         <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y') }}</td>
                         {{-- <td class="align-middle">{{ \Carbon\Carbon::parse($compra->created_at)->format('h:i A') }}</td> --}}
                         <td class="align-middle">{{ $estadoDescripcion }}</td>

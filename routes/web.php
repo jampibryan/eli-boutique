@@ -3,6 +3,7 @@
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
@@ -40,7 +41,7 @@ Route::middleware([
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::resource('users', UserController::class);
 

@@ -323,6 +323,13 @@ return [
         //     'label_color' => 'success',
         // ],
         [
+            'text' => 'Dashboard',
+            'url' => 'home',
+            'icon' => 'fas fa-user',
+            // 'label' => 4,
+            // 'label_color' => 'success',
+        ],
+        [
             'text' => 'Usuarios',
             'url' => 'users',
             'icon' => 'fas fa-user',
