@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('cajas', function (Blueprint $table) {
             $table->id();
+            $table->string('codigoCaja', 6)->unique(); // Código de caja único
+            $table->date('fecha')->unique(); // Fecha de la caja (única por día)
+            $table->integer('clientesHoy')->default(0); // Clientes del día
+            $table->integer('productosVendidos')->default(0); // Productos vendidos hoy
+            $table->decimal('ingresoDiario', 10, 2)->default(0.00); // Ingresos del día
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('cajas');
     }

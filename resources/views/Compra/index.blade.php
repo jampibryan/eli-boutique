@@ -14,7 +14,7 @@
 
     <div class="d-flex justify-content-between">
         <div>
-            <a href="{{ route('compras.create') }}" class="btn btn-danger">REGISTRAR COMPRA</a>
+            <a href="{{ route('compras.create') }}" class="btn btn-danger">REGISTRAR ORDEN DE COMPRA</a>
         </div>
         <div>
             {{-- <a href="{{ route('compras.index') }}" class="btn btn-secondary">GENERAR ORDEN DE COMPRA</a> --}}

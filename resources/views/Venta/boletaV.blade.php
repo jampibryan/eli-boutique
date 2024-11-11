@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -73,8 +75,6 @@
         <div class="client-info">
             <h2>Boleta de Venta</h2>
             <h3>Código de Venta: {{ $venta->codigoVenta }}</h3>
-            {{-- <p>Señor(es): {{ $venta->cliente->nombreCliente }} {{ $venta->cliente->apellidoCliente }}</p> --}}
-            {{-- <p>DNI: {{ $venta->cliente->dniCliente }}</p> --}}
 
             <div class="date-table">
                 <table>

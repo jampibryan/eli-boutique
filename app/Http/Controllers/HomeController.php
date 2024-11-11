@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caja;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\Venta;
@@ -15,11 +16,13 @@ class HomeController extends Controller
      *
      * @return void
      */
+    
     public function __construct()
     {
         $this->middleware('auth');
     }
 
+ 
     /**
      * Show the application dashboard.
      *
@@ -27,6 +30,14 @@ class HomeController extends Controller
      */
     public function index()
     {
+        // Verificar si la caja está abierta hoy
+        $cajaAbierta = Caja::whereDate('fecha', now()->toDateString())->exists();
+
+        // Reseteo de la sesión si es un nuevo día
+        if (!$cajaAbierta) {
+            session()->forget('cajaCerrada'); // Borra la variable de sesión
+        }
+
         // Contar la cantidad de clientes únicos que realizaron compras hoy
         $clientesCount = Venta::whereDate('created_at', now()->toDateString())
             ->whereHas('estadoTransaccion', function ($query) {
@@ -51,8 +62,8 @@ class HomeController extends Controller
             })                    
             ->sum('montoTotal');
 
-        // Obtener productos con stock mínimo (10 o menos)
-        $productosStockMinimo = Producto::where('stockP', '<=', 10)->get();
+        // Obtener productos con stock mínimo (15 o menos)
+        $productosStockMinimo = Producto::where('stockP', '<=', 15)->get();
 
         // Obtener los 5 productos más vendidos
         $productosMasVendidos = VentaDetalle::with('producto')
@@ -67,7 +78,7 @@ class HomeController extends Controller
 
         // Obtener la lista de productos con su stock actual
         $productosStockActual = Producto::select('descripcionP', 'stockP')->get();
-        
-        return view('home', compact('clientesCount', 'productosCount', 'ingresoDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
+
+        return view('home', compact('cajaAbierta', 'clientesCount', 'productosCount', 'ingresoDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
     }
 }

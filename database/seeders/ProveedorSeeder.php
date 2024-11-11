@@ -54,6 +54,16 @@ class ProveedorSeeder extends Seeder
                 'correoProveedor' => 'maria_lopez@gmail.com',
                 'telefonoProveedor' => '994567890',
             ],
+            [
+                // 'tipo_proveedor_id' => 1,
+                'nombreEmpresa' => 'Textiles de Oro S.A.',
+                'nombreProveedor' => 'Jorge',
+                'apellidoProveedor' => 'Ramírez Salazar',
+                'RUC' => '20456712345',
+                'direccionProveedor' => 'Calle Los Almendros 88',
+                'correoProveedor' => 'jorge_ramirez@gmail.com',
+                'telefonoProveedor' => '996543210',
+            ],
         ]);
     }
 }

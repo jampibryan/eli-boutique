@@ -3,76 +3,120 @@
 @section('title', 'Dashboard')
 
 @section('content_header')
-    {{-- <h1 class="text-center">Reporte Diario</h1> --}}
+{{-- <h1 class="text-center">Reporte Diario</h1> --}}
 @stop
 
 
 @section('content')
-    <div class="container">
-        <!-- Sección 1: Información General -->
-        <div class="row mt-4 mb-4 justify-content-center">
-            <div class="col-md-3">
-                <div class="card border-primary shadow-sm text-center">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                        <h5 class="card-title mb-1">Clientes de hoy</h5>
-                        <p class="card-text h4">{{ $clientesCount }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-success shadow-sm text-center">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-box-open fa-2x text-success mb-2"></i>
-                        <h5 class="card-title mb-1">Productos vendidos hoy</h5>
-                        <p class="card-text h4">{{ $productosCount }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-warning shadow-sm text-center">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-coins fa-2x text-warning mb-2"></i>
-                        <h5 class="card-title mb-1">Ingresos del día</h5>
-                        <p class="card-text h4">S/ {{ number_format($ingresoDiario, 2) }}</p>
-                    </div>
-                </div>
-            </div>
+<div class="container">
+    <!-- Botones para abrir y cerrar caja -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-2">
+            <form action="{{ route('caja.abrir') }}" method="POST">
+                @csrf
+                <button 
+                    type="submit" 
+                    class="btn btn-success btn-block"
+                    {{ $cajaAbierta ? 'disabled' : '' }}>
+                    Abrir caja
+                </button>
+            </form>
         </div>
-
-        <!-- Sección 2: Gráfico de productos -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h4 class="text-center">Productos con stock mínimo</h4>
-                        <canvas id="stockMinimoGrafico"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h4 class="text-center">Top 5 Productos más vendidos</h4>
-                        <canvas id="productosMasVendidosGrafico"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h4 class="text-center">Stock actual de productos</h4>
-                            <canvas id="stockProductosGrafico"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+        <div class="col-md-2">
+            <form action="{{ route('caja.cerrar') }}" method="POST">
+                @csrf
+                <input type="hidden" name="clientesHoy" value="{{ $clientesCount }}">
+                <input type="hidden" name="productosVendidos" value="{{ $productosCount }}">
+                <input type="hidden" name="ingresoDiario" value="{{ $ingresoDiario }}">
+                <button 
+                    type="submit" 
+                    class="btn btn-danger btn-block"
+                    {{ !$cajaAbierta || session('cajaCerrada') ? 'disabled' : '' }}>
+                    Cerrar caja
+                </button>
+            </form>
         </div>
     </div>
+
+    <!-- Mensajes de éxito y error -->
+    @if(session('success'))
+        <div class="alert alert-success mt-3">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger mt-3">
+            {{ session('error') }}
+        </div>
+    @endif
+
+
+    <!-- Sección 1: Información General -->
+    <div class="row mt-4 mb-4 justify-content-center">
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm text-center">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title mb-1">Clientes de hoy</h5>
+                    <p class="card-text h4">{{ $clientesCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm text-center">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-box-open fa-2x text-success mb-2"></i>
+                    <h5 class="card-title mb-1">Productos vendidos</h5>
+                    <p class="card-text h4">{{ $productosCount }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning shadow-sm text-center">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                    <h5 class="card-title mb-1">Ingresos del día</h5>
+                    <p class="card-text h4">S/ {{ number_format($ingresoDiario, 2) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Sección 2: Gráfico de productos -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="text-center">Productos con stock mínimo</h4>
+                    <canvas id="stockMinimoGrafico"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="text-center">Top 5 Productos más vendidos</h4>
+                    <canvas id="productosMasVendidosGrafico"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="text-center">Stock actual de productos</h4>
+                        <canvas id="stockProductosGrafico"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 @stop
 
 @section('css')
@@ -85,6 +129,32 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     
+    <!-- JavaScript para confirmar y deshabilitar botones -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const abrirCajaForm = document.querySelector('form[action="{{ route("caja.abrir") }}"]');
+            const cerrarCajaForm = document.querySelector('form[action="{{ route("caja.cerrar") }}"]');
+    
+            if (abrirCajaForm) {
+                abrirCajaForm.addEventListener('submit', function(event) {
+                    event.preventDefault(); // Evitar el envío inmediato del formulario
+                    if (confirm("¿Estás seguro de que quieres abrir la caja?")) {
+                        abrirCajaForm.submit(); // Enviar el formulario si el usuario confirma
+                    }
+                });
+            }
+    
+            if (cerrarCajaForm) {
+                cerrarCajaForm.addEventListener('submit', function(event) {
+                    event.preventDefault(); // Evitar el envío inmediato del formulario
+                    if (confirm("¿Estás seguro de que quieres cerrar la caja?")) {
+                        cerrarCajaForm.submit(); // Enviar el formulario si el usuario confirma
+                    }
+                });
+            }
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Gráfico de productos con stock mínimo

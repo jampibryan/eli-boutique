@@ -59,7 +59,7 @@
         <hr>
 
         <!-- Botón para registrar compra -->
-        <button type="submit" class="btn btn-success">Registrar compra</button>
+        <button type="submit" class="btn btn-success">Registrar orden de compra</button>
     </form>
 @stop
 

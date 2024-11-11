@@ -19,6 +19,8 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'gestionar proveedores']);
         Permission::create(['name' => 'gestionar ventas']);
         Permission::create(['name' => 'gestionar compras']);
+        Permission::create(['name' => 'ver cajas']);
+        Permission::create(['name' => 'ver reportes gráficos']);
 
         // Crear roles
         $adminRole = Role::create(['name' => 'administrador']);
@@ -34,8 +36,10 @@ class RoleSeeder extends Seeder
             'gestionar proveedores',
             'gestionar ventas',
             'gestionar compras',
+            'ver cajas',
+            'ver reportes gráficos',
         ]);
-
+        
         $gerenteRole->givePermissionTo([
             'gestionar colaboradores',
             'gestionar productos',
@@ -43,8 +47,10 @@ class RoleSeeder extends Seeder
             'gestionar proveedores',
             'gestionar ventas',
             'gestionar compras',
+            'ver cajas',
+            'ver reportes gráficos',
         ]);
-
+        
         $vendedorRole->givePermissionTo([
             'gestionar clientes',
             'gestionar productos',

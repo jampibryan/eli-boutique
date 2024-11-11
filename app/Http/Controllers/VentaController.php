@@ -10,14 +10,83 @@ use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class VentaController extends Controller
 {
+
     public function __construct()
     {
         // Aplicar middleware para verificar permisos
-        $this->middleware('permission:gestionar ventas');
+        $this->middleware('permission:gestionar ventas', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy', 'calcularTotales']]);
     }
+
+
+    public function exportarVentasCsv()
+    {
+        // Obtener los datos de ventas
+        $ventas = Venta::with('detalles.producto')->get();
+    
+        // Crear un archivo CSV
+        $csvFileName = 'ventas.csv';
+        $file = fopen($csvFileName, 'w');
+    
+        // Escribir la cabecera del CSV
+        fputcsv($file, ['producto_id', 'cantidad_vendida', 'año', 'mes', 'día']);
+    
+        // Escribir los datos de ventas
+        foreach ($ventas as $venta) {
+            foreach ($venta->detalles as $detalle) {
+                // Dividir la fecha en año, mes y día
+                $fecha = $venta->created_at; // Obtener la fecha de la venta
+                $año = $fecha->year; // Año
+                $mes = $fecha->month; // Mes
+                $dia = $fecha->day; // Día
+    
+                // Escribir los datos de cada venta en el CSV
+                fputcsv($file, [
+                    'producto_id' => $detalle->producto_id,
+                    'cantidad_vendida' => $detalle->cantidad,
+                    'año' => $año,
+                    'mes' => $mes,
+                    'día' => $dia
+                ]);
+            }
+        }
+    
+        fclose($file);
+    
+        return response()->download($csvFileName)->deleteFileAfterSend(true);
+    }
+    
+    // Método para obtener las ventas desde la base de datos
+    public function obtenerDatosVentas(Request $request)
+    {
+        // Obtener las ventas con los detalles y productos relacionados
+        $ventas = Venta::with('detalles.producto')  // Asegurándonos de que cargamos la relación con Producto
+            ->get();
+    
+        // Preparar los datos para ser enviados a la API
+        $resultados = [];
+    
+        foreach ($ventas as $venta) {
+            foreach ($venta->detalles as $detalle) {
+                $resultados[] = [
+                    'producto_nombre' => $detalle->producto->descripcionP,  // Aquí obtenemos el nombre del producto
+                    'cantidad_vendida' => $detalle->cantidad,
+                    'año' => $venta->created_at->year,   // Año de la venta
+                    'mes' => $venta->created_at->month,  // Mes de la venta
+                    'dia' => $venta->created_at->day,    // Día de la venta
+                    'producto_id' => $detalle->producto_id, // También puedes dejar el ID si lo necesitas
+                ];
+            }
+        }
+    
+        // Retornar los resultados en formato JSON
+        return response()->json($resultados);
+    }
+    
 
     public function pdfVentas()
     {

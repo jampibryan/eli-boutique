@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caja;
 use App\Models\Compra;
 use App\Models\Venta;
 use Carbon\Carbon;
@@ -10,9 +11,12 @@ use Illuminate\Support\Facades\DB;
 
 class ReporteGraficoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        // Aplicar middleware para verificar permisos
+        $this->middleware('permission:ver reportes gráficos');
+    }
+
     public function index()
     {
         // return view('reporte.index');
@@ -171,7 +175,6 @@ class ReporteGraficoController extends Controller
 
         return view('reporte.compragrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
-
     
 
     /**

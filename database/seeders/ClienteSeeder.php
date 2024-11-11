@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Cliente;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\TipoGenero;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Faker\Factory as Faker;
 
 class ClienteSeeder extends Seeder
 {
@@ -14,89 +14,36 @@ class ClienteSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('clientes')->insert([
-            [
-                'nombreCliente'   => 'Luis',
-                'apellidoCliente' => 'Fernández Torres',
-                'dniCliente'      => '21748275',
-                'correoCliente'   => 'luis_fernandez@gmail.com',
-                'telefonoCliente' => '947838444',
-                'tipo_genero_id'  => 1,
-            ],
-            [
-                'nombreCliente'   => 'María',
-                'apellidoCliente' => 'Pérez Sánchez',
-                'dniCliente'      => '74838538',
-                'correoCliente'   => 'maria_perez@gmail.com',
-                'telefonoCliente' => '937582373',
-                'tipo_genero_id'  => 2,
-            ],
-            [
-                'nombreCliente'   => 'Carlos',
-                'apellidoCliente' => 'Martínez López',
-                'dniCliente'      => '83467492',
-                'correoCliente'   => 'carlos_martinez@gmail.com',
-                'telefonoCliente' => '987655524',
-                'tipo_genero_id'  => 1,
-            ],
-            [
-                'nombreCliente'   => 'Laura',
-                'apellidoCliente' => 'Ramírez Salas',
-                'dniCliente'      => '53171482',
-                'correoCliente'   => 'laura_ramirez@gmail.com',
-                'telefonoCliente' => '937285313',
-                'tipo_genero_id'  => 2,
-            ],
-            [
-                'nombreCliente'   => 'José',
-                'apellidoCliente' => 'García Montalvo',
-                'dniCliente'      => '74641929',
-                'correoCliente'   => 'jose_garcia@gmail.com',
-                'telefonoCliente' => '937847241',
-                'tipo_genero_id'  => 1,
-            ],
-            [
-                'nombreCliente'   => 'Sofía',
-                'apellidoCliente' => 'Cruz Díaz',
-                'dniCliente'      => '67890124',
-                'correoCliente'   => 'sofia_cruz@gmail.com',
-                'telefonoCliente' => '961484889',
-                'tipo_genero_id'  => 2,
-            ],
-            [
-                'nombreCliente'   => 'Andrés',
-                'apellidoCliente' => 'Castillo Peña',
-                'dniCliente'      => '78901235',
-                'correoCliente'   => 'andres_castillo@gmail.com',
-                'telefonoCliente' => '974938483',
-                'tipo_genero_id'  => 1,
-            ],
-            [
-                'nombreCliente'   => 'Isabella',
-                'apellidoCliente' => 'Hernández Soto',
-                'dniCliente'      => '89012346',
-                'correoCliente'   => 'isabella_hernandez@gmail.com',
-                'telefonoCliente' => '987654329',
-                'tipo_genero_id'  => 2,
-            ],
-            [
-                'nombreCliente'   => 'Diego',
-                'apellidoCliente' => 'Morales Ruiz',
-                'dniCliente'      => '90123457',
-                'correoCliente'   => 'diego_morales@gmail.com',
-                'telefonoCliente' => '979473873',
-                'tipo_genero_id'  => 1,
-            ],
-            [
-                'nombreCliente'   => 'Valentina',
-                'apellidoCliente' => 'Salazar Álvarez',
-                'dniCliente'      => '01234568',
-                'correoCliente'   => 'valentina_salazar@gmail.com',
-                'telefonoCliente' => '937482743',
-                'tipo_genero_id'  => 2,
-            ],
-        ]);
-        
+        $faker = Faker::create();
+
+        // Generar 50 clientes
+        foreach (range(1, 25) as $index) {
+            // Generar un nombre y apellidos aleatorios
+            $nombreCliente = $faker->firstName;
+            $apellidoCliente = $faker->lastName;
+            $segundoApellidoCliente = $faker->lastName;
+
+            // Generar el teléfono (9 caracteres)
+            $telefonoCliente = $faker->numerify('9########');
+
+            // Generar el DNI (8 caracteres)
+            $dniCliente = $faker->numerify('########');
+
+            // Generar correo
+            $correoCliente = strtolower($nombreCliente) . '.' . strtolower($apellidoCliente) . '@gmail.com';
+
+            // Generar género aleatorio (1 = hombre, 2 = mujer)
+            $tipoGeneroId = $faker->randomElement([1, 2]);
+
+            // Insertar el cliente en la base de datos
+            Cliente::create([
+                'nombreCliente'   => $nombreCliente,
+                'apellidoCliente' => $apellidoCliente,
+                'dniCliente'      => $dniCliente,
+                'correoCliente'   => $correoCliente,
+                'telefonoCliente' => $telefonoCliente,
+                'tipo_genero_id'  => $tipoGeneroId,
+            ]);
+        }
     }
 }
-

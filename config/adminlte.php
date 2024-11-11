@@ -373,14 +373,16 @@ return [
             'icon' => 'fas fa-shopping-cart',
             'can' => 'gestionar compras',
         ],
-        // [
-        //     'text' => 'Gráficos',
-        //     'url' => 'reportes/index',
-        //     'icon' => 'fas fa-shopping-cart',
-        // ],
+        [
+            'text' => 'Cajas',
+            'url' => 'cajas',
+            'icon' => 'fas fa-shopping-cart',
+            'can' => 'ver cajas',
+        ],
         [
             'text' => 'Reportes',
             'icon' => 'fas fa-chart-pie',
+            'can' => 'ver reportes gráficos',
             'submenu' => [
                 [
                     'text' => 'Reporte gráfico ventas',

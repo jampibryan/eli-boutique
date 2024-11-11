@@ -1,3 +1,4 @@
+
 @extends('adminlte::page')
 
 @section('title', 'Ventas')
@@ -14,6 +15,9 @@
 
     <div class="d-flex justify-content-between">
         <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
+
+        <a href="{{ route('exportarCSV') }}" class="btn btn-info">DESCARGAR CSV</a>
+                
         {{-- <a href="{{ route('ventas.index') }}" class="btn btn-primary">GENERAR REPORTE</a> --}}
         <a href="{{ route('ventas.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
     </div>
@@ -157,5 +161,18 @@
         });
     }
 </script>
+
+
+{{-- <script>
+    document.getElementById('btn-prediccion').addEventListener('click', function() {
+        fetch('/api/productos/predict')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Maneja los datos que recibes
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script> --}}
+
 @stop
 

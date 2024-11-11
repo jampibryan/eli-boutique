@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
@@ -28,6 +29,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Route::post('api/prediccion-ventas', [VentaController::class, 'predecirVentas']);
+Route::get('obtener-datos-ventas', [VentaController::class, 'obtenerDatosVentas']);
+
+Route::get('exportar-ventas', [VentaController::class, 'exportarVentasCsv'])->name('exportarCSV');
+
 
 Route::middleware([
     'auth:sanctum',
@@ -43,6 +49,13 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+// Caja
+Route::get('cajas/reporte', [CajaController::class, 'pdfCajas'])->name('cajas.pdf');
+Route::get('cajas', [CajaController::class, 'index'])->name('cajas.index');
+Route::post('/caja/abrir', [CajaController::class, 'abrirCaja'])->name('caja.abrir');
+Route::post('/caja/cerrar', [CajaController::class, 'cerrarCaja'])->name('caja.cerrar');
+
+// USUARIOS
 Route::resource('users', UserController::class);
 
 // CLIENTES
@@ -61,7 +74,9 @@ Route::resource('proveedores', ProveedorController::class);
 Route::get('productos/reporte', [ProductoController::class, 'pdfProductos'])->name('productos.pdf');
 Route::resource('productos', ProductoController::class);
 
+
 // VENTAS
+
 Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
 Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
 Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
