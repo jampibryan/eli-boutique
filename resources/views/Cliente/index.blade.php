@@ -17,7 +17,7 @@
         <table id="example" class="table table-dark table-striped text-center">
             <thead>
                 <tr>
-                    <th scope="col" class="align-middle">ID</th>
+                    <th scope="col" class="align-middle">CÓDIGO</th>
                     <th scope="col" class="align-middle">NOMBRE</th>
                     <th scope="col" class="align-middle">APELLIDOS</th>
                     <th scope="col" class="align-middle">GÉNERO</th>

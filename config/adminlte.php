@@ -380,6 +380,12 @@ return [
             'can' => 'ver cajas',
         ],
         [
+            'text' => 'Predicción',
+            'url' => 'prediccion',
+            'icon' => 'fas fa-shopping-cart',
+            // 'can' => 'ver predicción',
+        ],
+        [
             'text' => 'Reportes',
             'icon' => 'fas fa-chart-pie',
             'can' => 'ver reportes gráficos',

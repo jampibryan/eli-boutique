@@ -17,7 +17,7 @@
         <table id="example" class="table table-dark table-striped text-center">
             <thead>
                 <tr>
-                    <th scope="col">ID</th>
+                    <th scope="col">CÓDIGO</th>
                     {{-- <th scope="col">TIPO PROVEEDOR</th> --}}
                     <th scope="col">EMPRESA</th>
                     <th scope="col">NOMBRE</th>

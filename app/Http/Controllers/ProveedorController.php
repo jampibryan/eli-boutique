@@ -15,6 +15,16 @@ class ProveedorController extends Controller
         // Aplicar middleware para verificar permisos
         $this->middleware('permission:gestionar proveedores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
+    
+    public function getProveedores()
+    {
+        // Obtener todos los proveedores
+        $proveedores = Proveedor::all();
+
+        // Retornar los proveedores en formato JSON
+        return response()->json($proveedores);
+    }
+    
 
     public function pdfProveedores()
     {

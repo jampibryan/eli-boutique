@@ -22,9 +22,10 @@
             <table class="table table-striped table-bordered mx-auto">
                 <thead class="table-dark">
                     <tr>
+                        <th>CÓDIGO</th>
                         <th>NOMBRE</th>
                         <th>APELLIDOS</th>
-                        <th>GÉNERO</th>
+                        {{-- <th>GÉNERO</th> --}}
                         <th>DNI</th>
                         <th>EMAIL</th>
                         <th>TELÉFONO</th>
@@ -33,9 +34,10 @@
                 <tbody>
                     @foreach ($clientes as $cliente)
                         <tr>
+                            <td>{{$cliente->id}}</td>
                             <td>{{$cliente->nombreCliente}}</td>
                             <td>{{$cliente->apellidoCliente}}</td>
-                            <td>{{$cliente->tipoGenero->descripcionTG}}</td>
+                            {{-- <td>{{$cliente->tipoGenero->descripcionTG}}</td> --}}
                             <td>{{$cliente->dniCliente}}</td>
                             <td>{{$cliente->correoCliente}}</td>
                             <td>{{$cliente->telefonoCliente}}</td>

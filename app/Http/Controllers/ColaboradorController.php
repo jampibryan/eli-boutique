@@ -19,7 +19,6 @@ class ColaboradorController extends Controller
 
     public function pdfColaboradores()
     {
-        
         $colaboradores = Colaborador::whereNotNull('id')->get();
 
         $pdf = App::make('dompdf.wrapper');

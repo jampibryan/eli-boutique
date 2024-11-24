@@ -20,10 +20,17 @@ class ClienteController extends Controller
         $this->middleware('permission:gestionar clientes', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
     
+    public function apiClientes()
+    {
+        $clientes = Cliente::with('tipoGenero')->get();
+        return response()->json($clientes);
+    }
+
     public function pdfClientes()
     {
-        
-        $clientes = Cliente::whereNotNull('id')->orderBy('apellidoCliente')->get();
+        // $clientes = Cliente::whereNotNull('id')->orderBy('apellidoCliente')->get();
+        $clientes = Cliente::whereNotNull('id')->get();
+
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('cliente.reporte', compact('clientes')));

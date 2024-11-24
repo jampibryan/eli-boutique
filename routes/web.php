@@ -6,6 +6,7 @@ use App\Http\Controllers\ColaboradorController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PrediccionController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteGraficoController;
@@ -59,6 +60,7 @@ Route::post('/caja/cerrar', [CajaController::class, 'cerrarCaja'])->name('caja.c
 Route::resource('users', UserController::class);
 
 // CLIENTES
+Route::get('api/clientes', [ClienteController::class, 'apiClientes'])->name('clientes.api');
 Route::get('clientes/reporte', [ClienteController::class, 'pdfClientes'])->name('clientes.pdf');
 Route::resource('clientes', ClienteController::class);
 
@@ -68,6 +70,7 @@ Route::resource('colaboradores', ColaboradorController::class);
 
 // PROVEEDORES
 Route::get('proveedores/reporte', [ProveedorController::class, 'pdfProveedores'])->name('proveedores.pdf');
+Route::get('proveedores/mobile', [ProveedorController::class, 'getProveedores']);
 Route::resource('proveedores', ProveedorController::class);
 
 // PRODUCTOS
@@ -76,7 +79,6 @@ Route::resource('productos', ProductoController::class);
 
 
 // VENTAS
-
 Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
 Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
 Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
@@ -101,6 +103,9 @@ Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('
 Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
 Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'compras'])->name('reporte.grafico.compras');
 
+
+//Prediccion
+Route::get('/prediccion', [PrediccionController::class, 'index'])->name('prediccion.index');
 
 
 // index(): Muestra una lista de productos.
