@@ -69,8 +69,8 @@ Route::get('colaboradores/reporte', [ColaboradorController::class, 'pdfColaborad
 Route::resource('colaboradores', ColaboradorController::class);
 
 // PROVEEDORES
+Route::get('api/proveedores', [ProveedorController::class, 'apiProveedores'])->name('proveedores.api');
 Route::get('proveedores/reporte', [ProveedorController::class, 'pdfProveedores'])->name('proveedores.pdf');
-Route::get('proveedores/mobile', [ProveedorController::class, 'getProveedores']);
 Route::resource('proveedores', ProveedorController::class);
 
 // PRODUCTOS
@@ -106,6 +106,21 @@ Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'comp
 
 //Prediccion
 Route::get('/prediccion', [PrediccionController::class, 'index'])->name('prediccion.index');
+
+
+
+Route::get('/abrir-ayuda', function () {
+    $ruta = "D:\\X CICLO\\TESIS II\\Semana 13\\Manual de Usuario_Ventas.chm"; // Ruta completa al archivo de ayuda
+    // $ruta = "D:\\MOD_VENTAS\\Ayuda_ventas.chm"; // Ruta completa al archivo de ayuda
+
+    if (file_exists($ruta)) {
+        // Comando ajustado para abrir el archivo en segundo plano
+        pclose(popen('start /B "Ayuda" "' . $ruta . '"', 'r'));
+        return response()->json(['success' => true]);
+    }
+
+    return response()->json(['success' => false, 'message' => 'Archivo no encontrado'], 404);
+})->name('abrirAyuda');
 
 
 // index(): Muestra una lista de productos.

@@ -16,7 +16,7 @@ class ProveedorController extends Controller
         $this->middleware('permission:gestionar proveedores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
     
-    public function getProveedores()
+    public function apiProveedores()
     {
         // Obtener todos los proveedores
         $proveedores = Proveedor::all();

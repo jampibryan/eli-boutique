@@ -16,7 +16,7 @@
     <div class="d-flex justify-content-between">
         <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
 
-        <a href="{{ route('exportarCSV') }}" class="btn btn-info">DESCARGAR CSV</a>
+        {{-- <a href="{{ route('exportarCSV') }}" class="btn btn-info">DESCARGAR CSV</a> --}}
                 
         {{-- <a href="{{ route('ventas.index') }}" class="btn btn-primary">GENERAR REPORTE</a> --}}
         <a href="{{ route('ventas.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
@@ -162,6 +162,30 @@
     }
 </script>
 
+<script>
+    function capturarTecla(event) {
+        // Verificar si se presionó la tecla F1
+        if (event.key === "F1") {
+            event.preventDefault(); // Prevenir la acción predeterminada del navegador
+
+            // Llamar al backend para abrir el archivo de ayuda
+            fetch('{{ route("abrirAyuda") }}')
+                .then(response => {
+                    if (response.ok) {
+                        console.log("Ayuda abierta correctamente.");
+                    } else {
+                        alert("No se pudo abrir el archivo de ayuda.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al intentar abrir la ayuda:", error);
+                });
+        }
+    }
+
+    // Escuchar eventos de teclado en toda la página
+    document.addEventListener("keydown", capturarTecla);
+</script>
 
 {{-- <script>
     document.getElementById('btn-prediccion').addEventListener('click', function() {
