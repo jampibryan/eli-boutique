@@ -99,9 +99,11 @@ Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('
 
 
 
-// Route::get('/reportes/index', [ReporteGraficoController::class, 'index'])->name('reportes.index');
+// Ruta para generar el PDF del gráfico de ventas
+Route::get('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
 Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
 Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'compras'])->name('reporte.grafico.compras');
+// Route::post('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
 
 
 //Prediccion

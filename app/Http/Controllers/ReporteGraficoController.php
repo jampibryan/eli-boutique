@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Caja;
 use App\Models\Compra;
 use App\Models\Venta;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,46 @@ class ReporteGraficoController extends Controller
         return view('reporte.ventagrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
 
+    public function generarPdfVentasDia(Request $request)
+    {
+        $diaInicio = $request->input('diaInicio');
+        $diaFinal = Carbon::parse($request->input('diaFinal'))->endOfDay();
+        $chartImage = $request->input('chartImage'); // Recibir la imagen base64
+    
+        if (!$diaInicio || !$diaFinal) {
+            abort(400, 'El rango de fechas es obligatorio.');
+        }
+    
+        // Filtrar las ventas por rango de fechas
+        $ventas = Venta::whereHas('estadoTransaccion', function ($query) {
+                $query->where('descripcionET', 'Pagado');
+            })
+            ->whereBetween('created_at', [$diaInicio, $diaFinal])
+            ->get();
+    
+        $labelsDia = [];
+        $valuesDia = [];
+    
+        foreach ($ventas as $venta) {
+            $fecha = Carbon::parse($venta->created_at)->format('Y-m-d');
+            if (!isset($valuesDia[$fecha])) {
+                $labelsDia[] = $fecha;
+                $valuesDia[$fecha] = 0;
+            }
+            $valuesDia[$fecha] += $venta->montoTotal;
+        }
+    
+        // Pasar la imagen y otros datos a la vista
+        $pdf = Pdf::loadView('reporte.ventaspdf', [
+            'ventas' => $ventas,
+            'labelsDia' => $labelsDia,
+            'valuesDia' => $valuesDia,
+            'chartImage' => $chartImage, // Pasar la imagen a la vista
+        ]);
+    
+        return $pdf->stream('Reporte_Ventas.pdf');
+    }
+    
 
     
     public function compras(Request $request)
