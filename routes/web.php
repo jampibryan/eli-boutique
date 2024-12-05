@@ -110,10 +110,9 @@ Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'comp
 Route::get('/prediccion', [PrediccionController::class, 'index'])->name('prediccion.index');
 
 
-
 Route::get('/abrir-ayuda', function () {
-    $ruta = "D:\\X CICLO\\TESIS II\\Semana 13\\Manual de Usuario_Ventas.chm"; // Ruta completa al archivo de ayuda
-    // $ruta = "D:\\MOD_VENTAS\\Ayuda_ventas.chm"; // Ruta completa al archivo de ayuda
+    // $ruta = "D:\\X CICLO\\TESIS II\\Semana 13\\Manual de Usuario_Ventas.chm"; // Ruta completa al archivo de ayuda
+    $ruta = public_path('help/Manual de Usuario_Ventas.chm');
 
     if (file_exists($ruta)) {
         // Comando ajustado para abrir el archivo en segundo plano
