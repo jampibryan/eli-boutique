@@ -91,7 +91,7 @@ class ReporteGraficoController extends Controller
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
     
-        return view('Reporte.ventaGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.VentaGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
 
     public function generarPdfVentasDia(Request $request)
@@ -214,7 +214,7 @@ class ReporteGraficoController extends Controller
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
 
-        return view('Reporte.compraGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.CompraGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
     
 
