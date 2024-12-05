@@ -98,7 +98,6 @@ Route::get('pagos/create/{id}/{type}', [PagoController::class, 'create'])->name(
 Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('pagos.store');
 
 
-
 // Ruta para generar el PDF del gráfico de ventas
 Route::get('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
 Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
