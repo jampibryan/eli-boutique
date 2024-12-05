@@ -93,7 +93,7 @@ class VentaController extends Controller
         $ventas = Venta::whereNotNull('id')->get();
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('venta.reporte', compact('ventas')));
+        $pdf->loadHTML(view('Venta.reporte', compact('ventas')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Ventas.pdf'); //Abre una pestaña
@@ -115,12 +115,12 @@ class VentaController extends Controller
         $pdf = App::make('dompdf.wrapper');
 
         if ($tipoComprobante === 'Boleta') {
-            $pdf->loadHTML(view('venta.boletaV', compact('venta', 'colaborador')));
+            $pdf->loadHTML(view('Venta.boletaV', compact('venta', 'colaborador')));
             // Abrir el PDF en una nueva pestaña
             return $pdf->stream('Boleta_' . $venta->codigoVenta . '.pdf');
             
         } elseif ($tipoComprobante === 'Factura') {
-            $pdf->loadHTML(view('venta.facturaV', compact('venta', 'colaborador')));
+            $pdf->loadHTML(view('Venta.facturaV', compact('venta', 'colaborador')));
             // Abrir el PDF en una nueva pestaña
             return $pdf->stream('Factura_' . $venta->codigoVenta . '.pdf');
 
@@ -134,7 +134,7 @@ class VentaController extends Controller
     public function index()
     {
         $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago'])->get();
-        return view('venta.index', compact('ventas'));
+        return view('Venta.index', compact('ventas'));
     }
 
     /**
@@ -144,7 +144,7 @@ class VentaController extends Controller
     {
         $clientes = Cliente::all();
         $productos = Producto::all();
-        return view('venta.create', compact('clientes', 'productos'));
+        return view('Venta.create', compact('clientes', 'productos'));
 
     }
 
@@ -201,7 +201,7 @@ class VentaController extends Controller
     public function show(Venta $venta)
     {
         $venta->load('detalles.producto'); // Cargar los detalles con sus productos
-        return view('venta.show', compact('venta'));
+        return view('Venta.show', compact('venta'));
     }
 
     /**
@@ -222,7 +222,7 @@ class VentaController extends Controller
         }
         
         // return view('venta.edit', compact('venta', 'clientes', 'estadoVentas', 'productos'));
-        return view('venta.edit', compact('venta', 'clientes', 'productos'));
+        return view('Venta.edit', compact('venta', 'clientes', 'productos'));
     }
 
     /**

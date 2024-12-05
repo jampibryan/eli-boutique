@@ -20,7 +20,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return view('user.index', compact('users'));
+        return view('User.index', compact('users'));
     }
 
     /**
@@ -30,7 +30,7 @@ class UserController extends Controller
     {
         // Obtener todos los roles
         $roles = Role::all();
-        return view('user.create', compact('roles'));
+        return view('User.create', compact('roles'));
     }
 
     /**
@@ -67,7 +67,7 @@ class UserController extends Controller
         // Obtener todos los roles
         $roles = Role::all();
 
-        return view('user.edit', compact('user', 'roles'));
+        return view('User.edit', compact('user', 'roles'));
     }
 
 

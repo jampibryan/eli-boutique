@@ -33,7 +33,7 @@ class ClienteController extends Controller
 
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('cliente.reporte', compact('clientes')));
+        $pdf->loadHTML(view('Cliente.reporte', compact('clientes')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Clientes.pdf'); //Abre una pestaña
@@ -43,9 +43,9 @@ class ClienteController extends Controller
     {
         $clientes = Cliente::all();
 
-        // return view('cliente.index', ['clientes' => $clientes]);
+        // return view('Cliente.index', ['clientes' => $clientes]);
         // Es lo mismo
-        return view('cliente.index', compact('clientes'));
+        return view('Cliente.index', compact('clientes'));
     }
 
     /**
@@ -55,7 +55,7 @@ class ClienteController extends Controller
     {
         $generos = TipoGenero::all();
 
-        return view('cliente.create', compact('generos'));
+        return view('Cliente.create', compact('generos'));
     }
 
     /**
@@ -82,7 +82,7 @@ class ClienteController extends Controller
     public function edit(Cliente $cliente)
     {
         $generos = TipoGenero::all();
-        return view('cliente.edit', compact('cliente', 'generos'));
+        return view('Cliente.edit', compact('cliente', 'generos'));
     }
 
     /**

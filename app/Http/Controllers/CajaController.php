@@ -21,7 +21,7 @@ class CajaController extends Controller
         $cajas = Caja::All();
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('caja.reporte', compact('cajas')));
+        $pdf->loadHTML(view('Caja.reporte', compact('cajas')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Cajas.pdf'); //Abre una pestaña
@@ -30,7 +30,7 @@ class CajaController extends Controller
     public function index()
     {
         $cajas = Caja::all();
-        return view('caja.index', compact('cajas'));
+        return view('Caja.index', compact('cajas'));
     }
 
     public function abrirCaja(Request $request)

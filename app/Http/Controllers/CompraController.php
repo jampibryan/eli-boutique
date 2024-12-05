@@ -24,7 +24,7 @@ class CompraController extends Controller
         $compras = Compra::whereNotNull('id')->get();
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('compra.reporte', compact('compras')));
+        $pdf->loadHTML(view('Compra.reporte', compact('compras')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Compras.pdf'); //Abre una pestaña
@@ -40,7 +40,7 @@ class CompraController extends Controller
 
         // Pasar tanto la compra como el proveedor a la vista usando compact
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('compra.orden', compact('compra', 'colaborador'))); // Solo 'compra' ya incluye el proveedor cargado
+        $pdf->loadHTML(view('Compra.orden', compact('compra', 'colaborador'))); // Solo 'compra' ya incluye el proveedor cargado
 
         return $pdf->stream('Orden de compra - ' . $compra->codigoCompra . '.pdf');
     }
@@ -50,7 +50,7 @@ class CompraController extends Controller
     {
         // Cargar las compras con sus detalles y pagos
         $compras = Compra::with(['proveedor', 'detalles', 'pago'])->get();
-        return view('compra.index', compact('compras'));
+        return view('Compra.index', compact('compras'));
     }
 
     /**
@@ -61,7 +61,7 @@ class CompraController extends Controller
         // Cargar todos los proveedores
         $proveedores = Proveedor::all();
         $productos = Producto::all();
-        return view('compra.create', compact('proveedores', 'productos'));
+        return view('Compra.create', compact('proveedores', 'productos'));
     }
 
     /**
@@ -115,7 +115,7 @@ class CompraController extends Controller
         $productos = Producto::all();
 
         // Pasar la información a la vista de edición
-        return view('compra.edit', compact('compra', 'proveedores', 'productos'));
+        return view('Compra.edit', compact('compra', 'proveedores', 'productos'));
     }
 
     /**

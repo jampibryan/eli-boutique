@@ -91,7 +91,7 @@ class ReporteGraficoController extends Controller
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
     
-        return view('reporte.ventaGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.ventaGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
 
     public function generarPdfVentasDia(Request $request)
@@ -124,7 +124,7 @@ class ReporteGraficoController extends Controller
         }
     
         // Pasar la imagen y otros datos a la vista
-        $pdf = Pdf::loadView('reporte.ventaspdf', [
+        $pdf = Pdf::loadView('Reporte.ventaspdf', [
             'ventas' => $ventas,
             'labelsDia' => $labelsDia,
             'valuesDia' => $valuesDia,
@@ -214,7 +214,7 @@ class ReporteGraficoController extends Controller
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
 
-        return view('reporte.compraGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.compraGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
     
 

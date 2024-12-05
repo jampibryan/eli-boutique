@@ -28,7 +28,7 @@ class ProductoController extends Controller
             ->sortBy('categoriaProducto.nombreCP'); // Ordena por la relación 'categoriaProducto'
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('producto.reporte', compact('productos')));
+        $pdf->loadHTML(view('Producto.reporte', compact('productos')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Productos.pdf'); //Abre una pestaña
@@ -48,7 +48,7 @@ class ProductoController extends Controller
             $productos = Producto::all(); // Cargar todos los productos si no se filtra
         }
 
-        return view('producto.index', compact('productos', 'categorias'));
+        return view('Producto.index', compact('productos', 'categorias'));
     }
 
 
@@ -56,7 +56,7 @@ class ProductoController extends Controller
     public function create()
     {
         $categorias = CategoriaProducto::all();
-        return view('producto.create', compact('categorias'));
+        return view('Producto.create', compact('categorias'));
     }
 
 
@@ -86,14 +86,14 @@ class ProductoController extends Controller
     {
         $producto = Producto::find($id);
 
-        return view('productos.show', compact('producto'));
+        return view('Productos.show', compact('producto'));
     }
 
  
     public function edit(Producto $producto)
     {
         $categorias = CategoriaProducto::all(); // Obtén todas las categorías para el formulario
-        return view('producto.edit', compact('producto', 'categorias'));
+        return view('Producto.edit', compact('producto', 'categorias'));
     }
 
 

@@ -22,7 +22,7 @@ class ColaboradorController extends Controller
         $colaboradores = Colaborador::whereNotNull('id')->get();
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('colaborador.reporte', compact('colaboradores')));
+        $pdf->loadHTML(view('Colaborador.reporte', compact('colaboradores')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Colaboradores.pdf'); //Abre una pestaña
@@ -32,7 +32,7 @@ class ColaboradorController extends Controller
     {
         $colaboradores = Colaborador::all();
 
-        return view('colaborador.index', compact('colaboradores'));
+        return view('Colaborador.index', compact('colaboradores'));
     }
 
     public function create()
@@ -40,7 +40,7 @@ class ColaboradorController extends Controller
         $cargos = Cargo::all();
         $generos = TipoGenero::all();
 
-        return view('colaborador.create', compact('cargos', 'generos'));
+        return view('Colaborador.create', compact('cargos', 'generos'));
     }
 
 
@@ -62,7 +62,7 @@ class ColaboradorController extends Controller
         $cargos = Cargo::all();
         $generos = TipoGenero::all();
         $colaborador = $colaboradore;
-        return view('colaborador.edit', compact('colaborador', 'cargos', 'generos'));
+        return view('Colaborador.edit', compact('colaborador', 'cargos', 'generos'));
     }
 
  

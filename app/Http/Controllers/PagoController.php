@@ -32,7 +32,7 @@ class PagoController extends Controller
         $comprobantes = Comprobante::all();
 
         // Retorna la vista de creación de pago con los datos necesarios
-        return view('pago.create', compact('transaction', 'comprobantes', 'type'));
+        return view('Pago.create', compact('transaction', 'comprobantes', 'type'));
     }
 
     /**

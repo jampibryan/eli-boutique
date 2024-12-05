@@ -31,7 +31,7 @@ class ProveedorController extends Controller
         $proveedores = Proveedor::whereNotNull('id')->get();
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('proveedor.reporte', compact('proveedores')));
+        $pdf->loadHTML(view('Proveedor.reporte', compact('proveedores')));
 
         // return $pdf->download(); //Descarga automática
         return $pdf->stream('Reporte de Proveedores.pdf'); //Abre una pestaña
@@ -41,7 +41,7 @@ class ProveedorController extends Controller
     {
         $proveedores = Proveedor::all();
 
-        return view('proveedor.index', compact('proveedores'));
+        return view('Proveedor.index', compact('proveedores'));
     }
 
     /**
@@ -51,7 +51,7 @@ class ProveedorController extends Controller
     {
         $tiposProv = TipoProveedor::all();
 
-        return view('proveedor.create', compact('tiposProv'));
+        return view('Proveedor.create', compact('tiposProv'));
     }
 
     /**
@@ -79,7 +79,7 @@ class ProveedorController extends Controller
     {
         $tiposProv = TipoProveedor::all();
         $proveedor = $proveedore;
-        return view('proveedor.edit', compact('proveedor', 'tiposProv'));
+        return view('Proveedor.edit', compact('proveedor', 'tiposProv'));
     }
 
     /**
