@@ -13,6 +13,10 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <div class="alert alert-secondary mt-3" role="alert" style="font-size: 0.9rem; color: #555; background-color: #f8f9fa; border: 1px solid #ddd;">
+        Presiona <strong>F1</strong> para acceder a la <a href="#" class="text-primary" style="text-decoration: underline;" onclick="window.open('/guiaventas/index.htm', '_blank'); return false;">Guía de Ventas</a>
+    </div>    
+
     <div class="d-flex justify-content-between">
         <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
 
@@ -162,7 +166,7 @@
     }
 </script>
 
-<script>
+{{-- <script>
     function capturarTecla(event) {
         // Verificar si se presionó la tecla F1
         if (event.key === "F1") {
@@ -185,7 +189,22 @@
 
     // Escuchar eventos de teclado en toda la página
     document.addEventListener("keydown", capturarTecla);
+</script> --}}
+
+
+<script>
+    function capturarTecla(event) {
+        if (event.key === "F1") {
+            event.preventDefault(); // Prevenir la acción predeterminada del navegador
+            // Abrir la ayuda en una nueva pestaña
+            window.open('/guiaventas/index.htm', '_blank');
+        }
+    }
+
+    document.addEventListener("keydown", capturarTecla);
 </script>
+
+
 
 {{-- <script>
     document.getElementById('btn-prediccion').addEventListener('click', function() {

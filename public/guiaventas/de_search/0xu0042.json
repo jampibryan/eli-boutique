@@ -1,0 +1,9 @@
+[
+	{ "s": "BIENVENIDO", "p": [1] },
+	{ "s": "BOLETA", "p": [6] },
+	{ "s": "BOTÓN", "p": [7, 3, 9, 8, 6, 5] },
+	{ "s": "BOUTIQUE", "p": [1] },
+	{ "s": "BUSCA", "p": [3] },
+	{ "s": "BUSCAMOS", "p": [5] },
+	{ "s": "BUSCAR", "p": [3] }
+]

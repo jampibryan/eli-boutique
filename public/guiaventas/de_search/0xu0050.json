@@ -1,0 +1,20 @@
+[
+	{ "s": "PAGO", "p": [6, 8] },
+	{ "s": "PAGOS", "p": [1] },
+	{ "s": "PAGÓ", "p": [6] },
+	{ "s": "PARA", "p": [2, 8, 7, 6, 1] },
+	{ "s": "PDF", "p": [8] },
+	{ "s": "PERMITE", "p": [3] },
+	{ "s": "PESTAÑA", "p": [9] },
+	{ "s": "PRECISIÓN", "p": [1] },
+	{ "s": "PRESIONAMOS", "p": [7] },
+	{ "s": "PRESIONANDO", "p": [5] },
+	{ "s": "PREVIAMENTE", "p": [3] },
+	{ "s": "PRINCIPAL", "p": [1] },
+	{ "s": "PRODUCTO", "p": [3] },
+	{ "s": "PULSA", "p": [8] },
+	{ "s": "PULSAMOS", "p": [5] },
+	{ "s": "PULSANDO", "p": [7] },
+	{ "s": "PULSAR", "p": [9] },
+	{ "s": "PÁGINA", "p": [1] }
+]

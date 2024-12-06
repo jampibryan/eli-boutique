@@ -1,0 +1,10 @@
+[
+	{ "s": "REALIZAMOS", "p": [5] },
+	{ "s": "REALMENTE", "p": [7] },
+	{ "s": "REGISTRA", "p": [6] },
+	{ "s": "REGISTRADAS", "p": [9] },
+	{ "s": "REGISTRAR", "p": [6, 3] },
+	{ "s": "REGISTRO", "p": [1] },
+	{ "s": "REPORTE", "p": [9] },
+	{ "s": "REPORTES", "p": [9] }
+]
