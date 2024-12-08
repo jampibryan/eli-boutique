@@ -376,13 +376,15 @@ return [
         [
             'text' => 'Cajas',
             'url' => 'cajas',
-            'icon' => 'fas fa-shopping-cart',
+            'icon' => 'fas fa-box',
             'can' => 'ver cajas',
         ],
         [
             'text' => 'Predicción',
-            'url' => 'prediccion',
-            'icon' => 'fas fa-shopping-cart',
+            // 'url' => 'prediccion',
+            'url' => 'https://eliboutique.streamlit.app/',
+            'icon' => 'fas fa-brain',
+            'target' => '_blank',
             // 'can' => 'ver predicción',
         ],
         [
