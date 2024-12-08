@@ -206,16 +206,5 @@
 
 
 
-{{-- <script>
-    document.getElementById('btn-prediccion').addEventListener('click', function() {
-        fetch('/api/productos/predict')
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // Maneja los datos que recibes
-            })
-            .catch(error => console.error('Error:', error));
-    });
-</script> --}}
-
 @stop
 

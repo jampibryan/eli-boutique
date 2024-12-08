@@ -19,6 +19,16 @@ class CompraController extends Controller
         $this->middleware('permission:gestionar compras', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
 
+    public function apiCompras()
+    {
+        // Cargar las compras con sus detalles y pagos
+        $compras = Compra::with(['proveedor', 'detalles', 'pago'])->get();
+        return view('Compra.index', compact('compras'));
+    }
+
+
+
+
     public function pdfCompras()
     {
         $compras = Compra::whereNotNull('id')->get();

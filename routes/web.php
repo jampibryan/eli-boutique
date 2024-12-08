@@ -80,6 +80,9 @@ Route::resource('productos', ProductoController::class);
 
 
 // VENTAS
+Route::get('api/ventas', [VentaController::class, 'apiVentas'])->name('ventas.api');
+Route::get('api/ventas/{id}', [VentaController::class, 'apiVentaDetalle'])->name('ventas.detalle');
+
 Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
 Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
 Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');

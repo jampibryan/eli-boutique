@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
+
 class VentaController extends Controller
 {
 
@@ -22,6 +23,33 @@ class VentaController extends Controller
         $this->middleware('permission:gestionar ventas', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy', 'calcularTotales']]);
     }
 
+    // public function apiVentas()
+    // {
+    //     // Obtener todas las ventas con sus detalles y productos relacionados
+    //     $ventas = Venta::with('detalles.producto')->get();
+        
+    //     // Retornar las ventas en formato JSON
+    //     return response()->json($ventas);
+    // }
+
+
+    public function apiVentas()
+    {
+        $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago.comprobante'])
+            ->whereHas('estadoTransaccion')  // Asegura que todas las ventas tengan estado
+            ->whereHas('pago.comprobante')  // Asegura que todas las ventas tengan comprobante
+            ->get();
+
+        return response()->json($ventas);
+    }
+    
+    public function apiVentaDetalle($id)
+    {
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto', 'pago.comprobante'])
+            ->findOrFail($id); // Buscar la venta por ID, o devolver 404 si no se encuentra
+
+        return response()->json($venta);
+    }
 
     public function exportarVentasCsv()
     {
