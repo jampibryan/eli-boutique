@@ -60,6 +60,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Asegúrate de incluir Chart.js -->
 
     <script>
+
+
+        const btnMostrar
+
+
+
+
+
         // Guardar valores en localStorage
         function saveToLocalStorage() {
             const tipo = document.getElementById('tipoGrafica').value;
@@ -115,7 +123,7 @@
             const tipo = this.value;
             saveToLocalStorage();
             updateFormAndChart(tipo);
-            
+
             // Verificar si hay datos y graficar automáticamente si es necesario
             if (tipo === 'mes') {
                 const labelsMes = {!! json_encode($labelsMes) !!};

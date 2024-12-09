@@ -58,6 +58,7 @@
 
     <!-- Gráfico -->
     <h2>Gráfico de Ventas</h2>
+   
     <img src="{{ $chartImage }}" alt="Gráfico de Ventas" style="width: 80%;">
 
 </body>
