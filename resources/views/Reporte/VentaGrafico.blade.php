@@ -1,5 +1,3 @@
-
-
 @extends('adminlte::page')
 
 @section('title', 'Reporte de Ventas')
@@ -52,182 +50,158 @@
                     </div>
                 </div>
             </div>
-    
+
             <canvas id="ventasGraficoMes" class="mt-5" style="display: none;"></canvas>
             <canvas id="ventasGraficoDia" class="mt-5" style="display: none;"></canvas>
 
             <!-- Botón para Generar PDF -->
-            <div id="generarPdfDia" style="display: none;" class="mt-3">
+            <div id="generarPdfDia" class="mt-3">
                 <button class="btn btn-danger" id="btnGenerarPdfDia">Generar PDF</button>
             </div>
-            
+
         </div>
     </div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Asegúrate de incluir Chart.js -->
 
-    {{-- Bloque 1: Scripts generales --}}
-
     <script>
-        // Guardar valores en localStorage
+        // -------------------------
+        // BLOQUE 1: Gestión de LocalStorage
+        // -------------------------
+
+        // Guardar valores en LocalStorage
+
         function saveToLocalStorage() {
             const tipo = document.getElementById('tipoGrafica').value;
             localStorage.setItem('tipoGrafica', tipo);
-            if (tipo === 'mes') {
-                const mesInicio = document.getElementById('mesInicio').value;
-                const mesFinal = document.getElementById('mesFinal').value;
-                localStorage.setItem('mesInicio', mesInicio);
-                localStorage.setItem('mesFinal', mesFinal);
-            } else {
-                const diaInicio = document.getElementById('diaInicio').value;
-                const diaFinal = document.getElementById('diaFinal').value;
-                localStorage.setItem('diaInicio', diaInicio);
-                localStorage.setItem('diaFinal', diaFinal);
-            }
+
+            const isMes = tipo === 'mes';
+            const inicio = document.getElementById(isMes ? 'mesInicio' : 'diaInicio').value;
+            const final = document.getElementById(isMes ? 'mesFinal' : 'diaFinal').value;
+
+            localStorage.setItem(isMes ? 'mesInicio' : 'diaInicio', inicio);
+            localStorage.setItem(isMes ? 'mesFinal' : 'diaFinal', final);
         }
-    
-        // Cargar valores desde localStorage y mostrar el gráfico adecuado
+
+        // Cargar valores desde LocalStorage
         function loadFromLocalStorage() {
             const tipo = localStorage.getItem('tipoGrafica') || 'mes';
             document.getElementById('tipoGrafica').value = tipo;
-    
-            const mesInicio = localStorage.getItem('mesInicio');
-            const mesFinal = localStorage.getItem('mesFinal');
-            if (mesInicio) document.getElementById('mesInicio').value = mesInicio;
-            if (mesFinal) document.getElementById('mesFinal').value = mesFinal;
-    
-            const diaInicio = localStorage.getItem('diaInicio');
-            const diaFinal = localStorage.getItem('diaFinal');
-            if (diaInicio) document.getElementById('diaInicio').value = diaInicio;
-            if (diaFinal) document.getElementById('diaFinal').value = diaFinal;
-    
+
+            ['mesInicio', 'mesFinal', 'diaInicio', 'diaFinal'].forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) document.getElementById(key).value = value;
+            });
+
             updateFormAndChart(tipo);
         }
-    
+
         // Actualizar formularios y gráficos según el tipo seleccionado
         function updateFormAndChart(tipo) {
-            if (tipo === 'mes') {
-                document.getElementById('formMes').style.display = 'block';
-                document.getElementById('formDia').style.display = 'none';
-                document.getElementById('ventasGraficoMes').style.display = 'block';
-                document.getElementById('ventasGraficoDia').style.display = 'none';
-            } else {
-                document.getElementById('formMes').style.display = 'none';
-                document.getElementById('formDia').style.display = 'block';
-                document.getElementById('ventasGraficoMes').style.display = 'none';
-                document.getElementById('ventasGraficoDia').style.display = 'block';
-            }
-        }
-    </script>
+            const isMes = tipo === 'mes';
 
-    {{-- Bloque 2: Eventos de botones --}}
-    <script>
-        // Evento para el botón "Mostrar gráfica de mes"
-        document.getElementById('mostrarGraficaMes').addEventListener('click', function () {
+            document.getElementById('formMes').style.display = isMes ? 'block' : 'none';
+            document.getElementById('formDia').style.display = isMes ? 'none' : 'block';
+            document.getElementById('ventasGraficoMes').style.display = isMes ? 'block' : 'none';
+            document.getElementById('ventasGraficoDia').style.display = isMes ? 'none' : 'block';
+        }
+
+        // -------------------------
+        // BLOQUE 2: Gestión de Eventos
+        // -------------------------
+
+        document.getElementById('mostrarGraficaMes').addEventListener('click', function() {
             saveToLocalStorage();
             const mesInicio = document.getElementById('mesInicio').value;
             const mesFinal = document.getElementById('mesFinal').value;
             window.location.href = `/reportes/graficos/ventas?mesInicio=${mesInicio}&mesFinal=${mesFinal}`;
         });
-    
-        // Evento para el botón "Mostrar gráfica de día"
-        document.getElementById('mostrarGraficaDia').addEventListener('click', function () {
+
+        document.getElementById('mostrarGraficaDia').addEventListener('click', function() {
             saveToLocalStorage();
             const diaInicio = document.getElementById('diaInicio').value;
             const diaFinal = document.getElementById('diaFinal').value;
             window.location.href = `/reportes/graficos/ventas?diaInicio=${diaInicio}&diaFinal=${diaFinal}`;
         });
-    
-        // Evento para el botón "Generar PDF de día"
-        document.getElementById('btnGenerarPdfDia').addEventListener('click', function () {
+
+        document.getElementById('btnGenerarPdfDia').addEventListener('click', function() {
+            console.log('Generar PDF');
             const diaInicio = document.getElementById('diaInicio').value;
             const diaFinal = document.getElementById('diaFinal').value;
-    
-            // Validar que los campos de fecha no estén vacíos
+
+            // Validar fechas
             if (!diaInicio || !diaFinal) {
                 alert("Por favor selecciona un rango de fechas válido.");
                 return;
             }
-    
-            // Redirigir a la URL para generar el PDF
-            window.open(`/reportes/graficos/ventas/pdf?diaInicio=${diaInicio}&diaFinal=${diaFinal}`);
+
+            // Capturar el gráfico en formato base64
+            const canvas = document.getElementById('ventasGraficoDia'); // Asegúrate de que sea el ID correcto
+            const chartImage = canvas.toDataURL('image/png'); // Convertir gráfico a base64
+
+            // Preparar datos para el servidor
+            const data = {
+                diaInicio: diaInicio,
+                diaFinal: diaFinal,
+                chartImage: chartImage, // Incluir la imagen del gráfico
+            };
+
+            // Enviar datos al servidor sin esperar la respuesta
+            sendImageToServer('/reportes/graficos/ventas/pdf', data);
         });
-    </script>
-    
 
-    {{-- Bloque 3: Generación avanzada de PDF --}}
-    <script>
-        // Evento para generar PDF con el gráfico capturado
-        document.getElementById('btnGenerarPdfDia').addEventListener('click', function () {
-            const diaInicio = document.getElementById('diaInicio').value;
-            const diaFinal = document.getElementById('diaFinal').value;
 
-            // Validar si las fechas están llenas
-            if (!diaInicio || !diaFinal) {
-                alert("Por favor selecciona un rango de fechas válido.");
-                return;
-            }
 
-            // Capturar el gráfico como una imagen en formato base64
-            const canvas = document.getElementById('ventasGraficoDia');
-            const chartImage = canvas.toDataURL('image/png'); // Convertir el gráfico en base64
+        // -------------------------
+        // BLOQUE 3: Envío de Imagen al Servidor
+        // -------------------------
 
-            // Enviar la solicitud POST al servidor con las fechas y el gráfico
-            fetch(`/reportes/graficos/ventas/pdf`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({
-                    diaInicio: diaInicio,
-                    diaFinal: diaFinal,
-                    chartImage: chartImage, // Incluir el gráfico como imagen base64
-                }),
-            })
-                .then((response) => {
+        function sendImageToServer(url, data) {
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(response => {
                     if (!response.ok) {
                         throw new Error('Error al generar el PDF');
                     }
                     return response.blob();
                 })
-                .then((blob) => {
-                    // Descargar el PDF generado
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'Reporte_Ventas.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
+                .then(blob => {
+                    const pdfUrl = window.URL.createObjectURL(blob);
+
+                    // Abrir el PDF en una nueva pestaña
+                    window.open(pdfUrl, '_blank');
                 })
-                .catch((error) => {
-                    // Manejo silencioso del error
-                    console.error('Error:', error); // Solo registro en la consola
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Hubo un problema al generar el PDF. Intenta nuevamente.");
                 });
-        });
-
-    </script>
+        }
 
 
-    {{-- Bloque 4: Generación de gráficos --}}
-    <script>
-        // Función para generar gráfico de meses
-        function graficarDatosMes(labels, values) {
-            const ctx = document.getElementById('ventasGraficoMes').getContext('2d');
-            new Chart(ctx, {
+        // -------------------------
+        // BLOQUE 4: Generación de Gráficas
+        // -------------------------
+
+        function generateChart(canvasId, labels, values, title) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            return new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
-                    datasets: [
-                        {
+                    labels,
+                    datasets: [{
                             label: 'Barras',
                             data: values,
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 1,
-                            type: 'bar'
+                            type: 'bar',
                         },
                         {
                             label: 'Líneas',
@@ -236,128 +210,67 @@
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 2,
                             fill: false,
-                            type: 'line'
-                        }
-                    ]
+                            type: 'line',
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Monto total de ventas por mes',
+                            text: title,
                             font: {
                                 size: 16
-                            }
-                        }
+                            },
+                        },
                     },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Rango de meses'
+                                text: 'Rango'
                             }
                         },
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Monto total (S/)'  
+                                text: 'Monto total (S/)'
                             }
-                        }
-                    }
-                }
-            });
-        }
-    
-        // Función para generar gráfico de días
-        function graficarDatosDia(labels, values) {
-            const ctx = document.getElementById('ventasGraficoDia').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Barras',
-                            data: values,
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1,
-                            type: 'bar'
                         },
-                        {
-                            label: 'Líneas',
-                            data: values,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 2,
-                            fill: false,
-                            type: 'line'
-                        }
-                    ]
+                    },
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Monto total de ventas por día',
-                            font: {
-                                size: 16
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Rango de días'
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Monto total (S/)'  
-                            }
-                        }
-                    }
-                }
             });
-            // Mostrar el botón "Generar PDF"
-            document.getElementById('generarPdfDia').style.display = 'block';
         }
-    </script>
-    
-    {{-- Bloque 5: Inicialización --}}
-    <script>
-        // Al cargar la página, inicializa los gráficos y carga los valores
-        window.onload = function () {
+
+        // -------------------------
+        // BLOQUE 5: Inicialización
+        // -------------------------
+
+        window.onload = function() {
             loadFromLocalStorage();
+
             const labelsMes = {!! json_encode($labelsMes) !!};
             const valuesMes = {!! json_encode($valuesMes) !!};
             const labelsDia = {!! json_encode($labelsDia) !!};
             const valuesDia = {!! json_encode($valuesDia) !!};
-    
-            // Renderizar gráficos solo si hay datos
-            if (labelsMes.length > 0 && valuesMes.length > 0) {
-                graficarDatosMes(labelsMes, valuesMes);
+
+            if (labelsMes.length && valuesMes.length) {
+                generateChart('ventasGraficoMes', labelsMes, valuesMes, 'Monto total de ventas por mes');
             } else {
                 document.getElementById('ventasGraficoMes').style.display = 'none';
             }
-    
-            if (labelsDia.length > 0 && valuesDia.length > 0) {
-                graficarDatosDia(labelsDia, valuesDia);
+
+            if (labelsDia.length && valuesDia.length) {
+                generateChart('ventasGraficoDia', labelsDia, valuesDia, 'Monto total de ventas por día');
             } else {
                 document.getElementById('ventasGraficoDia').style.display = 'none';
             }
-    
-            // Asegurarse de mostrar el gráfico correspondiente según el tipo
+
             const tipoGrafica = localStorage.getItem('tipoGrafica') || 'mes';
             updateFormAndChart(tipoGrafica);
         };
     </script>
-    
 
 @stop
