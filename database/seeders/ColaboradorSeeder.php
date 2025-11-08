@@ -44,7 +44,7 @@ class ColaboradorSeeder extends Seeder
                 'edadColab' => 25,
                 'correoColab' => 'sofia_ramirez@gmail.com',
                 'telefonoColab' => '963456789',
-            ],
+            ]
         ]);
     }
 }
