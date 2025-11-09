@@ -15,114 +15,217 @@ class ProductoSeeder extends Seeder
     {
         // Inserta registros en la tabla productos, uno para cada categoría
         DB::table('productos')->insert([
+
+            //CATEGORÍA "Polos & Camisetas"
             [
-                'codigoP' => 'CAM-001',
-                'categoria_producto_id' => 1, // ID de la categoría "Camisetas"
+                'codigoP' => 'POL-001',
+                'categoria_producto_id' => 1,
                 'imagenP' => NULL,
-                'descripcionP' => 'Camiseta básica de algodón.',
+                'descripcionP' => 'Polo clásico cuello pique',
                 'precioP' => 20,
                 'stockP' => 20,
             ],
             [
                 'codigoP' => 'CAM-002',
-                'categoria_producto_id' => 1, // ID de la categoría "Camisetas"
+                'categoria_producto_id' => 1,
                 'imagenP' => NULL,
-                'descripcionP' => 'Camiseta estampada con diseños modernos.',
+                'descripcionP' => 'Camiseta básica algodón',
                 'precioP' => 25,
                 'stockP' => 20,
             ],
-            
             [
-                'codigoP' => 'PAN-021',
-                'categoria_producto_id' => 2, // ID de la categoría "Pantalones"
-                // 'imagenP' => 'jeans_clasicos.jpg',
+                'codigoP' => 'POL-003',
+                'categoria_producto_id' => 1,
                 'imagenP' => NULL,
-                'descripcionP' => 'Jeans clásicos de corte recto.',
+                'descripcionP' => 'Polo manga larga',
+                'precioP' => 25,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'CAM-004',
+                'categoria_producto_id' => 1,
+                'imagenP' => NULL,
+                'descripcionP' => 'Camiseta estampada',
+                'precioP' => 25,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'POL-005',
+                'categoria_producto_id' => 1,
+                'imagenP' => NULL,
+                'descripcionP' => 'Polo tipo golf',
+                'precioP' => 25,
+                'stockP' => 20,
+            ],
+
+            //CATEGORÍA "Jeans & Pantalones"
+            [
+                'codigoP' => 'JEA-021',
+                'categoria_producto_id' => 2,
+                // 'imagenP' => 'Jeans_skinny_ajustados.jpg',
+                'imagenP' => NULL,
+                'descripcionP' => 'Jeans skinny ajustados',
                 'precioP' => 50,
                 'stockP' => 20,
             ],
             [
-                'codigoP' => 'PAN-022',
-                'categoria_producto_id' => 2, // ID de la categoría "Pantalones"
+                'codigoP' => 'JEA-022',
+                'categoria_producto_id' => 2,
                 'imagenP' => NULL,
-                'descripcionP' => 'Pantalones cargo con múltiples bolsillos.',
-                'precioP' => 60,
-                'stockP' => 20,
-            ],
-            
-            
-            [
-                'codigoP' => 'ZAP-041',
-                'categoria_producto_id' => 3, // ID de la categoría "Zapatos"
-                'imagenP' => NULL,
-                'descripcionP' => 'Zapatos deportivos ligeros y cómodos.',
+                'descripcionP' => 'Jeans rectos clásicos',
                 'precioP' => 60,
                 'stockP' => 20,
             ],
             [
-                'codigoP' => 'ZAP-042',
-                'categoria_producto_id' => 3, // ID de la categoría "Zapatos"
+                'codigoP' => 'PAN-023',
+                'categoria_producto_id' => 2,
                 'imagenP' => NULL,
-                'descripcionP' => 'Zapatos formales de cuero.',
-                'precioP' => 100,
-                'stockP' => 20,
-            ],
-            
-            
-            [
-                'codigoP' => 'ACC-061',
-                'categoria_producto_id' => 4, // ID de la categoría "Accesorios"
-                'imagenP' => NULL,
-                'descripcionP' => 'Gafas de sol con protección UV.',
-                'precioP' => 15,
+                'descripcionP' => 'Pantalón de vestir',
+                'precioP' => 60,
                 'stockP' => 20,
             ],
             [
-                'codigoP' => 'ACC-062',
-                'categoria_producto_id' => 4, // ID de la categoría "Accesorios"
+                'codigoP' => 'JEA-024',
+                'categoria_producto_id' => 2,
                 'imagenP' => NULL,
-                'descripcionP' => 'Reloj analógico con correa de cuero.',
+                'descripcionP' => 'Jeans boyfriend',
+                'precioP' => 60,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'PAN-025',
+                'categoria_producto_id' => 2,
+                'imagenP' => NULL,
+                'descripcionP' => 'Pantalón cargo',
+                'precioP' => 60,
+                'stockP' => 20,
+            ],
+
+            //CATEGORÍA "Shorts & Bermudas"
+            [
+                'codigoP' => 'SHO-031',
+                'categoria_producto_id' => 3,
+                'imagenP' => NULL,
+                'descripcionP' => 'Shorts denim',
                 'precioP' => 35,
                 'stockP' => 20,
             ],
-            
-            
             [
-                'codigoP' => 'CHA-081',
-                'categoria_producto_id' => 5, // ID de la categoría "Chaquetas"
+                'codigoP' => 'BER-032',
+                'categoria_producto_id' => 3,
                 'imagenP' => NULL,
-                'descripcionP' => 'Chaqueta de cuero auténtico.',
-                'precioP' => 200,
+                'descripcionP' => 'Bermudas de lino',
+                'precioP' => 40,
                 'stockP' => 20,
             ],
             [
-                'codigoP' => 'CHA-082',
-                'categoria_producto_id' => 5, // ID de la categoría "Chaquetas"
+                'codigoP' => 'SHO-033',
+                'categoria_producto_id' => 3,
                 'imagenP' => NULL,
-                'descripcionP' => 'Chaqueta deportiva con capucha.',
-                'precioP' => 80,
-                'stockP' => 20,
-            ],
-            
-            [
-                'codigoP' => 'SHO-101',
-                'categoria_producto_id' => 6, // ID de la categoría "Shorts"
-                'imagenP' => NULL,
-                'descripcionP' => 'Shorts ligeros para verano.',
-                'precioP' => 24,
-                'stockP' => 20,
-            ],
-            [
-                'codigoP' => 'SHO-102',
-                'categoria_producto_id' => 6, // ID de la categoría "Shorts"
-                'imagenP' => NULL,
-                'descripcionP' => 'Shorts deportivos con tecnología de secado rápido.',
+                'descripcionP' => 'Shorts deportivos',
                 'precioP' => 30,
                 'stockP' => 20,
             ],
+            [
+                'codigoP' => 'BER-034',
+                'categoria_producto_id' => 3,
+                'imagenP' => NULL,
+                'descripcionP' => 'Bermudas cargo',
+                'precioP' => 45,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'SHO-035',
+                'categoria_producto_id' => 3,
+                'imagenP' => NULL,
+                'descripcionP' => 'Shorts elegantes',
+                'precioP' => 50,
+                'stockP' => 20,
+            ],
 
+            //CATEGORÍA "Abrigos & Chaquetas"
+            [
+                'codigoP' => 'CHA-041',
+                'categoria_producto_id' => 4,
+                'imagenP' => NULL,
+                'descripcionP' => 'Chaqueta denim',
+                'precioP' => 80,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'ABR-042',
+                'categoria_producto_id' => 4,
+                'imagenP' => NULL,
+                'descripcionP' => 'Abrigo trench coat',
+                'precioP' => 120,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'CHA-043',
+                'categoria_producto_id' => 4,
+                'imagenP' => NULL,
+                'descripcionP' => 'Chaqueta de cuero',
+                'precioP' => 150,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'CHA-044',
+                'categoria_producto_id' => 4,
+                'imagenP' => NULL,
+                'descripcionP' => 'Chaqueta bomber',
+                'precioP' => 90,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'BLA-045',
+                'categoria_producto_id' => 4,
+                'imagenP' => NULL,
+                'descripcionP' => 'Blazer elegante',
+                'precioP' => 100,
+                'stockP' => 20,
+            ],
+
+            //CATEGORÍA "Ropa Deportiva"
+            [
+                'codigoP' => 'DEP-051',
+                'categoria_producto_id' => 5,
+                'imagenP' => NULL,
+                'descripcionP' => 'Conjunto deportivo (top + pants)',
+                'precioP' => 60,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'DEP-052',
+                'categoria_producto_id' => 5,
+                'imagenP' => NULL,
+                'descripcionP' => 'Leggings de yoga',
+                'precioP' => 45,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'DEP-053',
+                'categoria_producto_id' => 5,
+                'imagenP' => NULL,
+                'descripcionP' => 'Sudadera con capucha',
+                'precioP' => 70,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'DEP-054',
+                'categoria_producto_id' => 5,
+                'imagenP' => NULL,
+                'descripcionP' => 'Shorts de running',
+                'precioP' => 35,
+                'stockP' => 20,
+            ],
+            [
+                'codigoP' => 'DEP-055',
+                'categoria_producto_id' => 5,
+                'imagenP' => NULL,
+                'descripcionP' => 'Top deportivo',
+                'precioP' => 25,
+                'stockP' => 20,
+            ],
         ]);
     }
 }
-
-

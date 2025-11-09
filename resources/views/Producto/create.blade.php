@@ -6,8 +6,9 @@
     <h1>Registrar un Producto</h1>
 @stop
 
-@section('content')   
-    <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data"> <!-- Habilitar la subida de archivos -->
+@section('content')
+    <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data">
+        <!-- Habilitar la subida de archivos -->
         @csrf
 
         <!-- Código Producto -->
@@ -18,14 +19,15 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-        
+
         <!-- Categoría -->
         <div class="mb-3">
             <label for="categoria_producto_id" class="form-label">Categoría</label>
             <select id="categoria_producto_id" name="categoria_producto_id" class="form-control">
                 <option value="">Seleccionar categoría</option>
-                @foreach($categorias as $categoria)
-                    <option value="{{ $categoria->id }}" {{ old('categoria_producto_id') == $categoria->id ? 'selected' : '' }}>
+                @foreach ($categorias as $categoria)
+                    <option value="{{ $categoria->id }}"
+                        {{ old('categoria_producto_id') == $categoria->id ? 'selected' : '' }}>
                         {{ $categoria->nombreCP }}
                     </option>
                 @endforeach
@@ -34,7 +36,7 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-        
+
         <!-- Imagen -->
         <div class="mb-3">
             <label for="imagenP" class="form-label">Imagen</label>
@@ -43,7 +45,7 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-        
+
         <!-- Descripción -->
         <div class="mb-3">
             <label for="descripcionP" class="form-label">Descripción</label>
@@ -56,7 +58,8 @@
         <!-- Precio -->
         <div class="mb-3">
             <label for="precioP" class="form-label">Precio</label>
-            <input id="precioP" name="precioP" type="number" step="any" class="form-control" value="{{ old('precio') }}">
+            <input id="precioP" name="precioP" type="number" step="any" class="form-control"
+                value="{{ old('precio') }}">
             @error('precioP')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
@@ -70,8 +73,10 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
+        
+        <a href="{{ route('productos.index') }}" class="btn btn-danger">Cancelar</a>
+        <button type="submit" class="btn btn-dark">Crear Producto</button>
 
-        <button type="submit" class="btn btn-dark">Crear</button>
     </form>
 @stop
 

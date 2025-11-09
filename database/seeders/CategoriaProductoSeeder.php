@@ -16,28 +16,24 @@ class CategoriaProductoSeeder extends Seeder
         // Inserta los registros en la tabla categoria_producto
         DB::table('categoria_productos')->insert([
             [
-                'nombreCP' => 'Camisetas',
-                'descripcionCP' => 'Ropa para la parte superior del cuerpo, comúnmente de manga corta o larga.',
+                'nombreCP' => 'Polos & Camisetas',
+                'descripcionCP' => 'Polos clásicos, camisetas básicas y estampadas para uso casual y deportivo.',
             ],
             [
-                'nombreCP' => 'Pantalones',
-                'descripcionCP' => 'Ropa para la parte inferior del cuerpo, disponible en varios estilos como jeans, chinos, etc.',
+                'nombreCP' => 'Jeans & Pantalones',
+                'descripcionCP' => 'Jeans ajustados, rectos, boyfriend y pantalones de vestir y cargo.',
             ],
             [
-                'nombreCP' => 'Zapatos',
-                'descripcionCP' => 'Calzado para diferentes ocasiones, incluyendo deportivos, formales, y casuales.',
+                'nombreCP' => 'Shorts & Bermudas',
+                'descripcionCP' => 'Shorts denim, deportivos y bermudas de lino y cargo para climas cálidos.',
             ],
             [
-                'nombreCP' => 'Accesorios',
-                'descripcionCP' => 'Complementos para la ropa como cinturones, sombreros, bufandas, etc.',
+                'nombreCP' => 'Abrigos & Chaquetas',
+                'descripcionCP' => 'Chaquetas denim, bomber, de cuero, abrigos trench y blazers elegantes.',
             ],
             [
-                'nombreCP' => 'Chaquetas',
-                'descripcionCP' => 'Ropa de abrigo para la parte superior del cuerpo, adecuada para diferentes climas.',
-            ],
-            [
-                'nombreCP' => 'Shorts',
-                'descripcionCP' => 'Ropa para la parte inferior del cuerpo, generalmente usada en climas cálidos o para actividades deportivas.',
+                'nombreCP' => 'Ropa Deportiva',
+                'descripcionCP' => 'Conjuntos deportivos, leggings, sudaderas y tops para entrenamiento y yoga.',
             ],
         ]);
     }

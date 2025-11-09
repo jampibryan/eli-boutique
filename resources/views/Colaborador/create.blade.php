@@ -98,6 +98,7 @@
 
     <a href="{{ route('colaboradores.index') }}" class="btn btn-danger">Cancelar</a>
     <button type="submit" class="btn btn-dark">Crear Colaborador</button>
+    
 </form>
 
 @stop

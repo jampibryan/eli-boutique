@@ -60,7 +60,7 @@ class ProductoController extends Controller
     }
 
 
-    // Maneja la lógica para guardar el nuevo recurso en la base de datos después de que el    formulario ha sido enviado.
+    // Maneja la lógica para guardar el nuevo recurso en la base de datos después de que el formulario ha sido enviado.
     public function store(StoreProducto $request)
     {
         // Guardar la imagen en la carpeta 'public/productos' y obtener la ruta
