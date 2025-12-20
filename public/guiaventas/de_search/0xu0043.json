@@ -1,0 +1,17 @@
+[
+	{ "s": "CAMBIOS", "p": [5] },
+	{ "s": "CAMPO", "p": [6, 3] },
+	{ "s": "CANCELA", "p": [7] },
+	{ "s": "CANCELAR", "p": [6, 7] },
+	{ "s": "CANTIDAD", "p": [3] },
+	{ "s": "CLAVE", "p": [1] },
+	{ "s": "CLIENTE", "p": [3, 6] },
+	{ "s": "COMERCIAL", "p": [1] },
+	{ "s": "COMO", "p": [9, 8, 7, 6, 3, 1] },
+	{ "s": "COMPROBANTE", "p": [8, 6] },
+	{ "s": "COMPROBANTES", "p": [1] },
+	{ "s": "CON", "p": [9, 3] },
+	{ "s": "CONFIRMA", "p": [7] },
+	{ "s": "CONFIRMACIÓN", "p": [7] },
+	{ "s": "CORRESPONDIENTES", "p": [5] }
+]

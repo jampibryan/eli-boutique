@@ -1,0 +1,9 @@
+[
+	{ "s": "FACILITAR", "p": [1] },
+	{ "s": "FACTURA", "p": [8, 6] },
+	{ "s": "FINALIZA", "p": [3] },
+	{ "s": "FINALIZAMOS", "p": [5] },
+	{ "s": "FORMATO", "p": [8] },
+	{ "s": "FUE", "p": [5] },
+	{ "s": "FUNCIONES", "p": [1] }
+]

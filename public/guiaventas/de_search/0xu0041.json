@@ -1,0 +1,18 @@
+[
+	{ "s": "A", "p": [6, 3, 9, 8, 7] },
+	{ "s": "ABRIRÁ", "p": [9] },
+	{ "s": "ACCIONES", "p": [4] },
+	{ "s": "ACTUALIZACIÓN", "p": [5] },
+	{ "s": "ACTUALIZAR", "p": [5] },
+	{ "s": "AGREGAR", "p": [3] },
+	{ "s": "AL", "p": [9, 6, 1] },
+	{ "s": "ANULACIÓN", "p": [7] },
+	{ "s": "ANULADA", "p": [7] },
+	{ "s": "ANULAR", "p": [7] },
+	{ "s": "APARTADO", "p": [6] },
+	{ "s": "APRENDERÁS", "p": [9, 8, 7, 6, 3] },
+	{ "s": "AQUÍ", "p": [8] },
+	{ "s": "AUTOMÁTICAMENTE", "p": [6] },
+	{ "s": "AYUDA", "p": [2] },
+	{ "s": "AÑADIR", "p": [3] }
+]

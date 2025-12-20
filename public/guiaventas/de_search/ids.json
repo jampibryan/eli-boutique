@@ -1,0 +1,11 @@
+{
+	"1": ["Página p... ¡Se requiere una licencia Advanced!", "index.htm", []],
+	"2": ["1. Ayuda en lí... ¡Se requiere una licencia Advanced!", "ayuda_en_linea_para_ventas.htm", []],
+	"3": ["1.1. Regis... ¡Se requiere una licencia Advanced!", "registrar_venta.htm", [1]],
+	"4": ["1.2. Accion... ¡Se requiere una licencia Advanced!", "acciones_de_venta.htm", [1]],
+	"5": ["1.2.1. Ed... ¡Se requiere una licencia Advanced!", "editar_venta.htm", [1,3]],
+	"6": ["1.2.2. Registra... ¡Se requiere una licencia Advanced!", "registrar_pago_de_venta.htm", [1,3]],
+	"7": ["1.2.3. An... ¡Se requiere una licencia Advanced!", "anular_venta.htm", [1,3]],
+	"8": ["1.2.4. Generar co... ¡Se requiere una licencia Advanced!", "generar_comprobante_de_pago.htm", [1,3]],
+	"9": ["1.3. Gener... ¡Se requiere una licencia Advanced!", "1_3__generar_reporte.htm", [1]]
+}
