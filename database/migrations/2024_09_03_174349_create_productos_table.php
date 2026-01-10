@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('codigoP');
             $table->foreignId('categoria_producto_id')->constrained()->onDelete('cascade');
+            $table->foreignId('producto_genero_id')->constrained()->onDelete('cascade');
+            $table->foreignId('producto_talla_id')->constrained()->onDelete('cascade');
             $table->string('imagenP')->nullable();
             $table->text('descripcionP')->nullable();
             $table->decimal('precioP', 8, 2);

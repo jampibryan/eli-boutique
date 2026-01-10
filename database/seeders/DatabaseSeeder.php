@@ -27,6 +27,12 @@ class DatabaseSeeder extends Seeder
         // Llama al seeder CategoriaProducto
         $this->call(CategoriaProductoSeeder::class);
 
+        // Llama al seeder ProductoGenero
+        $this->call(ProductoGeneroSeeder::class);
+
+        // Llama al seeder ProductoTalla
+        $this->call(ProductoTallaSeeder::class);
+
         // Llama al seeder Producto
         $this->call(ProductoSeeder::class);
 
@@ -49,11 +55,10 @@ class DatabaseSeeder extends Seeder
         $this->call(EstadoTransaccionSeeder::class);
         
         // Llama al seeder Compra
-        $this->call(CompraSeeder::class);
+        //$this->call(CompraSeeder::class);
         
         // Llama al seeder Venta
-        $this->call(VentaSeeder::class);
-        
+        //$this->call(VentaSeeder::class);
 
     }
 }

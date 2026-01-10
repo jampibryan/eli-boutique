@@ -20,6 +20,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'POL-001',
                 'categoria_producto_id' => 1,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Polo clásico cuello pique',
                 'precioP' => 20,
@@ -28,6 +30,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'CAM-002',
                 'categoria_producto_id' => 1,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Camiseta básica algodón',
                 'precioP' => 25,
@@ -36,6 +40,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'POL-003',
                 'categoria_producto_id' => 1,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Polo manga larga',
                 'precioP' => 25,
@@ -44,6 +50,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'CAM-004',
                 'categoria_producto_id' => 1,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Camiseta estampada',
                 'precioP' => 25,
@@ -52,6 +60,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'POL-005',
                 'categoria_producto_id' => 1,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Polo tipo golf',
                 'precioP' => 25,
@@ -62,7 +72,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'JEA-021',
                 'categoria_producto_id' => 2,
-                // 'imagenP' => 'Jeans_skinny_ajustados.jpg',
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 6,
                 'imagenP' => NULL,
                 'descripcionP' => 'Jeans skinny ajustados',
                 'precioP' => 50,
@@ -71,6 +82,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'JEA-022',
                 'categoria_producto_id' => 2,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 6,
                 'imagenP' => NULL,
                 'descripcionP' => 'Jeans rectos clásicos',
                 'precioP' => 60,
@@ -79,6 +92,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'PAN-023',
                 'categoria_producto_id' => 2,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 6,
                 'imagenP' => NULL,
                 'descripcionP' => 'Pantalón de vestir',
                 'precioP' => 60,
@@ -87,6 +102,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'JEA-024',
                 'categoria_producto_id' => 2,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 6,
                 'imagenP' => NULL,
                 'descripcionP' => 'Jeans boyfriend',
                 'precioP' => 60,
@@ -95,6 +112,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'PAN-025',
                 'categoria_producto_id' => 2,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 6,
                 'imagenP' => NULL,
                 'descripcionP' => 'Pantalón cargo',
                 'precioP' => 60,
@@ -105,6 +124,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'SHO-031',
                 'categoria_producto_id' => 3,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 1,
                 'imagenP' => NULL,
                 'descripcionP' => 'Shorts denim',
                 'precioP' => 35,
@@ -113,6 +134,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'BER-032',
                 'categoria_producto_id' => 3,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Bermudas de lino',
                 'precioP' => 40,
@@ -121,6 +144,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'SHO-033',
                 'categoria_producto_id' => 3,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 3,
                 'imagenP' => NULL,
                 'descripcionP' => 'Shorts deportivos',
                 'precioP' => 30,
@@ -129,6 +154,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'BER-034',
                 'categoria_producto_id' => 3,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 4,
                 'imagenP' => NULL,
                 'descripcionP' => 'Bermudas cargo',
                 'precioP' => 45,
@@ -137,6 +164,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'SHO-035',
                 'categoria_producto_id' => 3,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 1,
                 'imagenP' => NULL,
                 'descripcionP' => 'Shorts elegantes',
                 'precioP' => 50,
@@ -147,6 +176,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'CHA-041',
                 'categoria_producto_id' => 4,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Chaqueta denim',
                 'precioP' => 80,
@@ -155,6 +186,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'ABR-042',
                 'categoria_producto_id' => 4,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 3,
                 'imagenP' => NULL,
                 'descripcionP' => 'Abrigo trench coat',
                 'precioP' => 120,
@@ -163,6 +196,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'CHA-043',
                 'categoria_producto_id' => 4,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Chaqueta de cuero',
                 'precioP' => 150,
@@ -171,6 +206,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'CHA-044',
                 'categoria_producto_id' => 4,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 3,
                 'imagenP' => NULL,
                 'descripcionP' => 'Chaqueta bomber',
                 'precioP' => 90,
@@ -179,6 +216,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'BLA-045',
                 'categoria_producto_id' => 4,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Blazer elegante',
                 'precioP' => 100,
@@ -189,6 +228,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'DEP-051',
                 'categoria_producto_id' => 5,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Conjunto deportivo (top + pants)',
                 'precioP' => 60,
@@ -197,6 +238,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'DEP-052',
                 'categoria_producto_id' => 5,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Leggings de yoga',
                 'precioP' => 45,
@@ -205,6 +248,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'DEP-053',
                 'categoria_producto_id' => 5,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Sudadera con capucha',
                 'precioP' => 70,
@@ -213,6 +258,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'DEP-054',
                 'categoria_producto_id' => 5,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Shorts de running',
                 'precioP' => 35,
@@ -221,6 +268,8 @@ class ProductoSeeder extends Seeder
             [
                 'codigoP' => 'DEP-055',
                 'categoria_producto_id' => 5,
+                'producto_genero_id' => 1,
+                'producto_talla_id' => 2,
                 'imagenP' => NULL,
                 'descripcionP' => 'Top deportivo',
                 'precioP' => 25,

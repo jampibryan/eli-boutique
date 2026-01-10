@@ -37,6 +37,40 @@
             @enderror
         </div>
 
+        <!-- Género -->
+        <div class="mb-3">
+            <label for="producto_genero_id" class="form-label">Género</label>
+            <select id="producto_genero_id" name="producto_genero_id" class="form-control">
+                <option value="">Seleccionar género</option>
+                @foreach ($generos as $genero)
+                    <option value="{{ $genero->id }}"
+                        {{ old('producto_genero_id') == $genero->id ? 'selected' : '' }}>
+                        {{ $genero->descripcion }}
+                    </option>
+                @endforeach
+            </select>
+            @error('producto_genero_id')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+
+        <!-- Talla -->
+        <div class="mb-3">
+            <label for="producto_talla_id" class="form-label">Talla</label>
+            <select id="producto_talla_id" name="producto_talla_id" class="form-control">
+                <option value="">Seleccionar talla</option>
+                @foreach ($tallas as $talla)
+                    <option value="{{ $talla->id }}"
+                        {{ old('producto_talla_id') == $talla->id ? 'selected' : '' }}>
+                        {{ $talla->descripcion }}
+                    </option>
+                @endforeach
+            </select>
+            @error('producto_talla_id')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+
         <!-- Imagen -->
         <div class="mb-3">
             <label for="imagenP" class="form-label">Imagen</label>

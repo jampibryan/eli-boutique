@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProducto;
 use App\Models\CategoriaProducto;
 use App\Models\Producto;
+use App\Models\ProductoGenero;
+use App\Models\ProductoTalla;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -56,7 +58,9 @@ class ProductoController extends Controller
     public function create()
     {
         $categorias = CategoriaProducto::all();
-        return view('Producto.create', compact('categorias'));
+        $generos = ProductoGenero::all();
+        $tallas = ProductoTalla::all();
+        return view('Producto.create', compact('categorias', 'generos', 'tallas'));
     }
 
 
@@ -72,6 +76,8 @@ class ProductoController extends Controller
         $producto = Producto::create([
             'codigoP' => $request->codigoP,
             'categoria_producto_id' => $request->categoria_producto_id,
+            'producto_genero_id' => $request->producto_genero_id,
+            'producto_talla_id' => $request->producto_talla_id,
             'imagenP' => $path, // Guardar la ruta de la imagen
             'descripcionP' => $request->descripcionP,
             'precioP' => $request->precioP,
@@ -93,7 +99,9 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $categorias = CategoriaProducto::all(); // Obtén todas las categorías para el formulario
-        return view('Producto.edit', compact('producto', 'categorias'));
+        $generos = ProductoGenero::all();
+        $tallas = ProductoTalla::all();
+        return view('Producto.edit', compact('producto', 'categorias', 'generos', 'tallas'));
     }
 
 
@@ -115,7 +123,7 @@ class ProductoController extends Controller
         // Actualizar el resto de los campos
         // $producto->update($request->all());
 
-        $producto->update($request->only(['codigoP', 'categoria_producto_id', 'descripcionP', 'precioP', 'stockP']));
+        $producto->update($request->only(['codigoP', 'categoria_producto_id', 'producto_genero_id', 'producto_talla_id', 'descripcionP', 'precioP', 'stockP']));
 
         return redirect()->route('productos.index');
     }
