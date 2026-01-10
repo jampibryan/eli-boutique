@@ -78,6 +78,11 @@ Route::resource('proveedores', ProveedorController::class);
 Route::get('productos/reporte', [ProductoController::class, 'pdfProductos'])->name('productos.pdf');
 Route::resource('productos', ProductoController::class);
 
+// CARRITO
+Route::post('/carrito/agregar', [ProductoController::class, 'agregarAlCarrito'])->name('carrito.agregar');
+Route::get('/carrito', [ProductoController::class, 'verCarrito'])->name('carrito.ver');
+Route::delete('/carrito/remover/{index}', [ProductoController::class, 'removerDelCarrito'])->name('carrito.remover');
+
 
 // VENTAS
 Route::get('api/ventas', [VentaController::class, 'apiVentas'])->name('ventas.api');

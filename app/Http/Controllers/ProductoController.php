@@ -50,7 +50,9 @@ class ProductoController extends Controller
             $productos = Producto::all(); // Cargar todos los productos si no se filtra
         }
 
-        return view('Producto.index', compact('productos', 'categorias'));
+        $tallas = ProductoTalla::all(); // Cargar tallas para el carrito
+
+        return view('Producto.index', compact('productos', 'categorias', 'tallas'));
     }
 
 
@@ -133,5 +135,57 @@ class ProductoController extends Controller
     {
         $producto->delete();
         return redirect()->route('productos.index');
+    }
+
+    public function agregarAlCarrito(Request $request)
+    {
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id',
+            'talla_id' => 'required|exists:producto_tallas,id',
+            'cantidad' => 'required|integer|min:1',
+        ]);
+
+        $producto = Producto::find($request->producto_id);
+
+        // Verificar stock
+        if ($request->cantidad > $producto->stockP) {
+            return redirect()->back()->with('error', 'Cantidad supera el stock disponible.');
+        }
+
+        // Obtener carrito actual de la sesión
+        $carrito = session()->get('carrito', []);
+
+        // Agregar ítem (puedes manejar duplicados si es necesario)
+        $carrito[] = [
+            'producto_id' => $request->producto_id,
+            'talla_id' => $request->talla_id,
+            'cantidad' => $request->cantidad,
+        ];
+
+        // Guardar en sesión
+        session()->put('carrito', $carrito);
+
+        return redirect()->back()->with('success', 'Producto agregado al carrito.');
+    }
+
+    public function verCarrito()
+    {
+        $carrito = session()->get('carrito', []);
+        $productos = Producto::whereIn('id', collect($carrito)->pluck('producto_id'))->get()->keyBy('id');
+        $tallas = ProductoTalla::whereIn('id', collect($carrito)->pluck('talla_id'))->get()->keyBy('id');
+
+        return view('carrito.index', compact('carrito', 'productos', 'tallas'));
+    }
+
+    public function removerDelCarrito($index)
+    {
+        $carrito = session()->get('carrito', []);
+        if (isset($carrito[$index])) {
+            unset($carrito[$index]);
+            $carrito = array_values($carrito); // Reindexar
+            session()->put('carrito', $carrito);
+        }
+
+        return redirect()->back()->with('success', 'Producto removido del carrito.');
     }
 }

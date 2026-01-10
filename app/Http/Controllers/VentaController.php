@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\Colaborador;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
+use App\Models\ProductoTalla;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
@@ -130,16 +131,25 @@ class VentaController extends Controller
 
     public function create()
     {
+        $carrito = session()->get('carrito', []);
+        if (empty($carrito)) {
+            return redirect()->route('productos.index')->with('error', 'El carrito está vacío. Agrega productos primero.');
+        }
+
         $clientes = Cliente::all();
-        $productos = Producto::all();
-        return view('Venta.create', compact('clientes', 'productos'));
+        $productos = Producto::whereIn('id', collect($carrito)->pluck('producto_id'))->get()->keyBy('id');
+        $tallas = ProductoTalla::whereIn('id', collect($carrito)->pluck('talla_id'))->get()->keyBy('id');
+
+        $clienteSeleccionado = session('venta_cliente');
+
+        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'clienteSeleccionado'));
     }
 
     public function store(Request $request)
     {
         // Validar la solicitud
         $request->validate([
-            'cliente_id' => 'required',
+            'cliente_id' => 'nullable|exists:clientes,id',
             'productos' => 'required|array',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',
@@ -176,6 +186,9 @@ class VentaController extends Controller
         $venta->montoTotal = $request->montoTotal;
         $venta->save(); // ← LOS EVENTOS NO SUMARÁN A CAJA (porque está pendiente)
 
+        // Guardar cliente seleccionado en sesión para mantenerlo al regresar
+        session(['venta_cliente' => $request->cliente_id]);
+
         // Registrar los productos en la venta
         foreach ($request->productos as $productoData) {
             $productoDetalle = new VentaDetalle();
@@ -196,10 +209,11 @@ class VentaController extends Controller
 
         // ==================== REDIRIGIR AL PAGO ====================
 
-        //return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])
-        //    ->with('success', 'Venta creada exitosamente. Proceda al pago.');
+        // No limpiar carrito aquí, para permitir regresar y modificar
+        // session()->forget('carrito');
 
-        return redirect()->route('ventas.index')->with('success', 'Venta creada exitosamente. Estado: Pendiente de pago.');
+        return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])
+            ->with('success', 'Venta creada exitosamente. Proceda al pago.');
     }
 
     public function show(Venta $venta)
@@ -210,15 +224,24 @@ class VentaController extends Controller
 
     public function edit(Venta $venta)
     {
-        $clientes = Cliente::all();
-        $productos = Producto::all();
+        // Limpiar carrito actual
+        session()->forget('carrito');
+
+        // Cargar carrito con productos de la venta (asumiendo talla por defecto si no hay)
+        $carrito = [];
+        $tallaDefault = ProductoTalla::first()->id ?? 1; // Primera talla o 1
 
         foreach ($venta->detalles as $detalle) {
-            $producto = $detalle->producto;
-            $detalle->stock_inicial = $producto->stockP + $detalle->cantidad;
+            $carrito[] = [
+                'producto_id' => $detalle->producto_id,
+                'talla_id' => $tallaDefault, // No hay talla en detalles, usar default
+                'cantidad' => $detalle->cantidad,
+            ];
         }
 
-        return view('Venta.edit', compact('venta', 'clientes', 'productos'));
+        session(['carrito' => $carrito]);
+
+        return redirect()->route('ventas.create', ['cliente_id' => $venta->cliente_id])->with('info', 'Carrito cargado con productos de la venta para editar.');
     }
 
     public function update(Request $request, Venta $venta)

@@ -9,6 +9,9 @@
 @section('content')
 <form action="{{ route('clientes.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
+    @if(isset($redirect))
+        <input type="hidden" name="redirect" value="{{ $redirect }}">
+    @endif
 
     <!-- Nombre -->
     <div class="mb-3">

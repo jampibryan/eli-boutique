@@ -18,7 +18,7 @@
     </div>    
 
     <div class="d-flex justify-content-between">
-        <a href="{{ route('ventas.create') }}" class="btn btn-danger">REGISTRAR VENTA</a>
+        <a href="{{ route('carrito.ver') }}" class="btn btn-danger">VER CARRITO</a>
 
         {{-- <a href="{{ route('exportarCSV') }}" class="btn btn-info">DESCARGAR CSV</a> --}}
                 

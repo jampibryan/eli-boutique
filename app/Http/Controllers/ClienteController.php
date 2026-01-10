@@ -54,8 +54,9 @@ class ClienteController extends Controller
     public function create()
     {
         $generos = TipoGenero::all();
+        $redirect = request('redirect');
 
-        return view('Cliente.create', compact('generos'));
+        return view('Cliente.create', compact('generos', 'redirect'));
     }
 
     /**
@@ -64,6 +65,10 @@ class ClienteController extends Controller
     public function store(StoreCliente $request)
     {
         $cliente = Cliente::create($request->all());
+
+        if ($request->has('redirect') && $request->redirect === 'ventas.create') {
+            return redirect()->route('ventas.create', ['cliente_id' => $cliente->id])->with('success', 'Cliente registrado exitosamente. Ahora puedes proceder con la venta.');
+        }
 
         return redirect()->route('clientes.index');
     }

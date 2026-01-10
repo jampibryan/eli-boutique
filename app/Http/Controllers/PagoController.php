@@ -81,6 +81,12 @@ class PagoController extends Controller
         $pago->vuelto = $vuelto;
         $pago->save();
 
+        // Limpiar carrito solo después de pagar la venta
+        if ($type === 'venta') {
+            session()->forget('carrito');
+            session()->forget('venta_cliente');
+        }
+
         // Redirigir a la página correspondiente
         $redirectRoute = $type === 'venta' ? 'ventas.index' : 'compras.index';
         return redirect()->route($redirectRoute)->with('success', 'Pago registrado con éxito.');

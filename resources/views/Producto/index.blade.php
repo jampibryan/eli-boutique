@@ -10,7 +10,10 @@
 
     <div class="d-flex justify-content-between mb-3">
         <a href="{{ route('productos.create') }}" class="btn btn-danger">REGISTRAR PRODUCTO</a>
-        <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
+        <div>
+            <a href="{{ route('carrito.ver') }}" class="btn btn-primary">Ver Carrito ({{ count(session('carrito', [])) }})</a>
+            <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-primary">GENERAR REPORTE</a>
+        </div>
     </div>
 
     <!-- Formulario de búsqueda por categoría -->
@@ -39,6 +42,27 @@
                         <p class="card-text text-center mb-1"><strong>Descripción:</strong> {{ $producto->descripcionP }}</p>
                         <p class="card-text text-center mb-1"><strong>Precio:</strong> S/. {{ number_format($producto->precioP, 2) }}</p>
                         <p class="card-text text-center mb-2"><strong>Stock:</strong> {{ $producto->stockP }}</p>
+                        
+                        <!-- Formulario para agregar al carrito -->
+                        <form action="{{ route('carrito.agregar') }}" method="POST" class="mb-2">
+                            @csrf
+                            <input type="hidden" name="producto_id" value="{{ $producto->id }}">
+                            <div class="row">
+                                <div class="col-6">
+                                    <select name="talla_id" class="form-control form-control-sm" required>
+                                        <option value="">Talla</option>
+                                        @foreach($tallas as $talla)
+                                            <option value="{{ $talla->id }}">{{ $talla->descripcion }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="cantidad" class="form-control form-control-sm" placeholder="Cant." min="1" max="{{ $producto->stockP }}" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm w-100 mt-2">Agregar al Carrito</button>
+                        </form>
+                        
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('productos.edit', $producto) }}" class="btn btn-info btn-sm">Editar</a>
                             <form action="{{ route('productos.destroy', $producto) }}" method="post">
