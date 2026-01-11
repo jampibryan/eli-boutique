@@ -149,7 +149,7 @@ class VentaController extends Controller
     {
         // Validar la solicitud
         $request->validate([
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'productos' => 'required|array',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',
@@ -207,10 +207,10 @@ class VentaController extends Controller
             $productoSeleccionado->save();
         }
 
-        // ==================== REDIRIGIR AL PAGO ====================
+        // Limpiar carrito después de registrar
+        session()->forget('carrito');
 
-        // No limpiar carrito aquí, para permitir regresar y modificar
-        // session()->forget('carrito');
+        // ==================== REDIRIGIR AL PAGO ====================
 
         return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])
             ->with('success', 'Venta creada exitosamente. Proceda al pago.');
@@ -224,31 +224,38 @@ class VentaController extends Controller
 
     public function edit(Venta $venta)
     {
-        // Limpiar carrito actual
-        session()->forget('carrito');
+        // Solo permitir editar si la venta está pendiente
+        if ($venta->estadoTransaccion->descripcionET !== 'Pendiente') {
+            return redirect()->route('ventas.index')->with('error', 'No se puede editar una venta ya pagada.');
+        }
 
-        // Cargar carrito con productos de la venta (asumiendo talla por defecto si no hay)
+        $clientes = Cliente::all();
+        $productos = Producto::all();
+        $tallas = ProductoTalla::all(); // Para el select de tallas
+
+        // Cargar detalles de la venta como "carrito"
         $carrito = [];
-        $tallaDefault = ProductoTalla::first()->id ?? 1; // Primera talla o 1
-
         foreach ($venta->detalles as $detalle) {
             $carrito[] = [
                 'producto_id' => $detalle->producto_id,
-                'talla_id' => $tallaDefault, // No hay talla en detalles, usar default
+                'talla_id' => $detalle->producto_talla_id ?? ProductoTalla::first()->id, // Usar primera talla si no hay
                 'cantidad' => $detalle->cantidad,
             ];
         }
 
-        session(['carrito' => $carrito]);
+        // Pasar datos a la vista
+        $clienteSeleccionado = $venta->cliente_id;
+        $subtotal = $venta->subTotal;
+        $igv = $venta->IGV;
+        $montoTotal = $venta->montoTotal;
 
-        return redirect()->route('ventas.create', ['cliente_id' => $venta->cliente_id])->with('info', 'Carrito cargado con productos de la venta para editar.');
+        return view('Venta.edit', compact('venta', 'clientes', 'productos', 'tallas', 'carrito', 'clienteSeleccionado', 'subtotal', 'igv', 'montoTotal'));
     }
 
     public function update(Request $request, Venta $venta)
     {
         // Validación de la venta y los productos
         $validated = $request->validate([
-            'codigoVenta' => 'required|string|max:20|unique:ventas,codigoVenta,' . $venta->id,
             'cliente_id' => 'required|exists:clientes,id',
             'subTotal' => 'required|numeric',
             'IGV' => 'required|numeric',
@@ -338,7 +345,7 @@ class VentaController extends Controller
         // NOTA: Si la venta cambia de montoTotal, la caja NO se actualiza automáticamente
         // porque sería complejo llevar seguimiento de cambios. Solo se actualiza en creación/anulación.
 
-        return redirect()->route('ventas.index')->with('success', 'Venta actualizada con éxito.');
+        return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])->with('success', 'Venta actualizada con éxito.');
     }
 
     public function destroy(Venta $venta)

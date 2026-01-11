@@ -8,7 +8,7 @@
 @stop
 
 @section('content')
-    <a href="{{ $type === 'venta' ? route('ventas.create') : route($type.'s.index') }}" class="btn btn-primary mb-3">Regresar</a>
+    <a href="{{ $type === 'venta' ? route('ventas.edit', $transaction->id) : route($type.'s.index') }}" class="btn btn-primary mb-3">Regresar</a>
 
     <form action="{{ route('pagos.store', [$transaction->id, $type]) }}" method="POST">
         @csrf

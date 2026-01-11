@@ -66,8 +66,16 @@ class ClienteController extends Controller
     {
         $cliente = Cliente::create($request->all());
 
+        // Guardar el cliente en sesión para preseleccionarlo
+        session(['venta_cliente' => $cliente->id]);
+
         if ($request->has('redirect') && $request->redirect === 'ventas.create') {
-            return redirect()->route('ventas.create', ['cliente_id' => $cliente->id])->with('success', 'Cliente registrado exitosamente. Ahora puedes proceder con la venta.');
+            return redirect()->route('ventas.create')->with('success', 'Cliente registrado exitosamente. Ahora puedes proceder con la venta.');
+        }
+
+        if ($request->has('redirect') && $request->redirect === 'ventas.edit') {
+            $ventaId = $request->input('venta_id');
+            return redirect()->route('ventas.edit', $ventaId)->with('success', 'Cliente registrado exitosamente.');
         }
 
         return redirect()->route('clientes.index');

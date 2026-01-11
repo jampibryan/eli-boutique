@@ -26,8 +26,8 @@ class StoreCliente extends FormRequest
             'apellidoCliente' => 'required',
             'tipo_genero_id' => 'required',
             'dniCliente' => 'required|digits:8',
-            'correoCliente' => 'required|email',
-            'telefonoCliente' => 'required|numeric|digits:9',
+            'correoCliente' => 'nullable|email',
+            'telefonoCliente' => 'nullable|numeric|digits:9',
         ];
     }
 }

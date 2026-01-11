@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Registrar Venta')
+@section('title', 'Resumen de Venta')
 
 @section('content_header')
-    <h1>Registro de Venta</h1>
+    <h1>Resumen de Venta</h1>
 @stop
 
 @section('content')
@@ -77,8 +77,8 @@
         <h4>Comprador</h4>
         <div class="form-group">
             <label for="cliente_id">Seleccionar Cliente</label>
-            <select class="form-control select2" name="cliente_id">
-                <option value="">Cliente Anónimo</option>
+            <select class="form-control select2" name="cliente_id" required>
+                <option value="">Seleccionar Cliente</option>
                 @foreach($clientes as $cliente)
                     <option value="{{ $cliente->id }}" {{ (request('cliente_id') ?: $clienteSeleccionado) == $cliente->id ? 'selected' : '' }}>{{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }}</option>
                 @endforeach
@@ -100,8 +100,8 @@
             <input type="number" class="form-control" id="montoTotal" name="montoTotal" value="{{ number_format($montoTotal, 2, '.', '') }}" readonly>
         </div>
 
-        <!-- Botón para registrar venta -->
-        <button type="submit" class="btn btn-success">Registrar Venta</button>
+        <!-- Botón para proceder al pago -->
+        <button type="submit" class="btn btn-success">Proceder al Pago</button>
     </form>
 @stop
 

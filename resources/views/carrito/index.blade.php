@@ -56,6 +56,6 @@
 
         <h4>Total: S/. {{ number_format($total, 2) }}</h4>
 
-        <a href="{{ route('ventas.create') }}" class="btn btn-success">Proceder al Pago</a>
+        <a href="{{ route('ventas.create') }}" class="btn btn-success">Continuar con la Venta</a>
     @endif
 @stop
