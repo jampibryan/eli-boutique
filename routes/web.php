@@ -82,6 +82,9 @@ Route::resource('productos', ProductoController::class);
 Route::post('/carrito/agregar', [ProductoController::class, 'agregarAlCarrito'])->name('carrito.agregar');
 Route::get('/carrito', [ProductoController::class, 'verCarrito'])->name('carrito.ver');
 Route::delete('/carrito/remover/{index}', [ProductoController::class, 'removerDelCarrito'])->name('carrito.remover');
+Route::post('/carrito/actualizar/{index}', [ProductoController::class, 'actualizarCantidadCarrito'])->name('carrito.actualizar');
+Route::post('/carrito/cambiar-talla/{index}', [ProductoController::class, 'cambiarTallaCarrito'])->name('carrito.cambiarTalla');
+Route::post('/carrito/duplicar/{index}', [ProductoController::class, 'duplicarItemCarrito'])->name('carrito.duplicar');
 
 
 // VENTAS

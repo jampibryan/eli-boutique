@@ -62,8 +62,17 @@ class HomeController extends Controller
             })                    
             ->sum('montoTotal');
 
-        // Obtener productos con stock mínimo (15 o menos)
-        $productosStockMinimo = Producto::where('stockP', '<=', 15)->get();
+        // Obtener productos con stock total mínimo (15 o menos sumando todas las tallas)
+        $productosStockMinimo = Producto::with('tallaStocks')
+            ->get()
+            ->map(function($producto) {
+                $producto->stockP = $producto->tallaStocks->sum('stock');
+                return $producto;
+            })
+            ->filter(function($producto) {
+                return $producto->stockP <= 15;
+            })
+            ->values();
 
         // Obtener los 5 productos más vendidos
         $productosMasVendidos = VentaDetalle::with('producto')
@@ -76,8 +85,15 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        // Obtener la lista de productos con su stock actual
-        $productosStockActual = Producto::select('descripcionP', 'stockP')->get();
+        // Obtener la lista de productos con su stock actual (suma de todas las tallas)
+        $productosStockActual = Producto::with('tallaStocks')
+            ->get()
+            ->map(function($producto) {
+                return [
+                    'descripcionP' => $producto->descripcionP,
+                    'stockP' => $producto->tallaStocks->sum('stock')
+                ];
+            });
 
         return view('home', compact('cajaAbierta', 'clientesCount', 'productosCount', 'ingresoDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
     }

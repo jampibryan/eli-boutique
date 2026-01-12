@@ -13,11 +13,9 @@ class Producto extends Model
         'codigoP',
         'categoria_producto_id',
         'producto_genero_id',
-        'producto_talla_id',
         'imagenP',
         'descripcionP',
         'precioP',
-        'stockP',
     ];
 
     public function categoriaProducto()
@@ -32,9 +30,24 @@ class Producto extends Model
         return $this->belongsTo(ProductoGenero::class, 'producto_genero_id');
     }
 
-    public function productoTalla()
+    // Relación muchos a muchos con tallas a través de tabla pivot
+    public function tallas()
     {
-        return $this->belongsTo(ProductoTalla::class, 'producto_talla_id');
+        return $this->belongsToMany(ProductoTalla::class, 'producto_talla_stock', 'producto_id', 'producto_talla_id')
+                    ->withPivot('stock')
+                    ->withTimestamps();
+    }
+
+    // Relación directa con la tabla pivot
+    public function tallaStocks()
+    {
+        return $this->hasMany(ProductoTallaStock::class);
+    }
+
+    // Helper para obtener stock total del producto (suma de todas las tallas)
+    public function getStockTotalAttribute()
+    {
+        return $this->tallaStocks()->sum('stock');
     }
 
     public function getImagenPAttribute($value)

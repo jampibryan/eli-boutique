@@ -8,6 +8,7 @@ use App\Models\Colaborador;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
+use App\Models\ProductoTallaStock;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
@@ -140,9 +141,19 @@ class VentaController extends Controller
         $productos = Producto::whereIn('id', collect($carrito)->pluck('producto_id'))->get()->keyBy('id');
         $tallas = ProductoTalla::whereIn('id', collect($carrito)->pluck('talla_id'))->get()->keyBy('id');
 
+        // Cargar stocksPorTalla para validación en la vista
+        $stocksPorTalla = [];
+        foreach ($carrito as $item) {
+            $key = $item['producto_id'] . '_' . $item['talla_id'];
+            $tallaStock = ProductoTallaStock::where('producto_id', $item['producto_id'])
+                ->where('producto_talla_id', $item['talla_id'])
+                ->first();
+            $stocksPorTalla[$key] = $tallaStock ? $tallaStock->stock : 0;
+        }
+
         $clienteSeleccionado = session('venta_cliente');
 
-        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'clienteSeleccionado'));
+        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado'));
     }
 
     public function store(Request $request)
@@ -189,6 +200,31 @@ class VentaController extends Controller
         // Guardar cliente seleccionado en sesión para mantenerlo al regresar
         session(['venta_cliente' => $request->cliente_id]);
 
+        // VALIDAR STOCK ANTES DE PROCESAR LA VENTA (con sistema de tallas)
+        foreach ($request->productos as $productoData) {
+            $productoValidar = Producto::find($productoData['id']);
+            
+            if (!$productoValidar) {
+                return redirect()->back()->with('error', 'Producto no encontrado.');
+            }
+            
+            // Validar stock de la talla específica
+            $tallaStock = ProductoTallaStock::where('producto_id', $productoData['id'])
+                ->where('producto_talla_id', $productoData['talla_id'])
+                ->first();
+            
+            if (!$tallaStock) {
+                return redirect()->back()->with('error', 
+                    "No se encontró stock para la talla seleccionada de {$productoValidar->descripcionP}.");
+            }
+            
+            if ($tallaStock->stock < $productoData['cantidad']) {
+                $tallaNombre = ProductoTalla::find($productoData['talla_id'])->descripcion ?? '';
+                return redirect()->back()->with('error', 
+                    "Stock insuficiente para {$productoValidar->descripcionP} talla {$tallaNombre}. Stock disponible: {$tallaStock->stock}, solicitado: {$productoData['cantidad']}");
+            }
+        }
+
         // Registrar los productos en la venta
         foreach ($request->productos as $productoData) {
             $productoDetalle = new VentaDetalle();
@@ -202,9 +238,13 @@ class VentaController extends Controller
 
             $productoDetalle->save();
 
-            // Actualizar el stock del producto (SIEMPRE se actualiza stock)
-            $productoSeleccionado->stockP -= $productoData['cantidad'];
-            $productoSeleccionado->save();
+            // Actualizar el stock de la talla específica (VALIDADO PREVIAMENTE)
+            $tallaStock = ProductoTallaStock::where('producto_id', $productoData['id'])
+                ->where('producto_talla_id', $productoData['talla_id'])
+                ->first();
+            
+            $tallaStock->stock -= $productoData['cantidad'];
+            $tallaStock->save();
         }
 
         // Limpiar carrito después de registrar
@@ -292,7 +332,31 @@ class VentaController extends Controller
         // Almacenar IDs de productos existentes en la venta
         $productoIdsActuales = $detallesAntiguos->pluck('producto_id')->toArray();
 
-        // Actualizar detalles de la venta con los nuevos productos seleccionados
+        // PRIMERO: VALIDAR STOCK PARA TODOS LOS CAMBIOS
+        foreach ($request->productos as $productoData) {
+            $producto = Producto::find($productoData['id']);
+            
+            if (!$producto) {
+                return redirect()->back()->with('error', 'Producto no encontrado.');
+            }
+
+            // Buscar el detalle de venta anterior
+            $detalleAntiguo = $detallesAntiguos->firstWhere('producto_id', $producto->id);
+            $cantidadAntigua = $detalleAntiguo ? $detalleAntiguo->cantidad : 0;
+
+            // Calcular la diferencia en la cantidad
+            $diferencia = $productoData['cantidad'] - $cantidadAntigua;
+
+            // Validar stock si se está aumentando la cantidad
+            if ($diferencia > 0) {
+                if ($producto->stockP < $diferencia) {
+                    return redirect()->back()->with('error', 
+                        "Stock insuficiente para {$producto->descripcionP}. Stock disponible: {$producto->stockP}, adicional solicitado: {$diferencia}");
+                }
+            }
+        }
+
+        // SEGUNDO: Actualizar detalles de la venta con los nuevos productos seleccionados
         foreach ($request->productos as $productoData) {
             $producto = Producto::find($productoData['id']);
 
@@ -303,7 +367,7 @@ class VentaController extends Controller
             // Calcular la diferencia en la cantidad
             $diferencia = $productoData['cantidad'] - $cantidadAntigua;
 
-            // Ajustar el stock del producto según la diferencia
+            // Ajustar el stock del producto según la diferencia (YA VALIDADO)
             if ($diferencia !== 0) {
                 $producto->stockP -= $diferencia;
                 $producto->save();
