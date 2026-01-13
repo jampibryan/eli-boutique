@@ -39,8 +39,11 @@
                 <div class="card" style="height: 100%; padding: 10px;">
                     <h5 class="card-title text-center mt-2 mb-2">
                         <strong>{{ $producto->categoriaProducto->nombreCP }}</strong></h5>
-                    <img src="{{ $producto->imagenP }}" class="card-img-top" alt="Imagen del producto"
-                        style="height: 200px; width: 100%; object-fit: contain;">
+                    <img src="{{ $producto->imagenP ?? '/img/productos/Producto por defecto.webp' }}" 
+                         class="card-img-top" 
+                         alt="{{ $producto->descripcionP }}"
+                         onerror="this.src='/img/productos/Producto por defecto.webp'"
+                         style="height: 200px; width: 100%; object-fit: contain;">
                     <div class="card-body p-2">
                         <p class="card-text text-center mb-1"><strong>Código:</strong> {{ $producto->codigoP }}</p>
                         <p class="card-text text-center mb-1"><strong>Descripción:</strong> {{ $producto->descripcionP }}
@@ -92,8 +95,11 @@
                         <div class="row">
                             <!-- Imagen del producto -->
                             <div class="col-md-5 text-center">
-                                <img src="{{ $producto->imagenP }}" class="img-fluid rounded"
-                                    alt="{{ $producto->descripcionP }}" style="max-height: 300px; object-fit: contain;">
+                                <img src="{{ $producto->imagenP ?? '/img/productos/Producto por defecto.webp' }}" 
+                                     class="img-fluid rounded"
+                                     alt="{{ $producto->descripcionP }}" 
+                                     onerror="this.src='/img/productos/Producto por defecto.webp'"
+                                     style="max-height: 300px; object-fit: contain;">
                             </div>
 
                             <!-- Información del producto -->

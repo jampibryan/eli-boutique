@@ -50,21 +50,6 @@
         @enderror
     </div>
 
-    <!-- Talla -->
-    <div class="mb-3">
-        <label for="producto_talla_id" class="form-label">Talla</label>
-        <select id="producto_talla_id" name="producto_talla_id" class="form-control">
-            @foreach($tallas as $talla)
-                <option value="{{ $talla->id }}" {{ $producto->producto_talla_id == $talla->id ? 'selected' : '' }}>
-                    {{ $talla->descripcion }}
-                </option>
-            @endforeach
-        </select>
-        @error('producto_talla_id')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
-    </div>
-
     <!-- Imagen actual -->
     <div class="mb-3">
         <label for="imagenP" class="form-label">Imagen actual</label><br>
@@ -96,15 +81,6 @@
         <label for="precioP" class="form-label">Precio</label>
         <input id="precioP" name="precioP" type="number" step="any" class="form-control" value="{{ $producto->precioP }}">
         @error('precioP')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
-    </div>
-
-    <!-- Stock -->
-    <div class="mb-3">
-        <label for="stockP" class="form-label">Stock</label>
-        <input id="stockP" name="stockP" type="number" class="form-control" value="{{ $producto->stockP }}">
-        @error('stockP')
             <small class="text-danger">{{ $message }}</small>
         @enderror
     </div>

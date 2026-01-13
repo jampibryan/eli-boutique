@@ -50,8 +50,4 @@ class Producto extends Model
         return $this->tallaStocks()->sum('stock');
     }
 
-    public function getImagenPAttribute($value)
-    {
-        return asset('storage/' . $value); // Ruta completa de la imagen
-    }
 }

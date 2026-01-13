@@ -119,12 +119,15 @@ class Venta extends Model
             $this->save();
         }
 
-        // Devolver los productos al stock
+        // Devolver los productos al stock por talla
         foreach ($this->detalles as $detalle) {
-            $producto = $detalle->producto;
-            if ($producto) {
-                $producto->stockP += $detalle->cantidad;
-                $producto->save();
+            $productoTallaStock = \App\Models\ProductoTallaStock::where('producto_id', $detalle->producto_id)
+                ->where('producto_talla_id', $detalle->producto_talla_id)
+                ->first();
+            
+            if ($productoTallaStock) {
+                $productoTallaStock->stock += $detalle->cantidad;
+                $productoTallaStock->save();
             }
         }
 

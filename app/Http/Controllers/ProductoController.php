@@ -11,7 +11,6 @@ use App\Models\ProductoTallaStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ProductoController extends Controller
 {
@@ -76,9 +75,13 @@ class ProductoController extends Controller
     // Maneja la lógica para guardar el nuevo recurso en la base de datos después de que el formulario ha sido enviado.
     public function store(StoreProducto $request)
     {
-        // Guardar la imagen en la carpeta 'public/productos' y obtener la ruta
+        // Guardar la imagen en la carpeta 'public/img/productos/'
+        $path = null;
         if ($request->hasFile('imagenP')) {
-            $path = $request->file('imagenP')->store('productos', 'public');
+            $file = $request->file('imagenP');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('img/productos'), $filename);
+            $path = '/img/productos/' . $filename;
         }
 
         // Crear el producto con los datos del formulario
@@ -87,7 +90,7 @@ class ProductoController extends Controller
             'categoria_producto_id' => $request->categoria_producto_id,
             'producto_genero_id' => $request->producto_genero_id,
             'producto_talla_id' => $request->producto_talla_id,
-            'imagenP' => $path, // Guardar la ruta de la imagen
+            'imagenP' => $path,
             'descripcionP' => $request->descripcionP,
             'precioP' => $request->precioP,
             'stockP' => $request->stockP,
@@ -116,22 +119,22 @@ class ProductoController extends Controller
 
     public function update(StoreProducto $request, Producto $producto)
     {
-        
         // Verifica si se ha subido una nueva imagen
         if ($request->hasFile('imagenP')) {
             // Elimina la imagen anterior si existe
-            if ($producto->imagenP && Storage::disk('public')->exists($producto->imagenP)) {
-                Storage::disk('public')->delete($producto->imagenP);
+            if ($producto->imagenP && file_exists(public_path($producto->imagenP))) {
+                unlink(public_path($producto->imagenP));
                 Log::info('Imagen eliminada: ' . $producto->imagenP);
             }
 
-            // Guarda la nueva imagen y actualiza la ruta
-            $producto->imagenP = $request->file('imagenP')->store('productos', 'public');
+            // Guarda la nueva imagen
+            $file = $request->file('imagenP');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('img/productos'), $filename);
+            $producto->imagenP = '/img/productos/' . $filename;
         }
 
         // Actualizar el resto de los campos
-        // $producto->update($request->all());
-
         $producto->update($request->only(['codigoP', 'categoria_producto_id', 'producto_genero_id', 'producto_talla_id', 'descripcionP', 'precioP', 'stockP']));
 
         return redirect()->route('productos.index');
