@@ -66,9 +66,8 @@ class ProductoController extends Controller
     public function create()
     {
         $categorias = CategoriaProducto::all();
-        $generos = ProductoGenero::all();
         $tallas = ProductoTalla::all();
-        return view('Producto.create', compact('categorias', 'generos', 'tallas'));
+        return view('Producto.create', compact('categorias', 'tallas'));
     }
 
 
@@ -88,7 +87,7 @@ class ProductoController extends Controller
         $producto = Producto::create([
             'codigoP' => $request->codigoP,
             'categoria_producto_id' => $request->categoria_producto_id,
-            'producto_genero_id' => $request->producto_genero_id,
+            'producto_genero_id' => 1, // Automáticamente Unisex
             'producto_talla_id' => $request->producto_talla_id,
             'imagenP' => $path,
             'descripcionP' => $request->descripcionP,
@@ -111,9 +110,8 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $categorias = CategoriaProducto::all(); // Obtén todas las categorías para el formulario
-        $generos = ProductoGenero::all();
         $tallas = ProductoTalla::all();
-        return view('Producto.edit', compact('producto', 'categorias', 'generos', 'tallas'));
+        return view('Producto.edit', compact('producto', 'categorias', 'tallas'));
     }
 
 

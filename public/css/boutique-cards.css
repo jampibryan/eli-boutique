@@ -1,0 +1,211 @@
+/* === SISTEMA DE CARDS BOUTIQUE PREMIUM === */
+/* Reutilizable para todos los módulos */
+
+/* Botones */
+.btn-boutique-gold {
+    background: linear-gradient(135deg, #D4AF37 0%, #F4D03F 100%);
+    border: none;
+    color: #2C2C2C;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+.btn-boutique-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+    color: #1a1a1a;
+}
+.btn-boutique-dark {
+    background: #2C2C2C;
+    border: 1px solid #D4AF37;
+    color: #D4AF37;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.btn-boutique-dark:hover {
+    background: #3d3d3d;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44, 44, 44, 0.3);
+    color: #F4D03F;
+}
+
+/* Card base */
+.boutique-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+.boutique-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15), 0 0 0 1px #D4AF37;
+}
+
+/* Card header con borde dorado */
+.boutique-card-header {
+    background: linear-gradient(135deg, #2C2C2C 0%, #3d3d3d 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-bottom: 3px solid #D4AF37;
+}
+.boutique-card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+.boutique-card-header .icon {
+    color: #D4AF37;
+}
+
+/* Card body */
+.boutique-card-body {
+    padding: 1.25rem;
+}
+
+/* Avatar circular */
+.avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #D4AF37, #F4D03F);
+    color: #2C2C2C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+/* Badge de estado */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-success { background: #d4edda; color: #155724; }
+.status-warning { background: #fff3cd; color: #856404; }
+.status-danger { background: #f8d7da; color: #721c24; }
+.status-info { background: #d1ecf1; color: #0c5460; }
+.status-dark { background: #e2e3e5; color: #383d41; }
+
+/* Info row */
+.info-row {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.info-row:last-child {
+    border-bottom: none;
+}
+.info-row .icon {
+    color: #D4AF37;
+    width: 24px;
+    margin-right: 0.75rem;
+}
+.info-row .label {
+    font-weight: 600;
+    color: #6c757d;
+    min-width: 100px;
+}
+.info-row .value {
+    color: #2C2C2C;
+}
+
+/* Métrica destacada */
+.metric-box {
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #D4AF37;
+    margin: 0;
+}
+.metric-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
+}
+
+/* Botones de acción en cards */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+.btn-card-action {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-card-edit {
+    background: white;
+    border: 1px solid #D4AF37;
+    color: #D4AF37;
+}
+.btn-card-edit:hover {
+    background: #D4AF37;
+    color: white;
+}
+.btn-card-delete {
+    background: white;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+.btn-card-delete:hover {
+    background: #dc3545;
+    color: white;
+}
+.btn-card-view {
+    background: white;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+}
+.btn-card-view:hover {
+    background: #17a2b8;
+    color: white;
+}
+
+/* Barra superior de acciones */
+.action-bar {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-left: 4px solid #D4AF37;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    .metric-value {
+        font-size: 1.5rem;
+    }
+}

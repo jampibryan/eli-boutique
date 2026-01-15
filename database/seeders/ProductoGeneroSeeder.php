@@ -15,8 +15,9 @@ class ProductoGeneroSeeder extends Seeder
     {
         // Inserta los registros en la tabla producto_generos
         DB::table('producto_generos')->insert([
-            ['descripcion' => 'Hombre'],
-            ['descripcion' => 'Mujer'],
+            ['descripcion' => 'Unisex'], // ID 1 - usado por defecto en productos
+            ['descripcion' => 'Hombre'], // ID 2 - reservado para uso futuro
+            ['descripcion' => 'Mujer'],  // ID 3 - reservado para uso futuro
         ]);
     }
 }
