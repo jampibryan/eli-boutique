@@ -117,8 +117,16 @@
         </div>
 
         <div class="footer">
-            <p>IGV: 18%</p>
-            <p>TOTAL: S/. {{ number_format($venta->montoTotal, 2) }} </p>
+            @php
+                $totalBaseImponible = $venta->detalles->sum(function($d) { return $d->cantidad * $d->base_imponible; });
+                $totalIGV = $venta->detalles->sum(function($d) { return $d->cantidad * $d->igv; });
+            @endphp
+            <p>BASE IMPONIBLE: S/. {{ number_format($totalBaseImponible, 2) }}</p>
+            <p>IGV (18%): S/. {{ number_format($totalIGV, 2) }}</p>
+            <p><strong>TOTAL A PAGAR: S/. {{ number_format($venta->montoTotal, 2) }}</strong></p>
+            <p style="font-size: 11px; margin-top: 10px; color: #666;">
+                * Los precios mostrados incluyen IGV
+            </p>
         </div>
     </div>
 </body>

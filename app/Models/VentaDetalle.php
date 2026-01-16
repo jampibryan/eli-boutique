@@ -14,6 +14,8 @@ class VentaDetalle extends Model
         'producto_id',
         'cantidad',
         'precio_unitario',
+        'base_imponible',
+        'igv',
         'subtotal',
     ];
 

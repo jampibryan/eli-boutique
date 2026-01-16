@@ -153,13 +153,13 @@ class ProductoController extends Controller
 
         $producto = Producto::with('tallaStocks')->find($request->producto_id);
 
-        // Obtener la primera talla disponible del producto
-        $primeraTalla = $producto->tallaStocks->first();
+        // Obtener la primera talla CON STOCK disponible del producto
+        $primeraTalla = $producto->tallaStocks->where('stock', '>', 0)->first();
         
         if (!$primeraTalla) {
             return response()->json([
                 'success' => false,
-                'error' => 'Este producto no tiene tallas disponibles.'
+                'error' => 'Este producto no tiene stock disponible en ninguna talla.'
             ], 400);
         }
 

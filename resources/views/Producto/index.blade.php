@@ -3,24 +3,30 @@
 @section('title', 'Productos')
 
 @section('content_header')
-    <div class="d-flex justify-content-between align-items-center">
-        <h4 class="m-0" style="color: #2C2C2C;">
-            <i class="fas fa-store" style="color: #D4AF37;"></i> Catálogo de Productos
-        </h4>
-        <div class="d-flex gap-2">
-            <a href="{{ route('carrito.ver') }}" class="btn btn-boutique-gold">
-                <i class="fas fa-shopping-cart"></i> Carrito ({{ count(session('carrito', [])) }})
-            </a>
-            <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-boutique-dark">
-                <i class="fas fa-file-pdf"></i> Reporte
-            </a>
-        </div>
-    </div>
+    <!-- Catálogo de Productos -->
 @stop
 
 @section('content')
+    <!-- Barra de acciones: Título y botones principales -->
+    <div class="action-bar">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h4 class="mb-0" style="color: #2C2C2C;">
+                    <i class="fas fa-store" style="color: #D4AF37;"></i> Catálogo de Productos
+                </h4>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('carrito.ver') }}" class="btn btn-boutique-gold">
+                    <i class="fas fa-shopping-cart"></i> Carrito ({{ count(session('carrito', [])) }})
+                </a>
+                <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                    <i class="fas fa-file-pdf"></i> Generar Reporte
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <!-- Barra de acciones -->
+    <!-- Segunda barra de acciones: Filtros y búsqueda -->
     <div class="card shadow-sm mb-4" style="border: none; border-left: 4px solid #D4AF37;">
         <div class="card-body py-3">
             <div class="row align-items-center">
@@ -63,7 +69,9 @@
                     </span>
                     <span class="badge bg-light text-dark px-3 py-2 mt-1">
                         <i class="fas fa-warehouse" style="color: #28a745;"></i>
-                        <span id="totalStock">{{ $productos->sum(function($p) { return $p->tallas->sum('pivot.stock'); }) }}</span> en stock
+                        <span
+                            id="totalStock">{{ $productos->sum(function ($p) {return $p->tallas->sum('pivot.stock');}) }}</span>
+                        en stock
                     </span>
                 </div>
             </div>
@@ -73,9 +81,8 @@
     <!-- Grid de productos premium -->
     <div class="row g-4" id="productosGrid">
         @foreach ($productos as $producto)
-            <div class="col-lg-3 col-md-4 col-sm-6 producto-item" 
-                 data-nombre="{{ strtolower($producto->descripcionP) }}"
-                 data-stock="{{ $producto->tallas->sum('pivot.stock') }}">
+            <div class="col-lg-3 col-md-4 col-sm-6 producto-item" data-nombre="{{ strtolower($producto->descripcionP) }}"
+                data-stock="{{ $producto->tallas->sum('pivot.stock') }}">
                 <div class="producto-card">
                     <!-- Badge de categoría -->
                     <div class="categoria-badge">
@@ -109,15 +116,23 @@
 
                         <!-- Botones de acción -->
                         <div class="producto-acciones">
-                            <button type="button" class="btn btn-carrito btn-agregar-carrito"
-                                data-producto-id="{{ $producto->id }}">
-                                <i class="fas fa-cart-plus"></i> Agregar
-                            </button>
+                            @if($producto->stock_total > 0)
+                                <button type="button" class="btn btn-carrito btn-agregar-carrito"
+                                    data-producto-id="{{ $producto->id }}">
+                                    <i class="fas fa-cart-plus"></i> Agregar
+                                </button>
+                            @else
+                                <button type="button" class="btn btn-sin-stock" disabled>
+                                    <i class="fas fa-times-circle"></i> Sin Stock
+                                </button>
+                            @endif
                             <div class="btn-group" role="group">
-                                <a href="{{ route('productos.edit', $producto) }}" class="btn btn-accion" title="Editar">
+                                <a href="{{ route('productos.edit', $producto) }}" class="btn btn-accion"
+                                    title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('productos.destroy', $producto) }}" method="post" class="d-inline">
+                                <form action="{{ route('productos.destroy', $producto) }}" method="post"
+                                    class="d-inline">
                                     @csrf
                                     @method('delete')
                                     <button class="btn btn-accion btn-eliminar"
@@ -199,8 +214,14 @@
                                         <tbody>
                                             @php
                                                 $stockTotal = 0;
+                                                // Orden personalizado de tallas
+                                                $ordenTallas = ['XS' => 1, 'S' => 2, 'M' => 3, 'L' => 4, 'XL' => 5, 'XXL' => 6];
+                                                $tallasOrdenadas = $producto->tallaStocks->sortBy(function($tallaStock) use ($ordenTallas) {
+                                                    $descripcion = strtoupper($tallaStock->talla->descripcion);
+                                                    return $ordenTallas[$descripcion] ?? 999; // Si no está en el orden, va al final
+                                                });
                                             @endphp
-                                            @foreach ($producto->tallaStocks->sortBy('talla.descripcion') as $tallaStock)
+                                            @foreach ($tallasOrdenadas as $tallaStock)
                                                 @php
                                                     $stockTotal += $tallaStock->stock;
                                                 @endphp
@@ -242,6 +263,7 @@
 @section('css')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ asset('css/boutique-cards.css') }}">
     <style>
         /* === Botones Boutique === */
         .btn-boutique-gold {
@@ -464,6 +486,18 @@
             transform: none;
         }
 
+        .btn-sin-stock {
+            flex: 1;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            color: white;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
         .btn-accion {
             background: white;
             border: 1px solid #dee2e6;
@@ -515,11 +549,11 @@
             const items = document.querySelectorAll('.producto-item');
             let visibleCount = 0;
             let totalStock = 0;
-            
+
             items.forEach(item => {
                 const nombre = normalizeText(item.dataset.nombre);
                 const stock = parseInt(item.dataset.stock) || 0;
-                
+
                 if (searchTerm === '' || nombre.includes(searchTerm)) {
                     item.style.display = '';
                     visibleCount++;
@@ -528,7 +562,7 @@
                     item.style.display = 'none';
                 }
             });
-            
+
             document.getElementById('totalProductos').textContent = visibleCount;
             document.getElementById('totalStock').textContent = totalStock;
         });

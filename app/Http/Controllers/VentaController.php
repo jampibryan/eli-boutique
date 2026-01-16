@@ -151,7 +151,7 @@ class VentaController extends Controller
             $stocksPorTalla[$key] = $tallaStock ? $tallaStock->stock : 0;
         }
 
-        $clienteSeleccionado = session('venta_cliente');
+        $clienteSeleccionado = null; // Siempre iniciar con cliente vacío
 
         return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado'));
     }
@@ -162,8 +162,6 @@ class VentaController extends Controller
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'productos' => 'required|array',
-            'subTotal' => 'required|numeric',
-            'IGV' => 'required|numeric',
             'montoTotal' => 'required|numeric',
         ]);
 
@@ -187,18 +185,20 @@ class VentaController extends Controller
         }
         // ====================================================================
 
+        // Calcular subTotal e IGV a partir del montoTotal (precio incluye IGV)
+        $montoTotal = $request->montoTotal;
+        $baseImponible = round($montoTotal / 1.18, 2);
+        $igv = round($montoTotal - $baseImponible, 2);
+
         // Crear una nueva venta CON ESTADO "PENDIENTE"
         $venta = new Venta();
         $venta->cliente_id = $request->cliente_id;
         $venta->caja_id = $cajaHoy->id; // ← ASOCIAR A LA CAJA DEL DÍA
         $venta->estado_transaccion_id = $estadoPendiente->id; // ← ESTADO PENDIENTE (NO PAGADO)
-        $venta->subTotal = $request->subTotal;
-        $venta->IGV = $request->IGV;
-        $venta->montoTotal = $request->montoTotal;
+        $venta->subTotal = $baseImponible;
+        $venta->IGV = $igv;
+        $venta->montoTotal = $montoTotal;
         $venta->save(); // ← LOS EVENTOS NO SUMARÁN A CAJA (porque está pendiente)
-
-        // Guardar cliente seleccionado en sesión para mantenerlo al regresar
-        session(['venta_cliente' => $request->cliente_id]);
 
         // VALIDAR STOCK ANTES DE PROCESAR LA VENTA (con sistema de tallas)
         foreach ($request->productos as $productoData) {
@@ -233,8 +233,14 @@ class VentaController extends Controller
             $productoDetalle->cantidad = $productoData['cantidad'];
 
             $productoSeleccionado = Producto::find($productoData['id']);
-            $productoDetalle->precio_unitario = $productoSeleccionado->precioP;
-            $productoDetalle->subtotal = $productoData['cantidad'] * $productoSeleccionado->precioP;
+            $precioConIGV = $productoSeleccionado->precioP; // Precio final que ve el cliente
+            $baseImponible = round($precioConIGV / 1.18, 2); // Precio sin IGV
+            $igv = round($precioConIGV - $baseImponible, 2); // Monto del IGV
+            
+            $productoDetalle->precio_unitario = $precioConIGV;
+            $productoDetalle->base_imponible = $baseImponible;
+            $productoDetalle->igv = $igv;
+            $productoDetalle->subtotal = $productoData['cantidad'] * $precioConIGV;
 
             $productoDetalle->save();
 
@@ -297,8 +303,6 @@ class VentaController extends Controller
         // Validación de la venta y los productos
         $validated = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'subTotal' => 'required|numeric',
-            'IGV' => 'required|numeric',
             'montoTotal' => 'required|numeric',
             'productos.*.id' => 'required|exists:productos,id',
             'productos.*.cantidad' => 'required|numeric|min:1',
@@ -318,15 +322,20 @@ class VentaController extends Controller
         }
         // ===============================================================================
 
+        // Calcular subTotal e IGV a partir del montoTotal (precio incluye IGV)
+        $montoTotal = $validated['montoTotal'];
+        $baseImponible = round($montoTotal / 1.18, 2);
+        $igv = round($montoTotal - $baseImponible, 2);
+
         // Obtener los detalles actuales de la venta
         $detallesAntiguos = $venta->detalles;
 
         // Actualizar la venta con los datos principales
         $venta->update([
             'cliente_id' => $validated['cliente_id'],
-            'subTotal' => $validated['subTotal'],
-            'IGV' => $validated['IGV'],
-            'montoTotal' => $validated['montoTotal'],
+            'subTotal' => $baseImponible,
+            'IGV' => $igv,
+            'montoTotal' => $montoTotal,
         ]);
 
         // Almacenar IDs de productos existentes en la venta
@@ -373,19 +382,28 @@ class VentaController extends Controller
                 $producto->save();
             }
 
+            // Calcular IGV (precio incluye IGV)
+            $precioConIGV = $producto->precioP;
+            $baseImponible = round($precioConIGV / 1.18, 2);
+            $igv = round($precioConIGV - $baseImponible, 2);
+
             // Crear o actualizar el detalle de la venta
             if ($detalleAntiguo) {
                 $detalleAntiguo->update([
                     'cantidad' => $productoData['cantidad'],
-                    'precio_unitario' => $producto->precioP,
-                    'subtotal' => $productoData['cantidad'] * $producto->precioP,
+                    'precio_unitario' => $precioConIGV,
+                    'base_imponible' => $baseImponible,
+                    'igv' => $igv,
+                    'subtotal' => $productoData['cantidad'] * $precioConIGV,
                 ]);
             } else {
                 $venta->detalles()->create([
                     'producto_id' => $producto->id,
                     'cantidad' => $productoData['cantidad'],
-                    'precio_unitario' => $producto->precioP,
-                    'subtotal' => $productoData['cantidad'] * $producto->precioP,
+                    'precio_unitario' => $precioConIGV,
+                    'base_imponible' => $baseImponible,
+                    'igv' => $igv,
+                    'subtotal' => $productoData['cantidad'] * $precioConIGV,
                 ]);
             }
         }
@@ -422,17 +440,19 @@ class VentaController extends Controller
 
     public function calcularTotales(Request $request)
     {
-        $subtotal = 0;
+        $total = 0;
         foreach ($request->productos as $productoData) {
             $producto = Producto::find($productoData['id']);
-            $subtotal += $productoData['cantidad'] * $producto->precio;
+            $total += $productoData['cantidad'] * $producto->precioP;
         }
 
-        $igv = $subtotal * 0.18;
-        $montoTotal = $subtotal + $igv;
+        // El precio ya incluye IGV, desglosamos
+        $montoTotal = $total;
+        $baseImponible = round($total / 1.18, 2);
+        $igv = round($total - $baseImponible, 2);
 
         return response()->json([
-            'subtotal' => number_format($subtotal, 2),
+            'baseImponible' => number_format($baseImponible, 2),
             'IGV' => number_format($igv, 2),
             'montoTotal' => number_format($montoTotal, 2),
         ]);

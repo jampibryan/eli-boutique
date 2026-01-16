@@ -36,13 +36,38 @@
         </div>
     </div>
 
-    <!-- Barra de búsqueda -->
+    <!-- Barra de búsqueda y filtros -->
     <div class="action-bar mt-3">
-        <div class="input-group">
-            <span class="input-group-text bg-white">
-                <i class="fas fa-search" style="color: #D4AF37;"></i>
-            </span>
-            <input type="text" id="buscarVenta" class="form-control" placeholder="Buscar por ID de venta (ej: 1, 12)...">
+        <div class="row g-3 align-items-center">
+            <!-- Buscador -->
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="fas fa-search" style="color: #D4AF37;"></i>
+                    </span>
+                    <input type="text" id="buscarVenta" class="form-control" placeholder="Buscar por ID...">
+                </div>
+            </div>
+            
+            <!-- Ordenar por fecha -->
+            <div class="col-md-3">
+                <select id="ordenarVenta" class="form-select">
+                    <option value="reciente">Más recientes</option>
+                    <option value="antigua">Más antiguas</option>
+                </select>
+            </div>
+            
+            <!-- Filtrar por fecha -->
+            <div class="col-md-3">
+                <input type="date" id="filtrarFecha" class="form-control" placeholder="Filtrar por fecha">
+            </div>
+            
+            <!-- Botón limpiar filtros -->
+            <div class="col-md-3">
+                <button type="button" id="limpiarFiltros" class="btn btn-boutique-dark w-100">
+                    <i class="fas fa-redo"></i> Limpiar Filtros
+                </button>
+            </div>
         </div>
     </div>
 
@@ -147,45 +172,122 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Búsqueda inteligente de ventas (ignora ceros a la izquierda)
-        document.getElementById('buscarVenta').addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-            const items = document.querySelectorAll('.venta-item');
-            let visibleCount = 0;
-            
-            items.forEach(item => {
-                const codigo = item.dataset.codigo;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para aplicar todos los filtros
+            function aplicarFiltros() {
+                console.log('Aplicando filtros...');
+                const searchTerm = document.getElementById('buscarVenta').value.trim();
+                const ordenar = document.getElementById('ordenarVenta').value;
+                const fechaFiltro = document.getElementById('filtrarFecha').value;
                 
-                if (searchTerm === '') {
-                    item.style.display = '';
-                    visibleCount++;
-                } else {
-                    // Buscar por número (ignorando ceros) o por texto exacto en código
-                    const codigoNum = parseInt(codigo);
-                    const searchAsNum = parseInt(searchTerm);
+                console.log('Ordenar:', ordenar);
+                
+                const grid = document.getElementById('ventasGrid');
+                let items = Array.from(document.querySelectorAll('.venta-item'));
+                let visibleCount = 0;
+                
+                console.log('Total items:', items.length);
+                
+                // Primero ordenar TODOS los items
+                items.sort((a, b) => {
+                    const fechaTextA = a.querySelector('.text-muted').textContent.trim();
+                    const fechaTextB = b.querySelector('.text-muted').textContent.trim();
                     
-                    // Si ambos son números válidos, comparar numéricamente
-                    if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
-                        // Convertir a string para comparación de inicio
-                        if (codigoNum.toString().startsWith(searchAsNum.toString())) {
-                            item.style.display = '';
-                            visibleCount++;
-                        } else {
-                            item.style.display = 'none';
-                        }
+                    // Formato: dd/mm/yyyy hh:mm AM/PM
+                    const partsA = fechaTextA.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+)\s+(AM|PM)/);
+                    const partsB = fechaTextB.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+)\s+(AM|PM)/);
+                    
+                    if (!partsA || !partsB) {
+                        console.error('Error parseando fechas');
+                        return 0;
+                    }
+                    
+                    const [, diaA, mesA, anioA, horaA, minA, ampmA] = partsA;
+                    const [, diaB, mesB, anioB, horaB, minB, ampmB] = partsB;
+                    
+                    // Convertir hora de 12h a 24h
+                    let hora24A = parseInt(horaA);
+                    if (ampmA === 'PM' && hora24A !== 12) hora24A += 12;
+                    if (ampmA === 'AM' && hora24A === 12) hora24A = 0;
+                    
+                    let hora24B = parseInt(horaB);
+                    if (ampmB === 'PM' && hora24B !== 12) hora24B += 12;
+                    if (ampmB === 'AM' && hora24B === 12) hora24B = 0;
+                    
+                    // Crear Date objects con fecha y hora completa
+                    const fechaA = new Date(parseInt(anioA), parseInt(mesA) - 1, parseInt(diaA), hora24A, parseInt(minA));
+                    const fechaB = new Date(parseInt(anioB), parseInt(mesB) - 1, parseInt(diaB), hora24B, parseInt(minB));
+                    
+                    console.log('Date A:', fechaA.toLocaleString(), 'Date B:', fechaB.toLocaleString());
+                    
+                    if (ordenar === 'reciente') {
+                        return fechaB - fechaA; // Más recientes primero
                     } else {
-                        // Búsqueda de texto normal
-                        if (codigo.toLowerCase().includes(searchTerm.toLowerCase())) {
-                            item.style.display = '';
-                            visibleCount++;
+                        return fechaA - fechaB; // Más antiguas primero
+                    }
+                });
+                
+                // Limpiar el grid completamente
+                grid.innerHTML = '';
+                
+                // Reinsertar items en el nuevo orden
+                items.forEach(item => {
+                    grid.appendChild(item);
+                });
+                
+                console.log('Items reordenados');
+                
+                // Luego aplicar filtros de visibilidad
+                items.forEach(item => {
+                    const codigo = item.dataset.codigo;
+                    let visible = true;
+                    
+                    // Filtrar por búsqueda de ID
+                    if (searchTerm !== '') {
+                        const codigoNum = parseInt(codigo);
+                        const searchAsNum = parseInt(searchTerm);
+                        
+                        if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
+                            visible = codigoNum.toString().startsWith(searchAsNum.toString());
                         } else {
-                            item.style.display = 'none';
+                            visible = codigo.toLowerCase().includes(searchTerm.toLowerCase());
                         }
                     }
-                }
+                    
+                    // Filtrar por fecha
+                    if (visible && fechaFiltro) {
+                        const fechaTexto = item.querySelector('.text-muted').textContent.trim();
+                        const fechaVenta = fechaTexto.split(' ')[0]; // Formato: dd/mm/yyyy
+                        const [dia, mes, anio] = fechaVenta.split('/');
+                        const fechaVentaISO = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+                        visible = fechaVentaISO === fechaFiltro;
+                    }
+                    
+                    item.style.display = visible ? '' : 'none';
+                    if (visible) visibleCount++;
+                });
+                
+                document.getElementById('totalVentas').textContent = visibleCount;
+            }
+
+            // Event listeners
+            document.getElementById('buscarVenta').addEventListener('input', aplicarFiltros);
+            document.getElementById('ordenarVenta').addEventListener('change', function() {
+                console.log('Select changed to:', this.value);
+                aplicarFiltros();
+            });
+            document.getElementById('filtrarFecha').addEventListener('change', aplicarFiltros);
+            
+            // Limpiar filtros
+            document.getElementById('limpiarFiltros').addEventListener('click', function() {
+                document.getElementById('buscarVenta').value = '';
+                document.getElementById('ordenarVenta').value = 'reciente';
+                document.getElementById('filtrarFecha').value = '';
+                aplicarFiltros();
             });
             
-            document.getElementById('totalVentas').textContent = visibleCount;
+            // Aplicar filtros al cargar la página (orden inicial)
+            aplicarFiltros();
         });
     </script>
 @stop

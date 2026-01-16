@@ -3,14 +3,325 @@
 @section('title', 'Carrito de Compras')
 
 @section('content_header')
-    <!-- h1>Carrito de Compras</h1> -->
+@stop
+
+@section('css')
+<style>
+    .page-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px 30px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .page-title h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .page-title h1 i {
+        font-size: 32px;
+    }
+    .cart-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 30px;
+        margin-bottom: 20px;
+    }
+    
+    .cart-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .cart-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .product-card {
+        background: white;
+        border: 2px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    
+    .product-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .product-card.stock-warning {
+        border-color: #f44336;
+        background: #ffebee;
+    }
+    
+    .product-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .product-details {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .detail-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .detail-label {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .detail-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .talla-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .cantidad-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-control {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 2px solid;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 0;
+    }
+    
+    .btn-control:hover:not(:disabled) {
+        transform: scale(1.1);
+    }
+    
+    .btn-control:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .btn-control.minus {
+        border-color: #f44336;
+        color: #f44336;
+    }
+    
+    .btn-control.minus:hover:not(:disabled) {
+        background: #f44336;
+        color: white;
+    }
+    
+    .btn-control.plus {
+        border-color: #4caf50;
+        color: #4caf50;
+    }
+    
+    .btn-control.plus:hover:not(:disabled) {
+        background: #4caf50;
+        color: white;
+    }
+    
+    .btn-control.talla {
+        border-color: #667eea;
+        color: #667eea;
+    }
+    
+    .btn-control.talla:hover:not(:disabled) {
+        background: #667eea;
+        color: white;
+    }
+    
+    .badge-custom {
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .stock-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .stock-badge {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .product-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+    
+    .btn-duplicate {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-duplicate:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(56, 239, 125, 0.4);
+        color: white;
+    }
+    
+    .btn-remove {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-remove:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(235, 51, 73, 0.4);
+        color: white;
+    }
+    
+    .cart-summary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .cart-summary .total-label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .cart-summary .total-value {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .btn-checkout {
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 10px;
+        margin-top: 15px;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .btn-checkout:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+        color: #667eea;
+    }
+    
+    .btn-checkout:disabled {
+        background: #ccc;
+        color: #666;
+        cursor: not-allowed;
+    }
+    
+    .btn-continue {
+        background: white;
+        border: 2px solid #667eea;
+        color: #667eea;
+        padding: 10px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        margin-top: 15px;
+    }
+    
+    .btn-continue:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-cart i {
+        font-size: 80px;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .empty-cart h3 {
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .alert-modern {
+        border-radius: 10px;
+        border: none;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+</style>
 @stop
 
 @section('content')
-    <a href="{{ route('productos.index') }}" class="btn btn-secondary mb-3">Seguir Comprando</a>
+    <a href="{{ route('productos.index') }}" class="btn btn-continue mb-3">
+        <i class="fas fa-arrow-left"></i> Seguir Comprando
+    </a>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-success alert-modern alert-dismissible fade show">
             <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -18,7 +329,7 @@
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
+        <div class="alert alert-danger alert-modern alert-dismissible fade show">
             <i class="fas fa-exclamation-triangle me-2"></i>
             {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -26,202 +337,181 @@
     @endif
 
     @if (empty($carrito))
-        <div class="alert alert-info">
-            <i class="fas fa-shopping-cart me-2"></i>
-            El carrito está vacío. ¡Agrega productos para comenzar!
+        <div class="cart-container">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Tu carrito está vacío</h3>
+                <p class="text-muted">¡Agrega productos para comenzar!</p>
+                <a href="{{ route('productos.index') }}" class="btn btn-continue mt-3">
+                    <i class="fas fa-shopping-bag"></i> Explorar Productos
+                </a>
+            </div>
         </div>
     @else
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h3 class="card-title">Productos en el Carrito</h3>
+        <div class="cart-container">
+            <div class="cart-header">
+                <h3><i class="fas fa-shopping-bag"></i> Tus Productos</h3>
             </div>
-            <div class="card-body">
-                <table class="table table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Producto</th>
-                            <th>Talla</th>
-                            <th>Cantidad</th>
-                            <th>Stock Disponible</th>
-                            <th>Precio Unitario</th>
-                            <th>Subtotal</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            @php
+                $total = 0;
+                $hayProblemasStock = false;
+            @endphp
+            @foreach ($carrito as $index => $item)
+                @php
+                    $producto = $productos[$item['producto_id']];
+                    $talla = $tallas[$item['talla_id']];
+                    $subtotal = $item['cantidad'] * $producto->precioP;
+                    $total += $subtotal;
+
+                    // Obtener stock de esta talla específica
+                    $keyStock = $item['producto_id'] . '_' . $item['talla_id'];
+                    $stockTalla = $stocksPorTalla[$keyStock] ?? 0;
+
+                    // Calcular cuántas unidades de este producto+talla están en el carrito
+                    $cantidadEnCarritoMismaTalla = 0;
+                    foreach ($carrito as $c) {
+                        if (
+                            $c['producto_id'] == $item['producto_id'] &&
+                            $c['talla_id'] == $item['talla_id']
+                        ) {
+                            $cantidadEnCarritoMismaTalla += $c['cantidad'];
+                        }
+                    }
+
+                    // Stock disponible después de este pedido
+                    $stockDisponible = $stockTalla - $cantidadEnCarritoMismaTalla;
+
+                    // Verificar si hay stock suficiente
+                    $stockSuficiente = $stockTalla >= $item['cantidad'];
+                    if (!$stockSuficiente) {
+                        $hayProblemasStock = true;
+                    }
+                @endphp
+                
+                <div class="product-card fila-carrito-{{ $index }} {{ !$stockSuficiente ? 'stock-warning' : '' }}" data-index="{{ $index }}">
+                    <div class="product-name td-producto-{{ $index }}">
+                        {{ $producto->descripcionP }}
+                        @if (!$stockSuficiente)
+                            <span class="badge bg-danger ms-2">
+                                <i class="fas fa-exclamation-triangle"></i> Stock Insuficiente
+                            </span>
+                        @endif
+                    </div>
+                    
+                    <div class="product-details">
+                        <!-- Talla -->
+                        <div class="detail-group">
+                            <div class="detail-label">Talla</div>
+                            <div class="talla-control">
+                                <button class="btn-control talla btn-cambiar-talla"
+                                    data-index="{{ $index }}" data-accion="anterior" title="Talla anterior">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="badge-custom bg-primary talla-badge-{{ $index }}">
+                                    {{ $talla->descripcion }}
+                                </span>
+                                <button class="btn-control talla btn-cambiar-talla"
+                                    data-index="{{ $index }}" data-accion="siguiente" title="Talla siguiente">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Cantidad -->
+                        <div class="detail-group">
+                            <div class="detail-label">Cantidad</div>
+                            <div class="cantidad-control">
+                                <button class="btn-control minus btn-actualizar-cantidad"
+                                    data-index="{{ $index }}" data-accion="disminuir"
+                                    {{ $item['cantidad'] <= 1 ? 'disabled' : '' }}>
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="badge-custom cantidad-badge-{{ $index }} {{ $stockSuficiente ? 'bg-success' : 'bg-danger' }}"
+                                    data-stock="{{ $stockTalla }}" data-precio="{{ $producto->precioP }}"
+                                    data-producto-id="{{ $item['producto_id'] }}"
+                                    data-talla-id="{{ $item['talla_id'] }}">
+                                    {{ $item['cantidad'] }}
+                                </span>
+                                <button class="btn-control plus btn-actualizar-cantidad btn-aumentar-{{ $index }}"
+                                    data-index="{{ $index }}" data-accion="aumentar"
+                                    data-producto-id="{{ $item['producto_id'] }}"
+                                    data-talla-id="{{ $item['talla_id'] }}"
+                                    {{ $item['cantidad'] >= $stockTalla ? 'disabled' : '' }}>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock -->
+                        <div class="detail-group td-stock-{{ $index }}">
+                            <div class="detail-label">Stock</div>
+                            <div class="stock-info">
+                                <span class="stock-badge bg-secondary stock-total-badge-{{ $index }}">
+                                    Disponible: <span class="stock-total-valor-{{ $index }}">{{ $stockTalla }}</span>
+                                </span>
+                                <span class="stock-badge stock-disponible-badge-{{ $index }} {{ $stockDisponible >= 0 ? 'bg-info' : 'bg-danger' }}">
+                                    Quedarán: <span class="stock-disponible-valor-{{ $index }}">{{ $stockDisponible }}</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Precio Unitario -->
+                        <div class="detail-group">
+                            <div class="detail-label">Precio Unitario</div>
+                            <div class="detail-value">S/ {{ number_format($producto->precioP, 2) }}</div>
+                        </div>
+                        
+                        <!-- Subtotal -->
+                        <div class="detail-group td-subtotal-{{ $index }}">
+                            <div class="detail-label">Subtotal</div>
+                            <div class="detail-value" style="color: #667eea; font-size: 20px;">
+                                S/ <span class="subtotal-valor-{{ $index }}">{{ number_format($subtotal, 2) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones -->
+                    <div class="product-actions">
                         @php
-                            $total = 0;
-                            $hayProblemasStock = false;
+                            $puedeSerDuplicado = $puedenDuplicarse[$item['producto_id']] ?? false;
                         @endphp
-                        @foreach ($carrito as $index => $item)
-                            @php
-                                $producto = $productos[$item['producto_id']];
-                                $talla = $tallas[$item['talla_id']];
-                                $subtotal = $item['cantidad'] * $producto->precioP;
-                                $total += $subtotal;
+                        <button type="button" class="btn btn-duplicate btn-sm btn-duplicar-item"
+                            data-index="{{ $index }}"
+                            title="{{ $puedeSerDuplicado ? 'Duplicar con siguiente talla disponible' : 'Todas las tallas ya están en el carrito' }}"
+                            {{ !$puedeSerDuplicado ? 'disabled' : '' }}>
+                            <i class="fas fa-copy"></i> Duplicar
+                        </button>
+                        <form action="{{ route('carrito.remover', $index) }}" method="POST" style="display:inline; margin: 0;">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-remove btn-sm" type="submit">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
 
-                                // Obtener stock de esta talla específica
-                                $keyStock = $item['producto_id'] . '_' . $item['talla_id'];
-                                $stockTalla = $stocksPorTalla[$keyStock] ?? 0;
+            @if ($hayProblemasStock)
+                <div class="alert alert-danger alert-modern mt-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atención:</strong> Algunos productos no tienen stock suficiente. Ajusta las cantidades antes de continuar.
+                </div>
+            @endif
 
-                                // Calcular cuántas unidades de este producto+talla están en el carrito
-                                $cantidadEnCarritoMismaTalla = 0;
-                                foreach ($carrito as $c) {
-                                    if (
-                                        $c['producto_id'] == $item['producto_id'] &&
-                                        $c['talla_id'] == $item['talla_id']
-                                    ) {
-                                        $cantidadEnCarritoMismaTalla += $c['cantidad'];
-                                    }
-                                }
-
-                                // Stock disponible después de este pedido
-                                $stockDisponible = $stockTalla - $cantidadEnCarritoMismaTalla;
-
-                                // Verificar si hay stock suficiente
-                                $stockSuficiente = $stockTalla >= $item['cantidad'];
-                                if (!$stockSuficiente) {
-                                    $hayProblemasStock = true;
-                                }
-                            @endphp
-                            <tr class="fila-carrito-{{ $index }} {{ !$stockSuficiente ? 'table-danger' : '' }}"
-                                data-index="{{ $index }}">
-                                <td class="td-producto-{{ $index }}">
-                                    {{ $producto->descripcionP }}
-                                    @if (!$stockSuficiente)
-                                        <br><small class="text-danger fw-bold">
-                                            <i class="fas fa-exclamation-triangle"></i> Stock insuficiente
-                                        </small>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- Botón Talla Anterior -->
-                                        <button class="btn btn-sm btn-outline-secondary btn-cambiar-talla"
-                                            data-index="{{ $index }}" data-accion="anterior" title="Talla anterior">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-
-                                        <!-- Talla Actual -->
-                                        <span class="badge bg-primary talla-badge-{{ $index }}"
-                                            style="font-size: 1rem; padding: 0.5rem 0.75rem;">
-                                            {{ $talla->descripcion }}
-                                        </span>
-
-                                        <!-- Botón Talla Siguiente -->
-                                        <button class="btn btn-sm btn-outline-secondary btn-cambiar-talla"
-                                            data-index="{{ $index }}" data-accion="siguiente"
-                                            title="Talla siguiente">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- Botón Disminuir -->
-                                        <button class="btn btn-sm btn-outline-danger btn-actualizar-cantidad"
-                                            data-index="{{ $index }}" data-accion="disminuir"
-                                            title="Disminuir cantidad" {{ $item['cantidad'] <= 1 ? 'disabled' : '' }}>
-                                            <i class="fas fa-minus"></i>
-                                        </button>
-
-                                        <!-- Cantidad Actual -->
-                                        <span
-                                            class="badge cantidad-badge-{{ $index }} {{ $stockSuficiente ? 'bg-success' : 'bg-danger' }}"
-                                            style="font-size: 1rem; padding: 0.5rem 0.75rem;"
-                                            data-stock="{{ $stockTalla }}" data-precio="{{ $producto->precioP }}"
-                                            data-producto-id="{{ $item['producto_id'] }}"
-                                            data-talla-id="{{ $item['talla_id'] }}">
-                                            {{ $item['cantidad'] }}
-                                        </span>
-
-                                        <!-- Botón Aumentar -->
-                                        <button
-                                            class="btn btn-sm btn-outline-success btn-actualizar-cantidad btn-aumentar-{{ $index }}"
-                                            data-index="{{ $index }}" data-accion="aumentar"
-                                            data-producto-id="{{ $item['producto_id'] }}"
-                                            data-talla-id="{{ $item['talla_id'] }}" title="Aumentar cantidad"
-                                            {{ $item['cantidad'] >= $stockTalla ? 'disabled' : '' }}>
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="td-stock-{{ $index }}">
-                                    <div>
-                                        <span class="badge bg-secondary">
-                                            Stock total: {{ $stockTalla }}
-                                        </span>
-                                        <br>
-                                        <span
-                                            class="badge stock-disponible-badge-{{ $index }} {{ $stockDisponible >= 0 ? 'bg-info' : 'bg-danger' }}"
-                                            title="Stock después de este pedido">
-                                            Quedarán: <span
-                                                class="stock-disponible-valor-{{ $index }}">{{ $stockDisponible }}</span>
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>S/. {{ number_format($producto->precioP, 2) }}</td>
-                                <td class="td-subtotal-{{ $index }}">S/. <span
-                                        class="subtotal-valor-{{ $index }}">{{ number_format($subtotal, 2) }}</span>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        @php
-                                            $puedeSerDuplicado = $puedenDuplicarse[$item['producto_id']] ?? false;
-                                        @endphp
-                                        <button type="button" class="btn btn-info btn-sm btn-duplicar-item"
-                                            data-index="{{ $index }}"
-                                            title="{{ $puedeSerDuplicado ? 'Duplicar con siguiente talla disponible' : 'Todas las tallas ya están en el carrito' }}"
-                                            {{ !$puedeSerDuplicado ? 'disabled' : '' }}>
-                                            <i class="fas fa-copy"></i> Duplicar
-                                        </button>
-                                        <form action="{{ route('carrito.remover', $index) }}" method="POST"
-                                            style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash"></i> Remover
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr class="table-light">
-                            <th colspan="5" class="text-end">Total:</th>
-                            <th colspan="2">S/. <span id="total-general">{{ number_format($total, 2) }}</span></th>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="cart-summary">
+                <div class="total-label">TOTAL A PAGAR</div>
+                <div class="total-value">S/ <span id="total-general">{{ number_format($total, 2) }}</span></div>
+                <small><i class="fas fa-info-circle"></i> Precio incluye IGV</small>
+                
+                <a href="{{ route('ventas.create') }}"
+                    class="btn btn-checkout {{ $hayProblemasStock ? 'disabled' : '' }}"
+                    {{ $hayProblemasStock ? 'onclick="return false;"' : '' }}>
+                    <i class="fas fa-arrow-right me-2"></i> Continuar con la Venta
+                </a>
             </div>
-        </div>
-
-        @if ($hayProblemasStock)
-            <div class="alert alert-warning mt-3">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Atención:</strong> Algunos productos en tu carrito no tienen stock suficiente. Por favor, ajusta las
-                cantidades o remueve los productos antes de continuar.
-            </div>
-        @endif
-
-        <div class="mt-3">
-            <a href="{{ route('ventas.create') }}"
-                class="btn btn-success btn-lg {{ $hayProblemasStock ? 'disabled' : '' }}">
-                <i class="fas fa-shopping-cart me-2"></i> Continuar con la Venta
-            </a>
         </div>
     @endif
-@stop
-
-@section('css')
-    <style>
-        /* Eliminar cursor de prohibido en botones deshabilitados */
-        button:disabled {
-            cursor: default !important;
-        }
-    </style>
 @stop
 
 @section('js')
@@ -400,9 +690,8 @@
                             // Actualizar data-talla-id en botones
                             btnAumentar.attr('data-talla-id', response.talla_id);
 
-                            // Actualizar stock mostrado
-                            $(`.td-stock-${index} .badge.bg-secondary`).text(
-                                `Stock total: ${response.stock}`);
+                            // Actualizar stock total mostrado
+                            $(`.stock-total-valor-${index}`).text(response.stock);
 
                             // Actualizar stock disponible
                             const stockDisponible = response.stock - response.cantidad;
