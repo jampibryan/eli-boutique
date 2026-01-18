@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Proveedor extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     // Especifica el nombre de la tabla en caso de que no siga la convención
     protected $table = 'proveedores';
+
+    protected $dates = ['deleted_at'];
 
     protected $fillable = [
         // 'tipo_proveedor_id',

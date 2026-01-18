@@ -10,18 +10,30 @@ class Compra extends Model
     use HasFactory;
 
     protected $fillable = [
-        'codigoCompra',          // Código único de la compra
-        'proveedor_id',          // Relación con el proveedor
-        'estado_transaccion_id', // Relación con el estado de la transacción
+        'codigoCompra',
+        'proveedor_id',
+        'comprobante_id',
+        'estado_transaccion_id',
+        'fecha_envio',
+        'fecha_cotizacion',
+        'fecha_aprobacion',
+        'fecha_entrega_estimada',
+        'subtotal',
+        'descuento',
+        'igv',
+        'total',
+        'notas_proveedor',
+        'condiciones_pago',
+        'dias_credito',
+        'pdf_cotizacion',
     ];
 
     protected static function booted()
     {
         static::creating(function ($compra) {
-            // Asigna el estado predeterminado "Pendiente" si no está establecido
             if (!$compra->estado_transaccion_id) {
-                $estadoPendiente = EstadoTransaccion::where('descripcionET', 'Pendiente')->first();
-                $compra->estado_transaccion_id = $estadoPendiente ? $estadoPendiente->id : null;
+                $estadoBorrador = EstadoTransaccion::where('descripcionET', 'Borrador')->first();
+                $compra->estado_transaccion_id = $estadoBorrador ? $estadoBorrador->id : null;
             }
 
             // Generar el código de compra automáticamente
@@ -47,6 +59,12 @@ class Compra extends Model
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    // Relación con comprobante
+    public function comprobante()
+    {
+        return $this->belongsTo(Comprobante::class);
     }
 
     // Relación de una compra con pagos

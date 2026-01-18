@@ -104,6 +104,12 @@ Route::resource('compras', CompraController::class);
 Route::post('/compras/{id}/anular', [CompraController::class, 'anularCompra'])->name('compras.anular');
 Route::post('/compras/{compra}/recibir', [CompraController::class, 'recibirPedido'])->name('compras.recibir');
 
+// Rutas para flujo profesional de compras
+Route::post('/compras/{compra}/enviar', [CompraController::class, 'enviarCompra'])->name('compras.enviar');
+Route::get('/compras/{compra}/cotizar', [CompraController::class, 'mostrarCotizar'])->name('compras.cotizar');
+Route::post('/compras/{compra}/cotizar', [CompraController::class, 'guardarCotizacion'])->name('compras.guardar-cotizacion');
+Route::post('/compras/{compra}/aprobar', [CompraController::class, 'aprobarCompra'])->name('compras.aprobar');
+
 // Route::resource('compras.pagos', PagoController::class)->except(['index']);
 
 Route::get('pagos/create/{id}/{type}', [PagoController::class, 'create'])->name('pagos.create');

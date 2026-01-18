@@ -9,9 +9,8 @@
 @section('content')
 <form action="{{ route('productos.update', $producto->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
-    @method('PUT') <!-- Necesario para indicar que es una actualización -->
+    @method('PUT')
 
-     <!-- Código Producto -->
     <div class="mb-3">
         <label for="codigoP" class="form-label">Código Producto</label>
         <input id="codigoP" name="codigoP" type="text" class="form-control" value="{{ $producto->codigoP }}">

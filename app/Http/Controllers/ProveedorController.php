@@ -18,10 +18,7 @@ class ProveedorController extends Controller
     
     public function apiProveedores()
     {
-        // Obtener todos los proveedores
         $proveedores = Proveedor::all();
-
-        // Retornar los proveedores en formato JSON
         return response()->json($proveedores);
     }
     
@@ -98,6 +95,6 @@ class ProveedorController extends Controller
     public function destroy(Proveedor $proveedore)
     {
         $proveedore->delete();
-        return redirect()->route('proveedores.index');
+        return redirect()->route('proveedores.index')->with('success', 'Proveedor eliminado correctamente.');
     }
 }

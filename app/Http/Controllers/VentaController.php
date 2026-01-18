@@ -137,7 +137,7 @@ class VentaController extends Controller
             return redirect()->route('productos.index')->with('error', 'El carrito está vacío. Agrega productos primero.');
         }
 
-        $clientes = Cliente::all();
+        $clientes = Cliente::withoutTrashed()->get();
         $productos = Producto::whereIn('id', collect($carrito)->pluck('producto_id'))->get()->keyBy('id');
         $tallas = ProductoTalla::whereIn('id', collect($carrito)->pluck('talla_id'))->get()->keyBy('id');
 
@@ -275,8 +275,8 @@ class VentaController extends Controller
             return redirect()->route('ventas.index')->with('error', 'No se puede editar una venta ya pagada.');
         }
 
-        $clientes = Cliente::all();
-        $productos = Producto::all();
+        $clientes = Cliente::withoutTrashed()->get();
+        $productos = Producto::withoutTrashed()->get();
         $tallas = ProductoTalla::all(); // Para el select de tallas
 
         // Cargar detalles de la venta como "carrito"

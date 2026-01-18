@@ -107,7 +107,13 @@
                     @foreach ($venta->detalles as $detalle)
                     <tr>
                         <td>{{ $detalle->cantidad }}</td>
-                        <td>{{ $detalle->producto->descripcionP }}</td>
+                        <td>
+                            @if($detalle->producto)
+                                {{ $detalle->producto->descripcionP }}
+                            @else
+                                <em style="color: #999;">Producto eliminado</em>
+                            @endif
+                        </td>
                         <td>S/. {{ number_format($detalle->precio_unitario, 2) }} </td>
                         <td>S/. {{ number_format($detalle->subtotal, 2) }} </td>
                     </tr>

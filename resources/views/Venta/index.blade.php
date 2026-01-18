@@ -99,11 +99,19 @@
                             <!-- Cliente -->
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-circle" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                    {{ strtoupper(substr($venta->cliente->nombreCliente, 0, 1)) }}
+                                    @if($venta->cliente)
+                                        {{ strtoupper(substr($venta->cliente->nombreCliente, 0, 1)) }}
+                                    @else
+                                        <i class="fas fa-user-slash"></i>
+                                    @endif
                                 </div>
                                 <div style="flex: 1;">
-                                    <strong style="color: #2C2C2C;">{{ $venta->cliente->nombreCliente }}
-                                        {{ $venta->cliente->apellidoCliente }}</strong>
+                                    @if($venta->cliente)
+                                        <strong style="color: #2C2C2C;">{{ $venta->cliente->nombreCliente }}
+                                            {{ $venta->cliente->apellidoCliente }}</strong>
+                                    @else
+                                        <strong style="color: #dc3545;">Cliente Eliminado</strong>
+                                    @endif
                                     <br><small
                                         class="text-muted">{{ \Carbon\Carbon::parse($venta->created_at)->format('d/m/Y h:i A') }}</small>
                                 </div>

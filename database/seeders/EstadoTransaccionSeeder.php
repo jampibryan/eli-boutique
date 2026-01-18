@@ -15,10 +15,14 @@ class EstadoTransaccionSeeder extends Seeder
     {
         // Inserta los registros en la tabla comprobante
         DB::table('estado_transacciones')->insert([
-            ['descripcionET' => 'Pendiente'],
-            ['descripcionET' => 'Pagado'],
-            ['descripcionET' => 'Anulado'],
-            ['descripcionET' => 'Recibido'],
+            ['descripcionET' => 'Borrador'],
+            ['descripcionET' => 'Enviada'],
+            ['descripcionET' => 'Cotizada'],
+            ['descripcionET' => 'Aprobada'],
+            ['descripcionET' => 'Pagada'],
+            ['descripcionET' => 'Recibida'],
+            ['descripcionET' => 'Anulada'],
         ]);
     }
 }
+

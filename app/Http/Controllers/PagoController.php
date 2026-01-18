@@ -22,11 +22,15 @@ class PagoController extends Controller
      */
     public function create($ventaId, $type = 'venta')
     {
-        // Obtén la venta y todos los comprobantes disponibles
+        // Obtén la venta o compra y todos los comprobantes disponibles
         if ($type === 'venta') {
             $transaction = Venta::findOrFail($ventaId);
+            // Para ventas usar montoTotal
+            $transaction->montoTotal = $transaction->montoTotal;
         } else {
             $transaction = Compra::findOrFail($ventaId);
+            // Para compras, el campo es 'total', agregarlo como montoTotal para la vista
+            $transaction->montoTotal = $transaction->total;
         }
 
         $comprobantes = Comprobante::all();
@@ -61,14 +65,14 @@ class PagoController extends Controller
             $vuelto = $importe - $montoTotal;
         } else {
             $transaction = Compra::findOrFail($ventaId);
-            $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first(); // Obtener el estado "Pagado"
+            $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
             
             if ($estadoPagado) {
-                $transaction->estado_transaccion_id = $estadoPagado->id; // Cambiar el estado de la compra a "Pagado"
+                $transaction->estado_transaccion_id = $estadoPagado->id;
                 $transaction->save();
             }
     
-            $vuelto = null; // No se necesita para compras
+            $vuelto = null;
         }
 
 
@@ -80,6 +84,19 @@ class PagoController extends Controller
         $pago->importe = $request->input('importe');
         $pago->vuelto = $vuelto;
         $pago->save();
+
+        // Asignar comprobante a la compra (solo para compras)
+        if ($type === 'compra') {
+            $transaction->comprobante_id = $request->input('comprobante_id');
+            
+            // Cambiar estado a Pagada
+            $estadoPagada = \App\Models\EstadoTransaccion::where('descripcionET', 'Pagada')->first();
+            if ($estadoPagada) {
+                $transaction->estado_transaccion_id = $estadoPagada->id;
+            }
+            
+            $transaction->save();
+        }
 
         // Limpiar carrito solo después de pagar la venta
         if ($type === 'venta') {

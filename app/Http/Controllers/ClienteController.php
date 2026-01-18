@@ -113,8 +113,8 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
-        $cliente->delete();
-        return redirect()->route('clientes.index');
+        $cliente->delete(); // Soft delete: solo marca como eliminado sin borrar físicamente
+        return redirect()->route('clientes.index')->with('success', 'Cliente eliminado correctamente.');
     }
 
 }

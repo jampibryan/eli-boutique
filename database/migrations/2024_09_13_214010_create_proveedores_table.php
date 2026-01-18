@@ -20,10 +20,8 @@ return new class extends Migration
             $table->string('direccionProveedor');
             $table->string('correoProveedor')->unique();
             $table->string('telefonoProveedor')->unique();
-
-            // Llaves foráneas
-            // $table->foreignId('tipo_proveedor_id')->constrained('tipo_proveedores')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

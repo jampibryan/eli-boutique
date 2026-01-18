@@ -23,6 +23,7 @@ return new class extends Migration
             // `constrained()` automáticamente establece la relación con la columna `id` en la tabla `tipo_generos`
             // `onDelete('cascade')` asegura que si un `TipoGenero` se elimina, todos los `Clientes` asociados también se eliminarán
             $table->timestamps();
+            $table->softDeletes(); // Agrega columna deleted_at para soft delete
         });
     }
 

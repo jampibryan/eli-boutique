@@ -3,7 +3,6 @@
 @section('title', 'Pago')
 
 @section('content_header')
-    <!-- <h1><i class="fas fa-cash-register"></i> Registrar Pago</h1> -->
 @stop
 
 @section('css')

@@ -10,20 +10,28 @@ class CompraDetalle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'compra_id',    // Relación con la compra
-        'producto_id',  // Relación con el producto
-        'cantidad',     // Cantidad del producto en la compra
+        'compra_id',
+        'producto_id',
+        'producto_talla_id',
+        'cantidad',
+        'precio_cotizado',
+        'precio_final',
+        'descuento_unitario',
+        'subtotal_linea',
     ];
 
-    // Relación de un detalle de compra con una compra
     public function compra()
     {
         return $this->belongsTo(Compra::class);
     }
 
-    // Relación de un detalle de compra con un producto
     public function producto()
     {
         return $this->belongsTo(Producto::class);
+    }
+
+    public function talla()
+    {
+        return $this->belongsTo(ProductoTalla::class, 'producto_talla_id');
     }
 }

@@ -23,17 +23,13 @@ class StoreProducto extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'codigoP' => 'required',
-            'categoria_producto_id' => 'required',
-            'producto_genero_id' => 'required',
-            'producto_talla_id' => 'required',
-            'imagenP' => 'nullable|image', // Hacer que la imagen sea opcional
-            'descripcionP' => 'required',
-            'precioP' => 'required',
-            'stockP' => 'required',
+            'codigoP' => 'required|string|max:50',
+            'categoria_producto_id' => 'required|exists:categoria_productos,id',
+            'producto_genero_id' => 'required|exists:producto_generos,id',
+            'imagenP' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'descripcionP' => 'required|string',
+            'precioP' => 'required|numeric|min:0',
         ];
-
     }
 }

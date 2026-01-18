@@ -22,12 +22,9 @@ class ProductoController extends Controller
  
     public function pdfProductos()
     {
-        // $productos = Producto::whereNotNull('id')->orderBy('categoriaProducto->nombreCP')->get();
-
-        // Obtener los productos y ordenar por el nombre de la categoría relacionada
         $productos = Producto::with('categoriaProducto')
             ->get()
-            ->sortBy('categoriaProducto.nombreCP'); // Ordena por la relación 'categoriaProducto'
+            ->sortBy('categoriaProducto.nombreCP');
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Producto.reporte', compact('productos')));
@@ -38,43 +35,46 @@ class ProductoController extends Controller
 
     public function index(Request $request)
     {
-        // $productos = Producto::all();
-
-        $categorias = CategoriaProducto::all(); // Cargar todas las categorías
+        $categorias = CategoriaProducto::all();
         $categoriaId = $request->get('categoria'); // Obtener el id de la categoría desde la solicitud
 
         // Filtrar productos por la categoría seleccionada
         if ($categoriaId) {
-            $productos = Producto::where('categoria_producto_id', $categoriaId)->get(); // Filtrar por categoria_producto_id
+            // Si hay filtro, solo traer productos de esa categoría ordenados alfabéticamente
+            $productos = Producto::withoutTrashed()
+                ->where('categoria_producto_id', $categoriaId)
+                ->orderBy('descripcionP', 'asc')
+                ->get();
         } else {
-            $productos = Producto::all(); // Cargar todos los productos si no se filtra
+            $productos = Producto::withoutTrashed()
+                ->with('categoriaProducto')
+                ->get()
+                ->sortBy([
+                    ['categoriaProducto.id', 'asc'],
+                    ['descripcionP', 'asc']
+                ]);
         }
 
-        // Cargar productos con sus tallas y stock para el modal de detalle
         $productos = $productos->load(['tallaStocks.talla'])->map(function ($producto) {
             $producto->stock_total = $producto->tallaStocks->sum('stock');
             return $producto;
         });
 
-        $tallas = ProductoTalla::all(); // Cargar tallas para el carrito
+        $tallas = ProductoTalla::all();
 
         return view('Producto.index', compact('productos', 'categorias', 'tallas'));
     }
 
-
-    // Muestra el formulario para crear un nuevo recurso. No hace cambios en la base de datos.
     public function create()
     {
         $categorias = CategoriaProducto::all();
         $tallas = ProductoTalla::all();
-        return view('Producto.create', compact('categorias', 'tallas'));
+        $generos = ProductoGenero::all();
+        return view('Producto.create', compact('categorias', 'tallas', 'generos'));
     }
 
-
-    // Maneja la lógica para guardar el nuevo recurso en la base de datos después de que el formulario ha sido enviado.
     public function store(StoreProducto $request)
     {
-        // Guardar la imagen en la carpeta 'public/img/productos/'
         $path = null;
         if ($request->hasFile('imagenP')) {
             $file = $request->file('imagenP');
@@ -83,19 +83,16 @@ class ProductoController extends Controller
             $path = '/img/productos/' . $filename;
         }
 
-        // Crear el producto con los datos del formulario
         $producto = Producto::create([
             'codigoP' => $request->codigoP,
             'categoria_producto_id' => $request->categoria_producto_id,
-            'producto_genero_id' => 1, // Automáticamente Unisex
-            'producto_talla_id' => $request->producto_talla_id,
+            'producto_genero_id' => $request->producto_genero_id,
             'imagenP' => $path,
             'descripcionP' => $request->descripcionP,
             'precioP' => $request->precioP,
-            'stockP' => $request->stockP,
         ]);
 
-        return redirect()->route('productos.index');
+        return redirect()->route('productos.index')->with('success', 'Producto registrado correctamente.');
     }
     
  
@@ -109,7 +106,7 @@ class ProductoController extends Controller
  
     public function edit(Producto $producto)
     {
-        $categorias = CategoriaProducto::all(); // Obtén todas las categorías para el formulario
+        $categorias = CategoriaProducto::all();
         $tallas = ProductoTalla::all();
         return view('Producto.edit', compact('producto', 'categorias', 'tallas'));
     }
@@ -117,22 +114,17 @@ class ProductoController extends Controller
 
     public function update(StoreProducto $request, Producto $producto)
     {
-        // Verifica si se ha subido una nueva imagen
         if ($request->hasFile('imagenP')) {
-            // Elimina la imagen anterior si existe
             if ($producto->imagenP && file_exists(public_path($producto->imagenP))) {
                 unlink(public_path($producto->imagenP));
                 Log::info('Imagen eliminada: ' . $producto->imagenP);
             }
-
-            // Guarda la nueva imagen
             $file = $request->file('imagenP');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('img/productos'), $filename);
             $producto->imagenP = '/img/productos/' . $filename;
         }
 
-        // Actualizar el resto de los campos
         $producto->update($request->only(['codigoP', 'categoria_producto_id', 'producto_genero_id', 'producto_talla_id', 'descripcionP', 'precioP', 'stockP']));
 
         return redirect()->route('productos.index');
@@ -141,8 +133,8 @@ class ProductoController extends Controller
 
     public function destroy(Producto $producto)
     {
-        $producto->delete();
-        return redirect()->route('productos.index');
+        $producto->delete(); // Soft delete: solo marca como eliminado sin borrar físicamente
+        return redirect()->route('productos.index')->with('success', 'Producto eliminado correctamente.');
     }
 
     public function agregarAlCarrito(Request $request)

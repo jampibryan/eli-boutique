@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('descripcionP')->nullable();
             $table->decimal('precioP', 8, 2);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
