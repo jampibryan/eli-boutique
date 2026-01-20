@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigoCaja', 6)->unique(); // Código de caja único
             $table->date('fecha')->unique(); // Fecha de la caja (única por día)
+            $table->time('hora_cierre')->nullable(); // Hora de cierre de la caja
             $table->integer('clientesHoy')->default(0); // Clientes del día
             $table->integer('productosVendidos')->default(0); // Productos vendidos hoy
             $table->decimal('ingresoDiario', 10, 2)->default(0.00); // Ingresos del día

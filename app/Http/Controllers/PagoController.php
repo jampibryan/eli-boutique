@@ -28,7 +28,13 @@ class PagoController extends Controller
             // Para ventas usar montoTotal
             $transaction->montoTotal = $transaction->montoTotal;
         } else {
-            $transaction = Compra::findOrFail($ventaId);
+            $transaction = Compra::with('estadoTransaccion')->findOrFail($ventaId);
+            
+            // Verificar que la compra esté en estado Recibida
+            if ($transaction->estadoTransaccion->descripcionET !== 'Recibida') {
+                return redirect()->route('compras.index')->with('error', 'Solo se pueden pagar órdenes que ya fueron recibidas y verificadas.');
+            }
+            
             // Para compras, el campo es 'total', agregarlo como montoTotal para la vista
             $transaction->montoTotal = $transaction->total;
         }

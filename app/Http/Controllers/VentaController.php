@@ -171,7 +171,13 @@ class VentaController extends Controller
         if (!$cajaHoy) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Debes abrir caja primero antes de registrar ventas.');
+                ->with('error', 'No se puede registrar ventas. Debes abrir la caja primero.');
+        }
+
+        if ($cajaHoy->hora_cierre) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'No se puede registrar ventas. La caja del día ya está cerrada.');
         }
         // ================================================================
 

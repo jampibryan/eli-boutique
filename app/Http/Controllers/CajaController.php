@@ -58,27 +58,21 @@ class CajaController extends Controller
     {
         $caja = Caja::whereDate('fecha', now()->toDateString())->first();
 
-        if ($caja) {
-            // OPCIONAL: Verificación de consistencia
-            $totalVentasDb = $caja->ventas()
-                ->whereHas('estadoTransaccion', function ($q) {
-                    $q->where('descripcionET', '!=', 'Anulado');
-                })
-                ->sum('montoTotal');
-
-            $diferencia = abs($totalVentasDb - $caja->ingresoDiario);
-
-            if ($diferencia > 0.01) {
-                return redirect()->back()->with(
-                    'warning',
-                    'Atención: Hay una diferencia de S/ ' . number_format($diferencia, 2) .
-                        '. Revise las ventas anuladas.'
-                );
-            }
-
-            // Marcar caja como cerrada en sesión
-            session(['cajaCerrada' => true]);
+        if (!$caja) {
+            return redirect()->back()->with('error', 'No hay una caja abierta para cerrar.');
         }
+
+        if ($caja->hora_cierre) {
+            return redirect()->back()->with('error', 'La caja ya está cerrada.');
+        }
+
+        // Actualizar datos de cierre
+        $caja->update([
+            'hora_cierre' => now()->format('H:i:s'),
+            'clientesHoy' => $request->clientesHoy ?? 0,
+            'productosVendidos' => $request->productosVendidos ?? 0,
+            'ingresoDiario' => $request->ingresoDiario ?? 0
+        ]);
 
         return redirect()->route('home')->with('success', 'Caja cerrada correctamente.');
     }

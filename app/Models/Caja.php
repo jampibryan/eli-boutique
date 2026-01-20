@@ -12,6 +12,7 @@ class Caja extends Model
     protected $fillable = [
         'codigoCaja',
         'fecha',
+        'hora_cierre',
         'clientesHoy',
         'productosVendidos',
         'ingresoDiario',

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Caja;
 use App\Models\Cliente;
+use App\Models\Compra;
+use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
@@ -30,13 +32,13 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Verificar si la caja está abierta hoy
-        $cajaAbierta = Caja::whereDate('fecha', now()->toDateString())->exists();
-
-        // Reseteo de la sesión si es un nuevo día
-        if (!$cajaAbierta) {
-            session()->forget('cajaCerrada'); // Borra la variable de sesión
-        }
+        // Verificar el estado de la caja hoy
+        $cajaHoy = Caja::whereDate('fecha', now()->toDateString())->first();
+        
+        // Determinar estados
+        $cajaSinIniciar = !$cajaHoy;
+        $cajaAbierta = $cajaHoy && empty($cajaHoy->hora_cierre);
+        $cajaCerrada = $cajaHoy && !empty($cajaHoy->hora_cierre);
 
         // Contar la cantidad de clientes únicos que realizaron compras hoy
         $clientesCount = Venta::whereDate('created_at', now()->toDateString())
@@ -61,6 +63,22 @@ class HomeController extends Controller
                 $query->where('descripcionET', 'Pagado');
             })                    
             ->sum('montoTotal');
+
+        // Obtener los IDs de estados "Recibida" y "Pagada" para compras
+        $estadosGastos = EstadoTransaccion::whereIn('descripcionET', ['Recibida', 'Pagada'])->pluck('id');
+
+        // Contar compras recibidas/pagadas hoy
+        $comprasRecibidasCount = Compra::whereDate('updated_at', now()->toDateString())
+            ->whereIn('estado_transaccion_id', $estadosGastos)
+            ->count();
+
+        // Calcular gastos del día (compras en estado Recibida o Pagada)
+        $gastosDiario = Compra::whereDate('updated_at', now()->toDateString())
+            ->whereIn('estado_transaccion_id', $estadosGastos)
+            ->sum('total');
+
+        // Calcular balance del día (Ingresos - Gastos)
+        $balanceDiario = $ingresoDiario - $gastosDiario;
 
         // Obtener productos con stock total mínimo (15 o menos sumando todas las tallas)
         $productosStockMinimo = Producto::with('tallaStocks')
@@ -95,6 +113,6 @@ class HomeController extends Controller
                 ];
             });
 
-        return view('home', compact('cajaAbierta', 'clientesCount', 'productosCount', 'ingresoDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
+        return view('home', compact('cajaAbierta', 'cajaCerrada', 'cajaSinIniciar', 'clientesCount', 'productosCount', 'ingresoDiario', 'comprasRecibidasCount', 'gastosDiario', 'balanceDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
     }
 }

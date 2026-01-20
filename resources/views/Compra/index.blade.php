@@ -220,18 +220,8 @@
                                         @csrf
                                     </form>
 
-                                {{-- Aprobada: Pagar directamente (sin confirmacion adicional) --}}
+                                {{-- Aprobada: Recibir mercaderia primero --}}
                                 @elseif($estadoDescripcion == 'Aprobada')
-                                    <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank"
-                                        class="btn btn-card-view">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </a>
-                                    <a href="{{ route('pagos.create', [$compra->id, 'compra']) }}" class="btn btn-success w-100" style="flex: 3;">
-                                        <i class="fas fa-credit-card"></i> Pagar
-                                    </a>
-
-                                {{-- Pagada: Recibir --}}
-                                @elseif($estadoDescripcion == 'Pagada')
                                     <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank"
                                         class="btn btn-card-view">
                                         <i class="fas fa-file-pdf"></i>
@@ -243,13 +233,22 @@
                                             data-accion="recibir" 
                                             data-id="{{ $compra->id }}" 
                                             data-nombre="Compra #{{ $compra->codigoCompra }}">
-                                            <i class="fas fa-box-open"></i> Recibir
+                                            <i class="fas fa-box-open"></i> Recibir Mercaderia
                                         </button>
                                     </form>
-                                    </form>
 
-                                {{-- Recibida o Anulada: Solo ver --}}
-                                @elseif($estadoDescripcion == 'Recibida' || $estadoDescripcion == 'Anulada')
+                                {{-- Recibida: Ahora si pagar --}}
+                                @elseif($estadoDescripcion == 'Recibida')
+                                    <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank"
+                                        class="btn btn-card-view">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    <a href="{{ route('pagos.create', [$compra->id, 'compra']) }}" class="btn btn-success w-100" style="flex: 3;">
+                                        <i class="fas fa-credit-card"></i> Pagar al Proveedor
+                                    </a>
+
+                                {{-- Pagada o Anulada: Solo ver --}}
+                                @elseif($estadoDescripcion == 'Pagada' || $estadoDescripcion == 'Anulada')
                                     <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank"
                                         class="btn btn-card-view" style="flex: 2;">
                                         <i class="fas fa-file-pdf"></i> Ver Orden
@@ -260,7 +259,7 @@
                                             <i class="fas fa-file-invoice"></i> Ver Cotización
                                         </a>
                                     @endif
-                                    @if($estadoDescripcion == 'Recibida')
+                                    @if($estadoDescripcion == 'Pagada')
                                         <span class="badge bg-success p-2" style="flex: 1; font-size: 0.9rem;">
                                             <i class="fas fa-check-circle"></i> Completada
                                         </span>

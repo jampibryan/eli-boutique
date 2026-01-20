@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caja;
 use App\Models\Colaborador;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
@@ -94,6 +95,22 @@ class CompraController extends Controller
             'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
+        // ==================== VERIFICAR CAJA ABIERTA ====================
+        $cajaHoy = Caja::whereDate('fecha', today())->first();
+
+        if (!$cajaHoy) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'No se puede crear órdenes de compra. Debes abrir la caja primero.');
+        }
+
+        if ($cajaHoy->hora_cierre) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'No se puede crear órdenes de compra. La caja del día ya está cerrada.');
+        }
+        // ================================================================
+
         $compra = Compra::create([
             'proveedor_id' => $request->proveedor_id,
         ]);
@@ -173,6 +190,11 @@ class CompraController extends Controller
     {
         $compra = Compra::with('detalles')->findOrFail($compraId);
         
+        // Verificar que la orden esté en estado Aprobada
+        if ($compra->estadoTransaccion->descripcionET !== 'Aprobada') {
+            return redirect()->route('compras.index')->with('error', 'Solo se pueden recibir órdenes en estado Aprobada.');
+        }
+        
         // Buscar el estado correcto (puede ser "Recibida" o "Recibido")
         $estadoRecibido = EstadoTransaccion::whereIn('descripcionET', ['Recibida', 'Recibido'])->first();
 
@@ -199,7 +221,7 @@ class CompraController extends Controller
             }
         }
 
-        return redirect()->route('compras.index')->with('success', 'Mercadería recibida y stock actualizado correctamente.');
+        return redirect()->route('compras.index')->with('success', 'Mercadería recibida y stock actualizado. Ahora puede proceder a pagar al proveedor.');
     }
 
     public function anularCompra($compraId)

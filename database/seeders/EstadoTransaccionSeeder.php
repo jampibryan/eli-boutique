@@ -13,15 +13,17 @@ class EstadoTransaccionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Inserta los registros en la tabla comprobante
+        // Inserta los registros en la tabla estado_transacciones
         DB::table('estado_transacciones')->insert([
-            ['descripcionET' => 'Borrador'],
-            ['descripcionET' => 'Enviada'],
-            ['descripcionET' => 'Cotizada'],
-            ['descripcionET' => 'Aprobada'],
-            ['descripcionET' => 'Pagada'],
-            ['descripcionET' => 'Recibida'],
-            ['descripcionET' => 'Anulada'],
+            ['descripcionET' => 'Pendiente'],  // Para ventas en proceso
+            ['descripcionET' => 'Pagado'],     // Para ventas completadas
+            ['descripcionET' => 'Anulado'],    // Para ventas/compras canceladas
+            ['descripcionET' => 'Borrador'],   // Para compras en creación
+            ['descripcionET' => 'Enviada'],    // Para compras enviadas al proveedor
+            ['descripcionET' => 'Cotizada'],   // Para compras con cotización
+            ['descripcionET' => 'Aprobada'],   // Para compras aprobadas
+            ['descripcionET' => 'Recibida'],   // Para compras recibidas
+            ['descripcionET' => 'Pagada'],     // Para compras pagadas
         ]);
     }
 }
