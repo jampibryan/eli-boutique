@@ -19,7 +19,8 @@ class UserController extends Controller
     // Mostrar todos los usuarios
     public function index()
     {
-        $users = User::all();
+        // Ordenar usuarios por nombre completo
+        $users = User::orderBy('name', 'asc')->get();
         return view('User.index', compact('users'));
     }
 
@@ -37,17 +38,17 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreUsuario $request)
-    {   
+    {
         // Crear el usuario sin incluir el campo 'role'
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-    
+
         // Asignar el rol al usuario
         $user->assignRole($request->role);
-    
+
         // Redirigir al index con un mensaje de éxito
         return redirect()->route('users.index')->with('success', 'Usuario creado con éxito y rol asignado.');
     }

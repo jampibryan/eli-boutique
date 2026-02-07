@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration(), // Desactivado: Los usuarios los crea el administrador
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),

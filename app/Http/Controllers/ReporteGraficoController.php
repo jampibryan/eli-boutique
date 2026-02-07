@@ -51,7 +51,7 @@ class ReporteGraficoController extends Controller
             foreach ($ventas as $venta) {
                 $mes = \Carbon\Carbon::parse($venta->created_at)->format('Y-m'); // Agrupar por mes
                 if (!isset($labelsMes[$mes])) {
-                    $labelsMes[$mes] = $mes;
+                    $labelsMes[$mes] = \Carbon\Carbon::parse($venta->created_at)->format('m/Y');
                     $valuesMes[$mes] = 0; // Inicializa el conteo de ventas
                 }
                 $valuesMes[$mes] += $venta->montoTotal;
@@ -75,7 +75,7 @@ class ReporteGraficoController extends Controller
             foreach ($ventas as $venta) {
                 $fecha = \Carbon\Carbon::parse($venta->created_at)->format('Y-m-d'); // Agrupar por día
                 if (!isset($labelsDia[$fecha])) {
-                    $labelsDia[$fecha] = $fecha;
+                    $labelsDia[$fecha] = \Carbon\Carbon::parse($venta->created_at)->format('d/m/Y');
                     $valuesDia[$fecha] = 0; // Inicializa el conteo de ventas
                 }
                 $valuesDia[$fecha] += $venta->montoTotal;
@@ -97,7 +97,7 @@ class ReporteGraficoController extends Controller
         log::info($labelsMes);
         log::info($valuesMes);
 
-        return view('Reporte.VentaGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.graficoVentas', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
 
     public function generarPdfVentasDia(Request $request)
@@ -105,7 +105,8 @@ class ReporteGraficoController extends Controller
         // Validar entradas
         $diaInicio = $request->input('diaInicio');
         $diaFinal = Carbon::parse($request->input('diaFinal'))->endOfDay();
-        $chartImage = $request->input('chartImage'); // Recibir la imagen base64
+        $chartImage = $request->input('chartImage');
+        $tipo = $request->input('tipo', 'dia'); // 'mes' o 'dia'
 
         if (!$diaInicio || !$diaFinal) {
             abort(400, 'El rango de fechas es obligatorio.');
@@ -115,43 +116,88 @@ class ReporteGraficoController extends Controller
             abort(400, 'La imagen del gráfico no es válida.');
         }
 
-        // Filtrar las ventas por rango de fechas
+        // Filtrar las ventas por rango de fechas con relaciones
         $ventas = Venta::whereHas('estadoTransaccion', function ($query) {
             $query->where('descripcionET', 'Pagado');
         })
+            ->with(['cliente', 'detalles.producto', 'pago.comprobante', 'estadoTransaccion'])
             ->whereBetween('created_at', [$diaInicio, $diaFinal])
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        $labelsDia = [];
-        $valuesDia = [];
+        // Calcular resumen general
+        $totalVentas = $ventas->sum('montoTotal');
+        $totalIGV = $ventas->sum('IGV');
+        $totalSubtotal = $ventas->sum('subTotal');
+        $totalProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
 
-        foreach ($ventas as $venta) {
-            $fecha = Carbon::parse($venta->created_at)->format('Y-m-d');
-            if (!isset($valuesDia[$fecha])) {
-                $labelsDia[] = $fecha;
-                $valuesDia[$fecha] = 0;
+        // Agrupar datos según tipo
+        $datosAgrupados = [];
+        if ($tipo === 'mes') {
+            foreach ($ventas as $venta) {
+                $clave = Carbon::parse($venta->created_at)->format('Y-m');
+                if (!isset($datosAgrupados[$clave])) {
+                    $datosAgrupados[$clave] = [
+                        'periodo' => Carbon::parse($venta->created_at)->format('m/Y'),
+                        'cantidadVentas' => 0,
+                        'subtotal' => 0,
+                        'igv' => 0,
+                        'total' => 0,
+                        'productos' => 0,
+                    ];
+                }
+                $datosAgrupados[$clave]['cantidadVentas']++;
+                $datosAgrupados[$clave]['subtotal'] += $venta->subTotal;
+                $datosAgrupados[$clave]['igv'] += $venta->IGV;
+                $datosAgrupados[$clave]['total'] += $venta->montoTotal;
+                $datosAgrupados[$clave]['productos'] += $venta->detalles->sum('cantidad');
             }
-            $valuesDia[$fecha] += $venta->montoTotal;
+            ksort($datosAgrupados);
+        } else {
+            foreach ($ventas as $venta) {
+                $clave = Carbon::parse($venta->created_at)->format('Y-m-d');
+                if (!isset($datosAgrupados[$clave])) {
+                    $datosAgrupados[$clave] = [
+                        'periodo' => Carbon::parse($venta->created_at)->format('d/m/Y'),
+                        'cantidadVentas' => 0,
+                        'subtotal' => 0,
+                        'igv' => 0,
+                        'total' => 0,
+                        'productos' => 0,
+                    ];
+                }
+                $datosAgrupados[$clave]['cantidadVentas']++;
+                $datosAgrupados[$clave]['subtotal'] += $venta->subTotal;
+                $datosAgrupados[$clave]['igv'] += $venta->IGV;
+                $datosAgrupados[$clave]['total'] += $venta->montoTotal;
+                $datosAgrupados[$clave]['productos'] += $venta->detalles->sum('cantidad');
+            }
+            ksort($datosAgrupados);
         }
+
+        // Formatear rango de fechas para mostrar
+        $fechaDesde = Carbon::parse($diaInicio)->format('d/m/Y');
+        $fechaHasta = Carbon::parse($request->input('diaFinal'))->format('d/m/Y');
 
         // Procesar la imagen base64 para incluirla en el PDF
         $chartImageData = str_replace('data:image/png;base64,', '', $chartImage);
         $chartImageData = base64_decode($chartImageData);
-
-        // Guardar temporalmente la imagen para pasarla al PDF (opcional, según librería)
         $tempImagePath = storage_path('app/public/temp_chart_image.png');
         file_put_contents($tempImagePath, $chartImageData);
 
-        // Generar el PDF con la imagen y los datos
-        $pdf = Pdf::loadView('Reporte.ventaspdf', [
-            'ventas' => $ventas,
-            'labelsDia' => $labelsDia,
-            'valuesDia' => $valuesDia,
-            'chartImage' => $tempImagePath, // Pasar la ruta de la imagen al PDF
-        ]);
-
-        // Eliminar la imagen temporal después de usarla
-        //unlink($tempImagePath);
+        // Generar el PDF con datos agrupados
+        $pdf = Pdf::loadView('Reporte.reporteGraficoVentas', [
+            'datosAgrupados' => array_values($datosAgrupados),
+            'tipo' => $tipo,
+            'chartImage' => $tempImagePath,
+            'totalVentas' => $totalVentas,
+            'totalIGV' => $totalIGV,
+            'totalSubtotal' => $totalSubtotal,
+            'totalProductos' => $totalProductos,
+            'totalRegistros' => $ventas->count(),
+            'fechaDesde' => $fechaDesde,
+            'fechaHasta' => $fechaHasta,
+        ])->setPaper('a4', 'landscape');
 
         return $pdf->stream('Reporte_Ventas.pdf');
     }
@@ -174,9 +220,9 @@ class ReporteGraficoController extends Controller
         $valuesDia = [];
 
         if ($mesInicio && $mesFinal) {
-            // Filtrar las compras por rango de meses y estado de transacción "Pagado" o "Recibido"
+            // Filtrar las compras por rango de meses y estado de transacción "Pagada" o "Recibida"
             $compras = Compra::whereHas('estadoTransaccion', function ($query) {
-                $query->whereIn('descripcionET', ['Pagado', 'Recibido']);
+                $query->whereIn('descripcionET', ['Pagada', 'Recibida']);
             })
                 ->whereBetween('created_at', [$mesInicio . '-01', $mesFinal . '-31'])
                 ->with('pago') // Asegurarse de incluir la relación de pagos
@@ -186,7 +232,7 @@ class ReporteGraficoController extends Controller
             foreach ($compras as $compra) {
                 $mes = \Carbon\Carbon::parse($compra->created_at)->format('Y-m'); // Agrupar por mes
                 if (!isset($labelsMes[$mes])) {
-                    $labelsMes[$mes] = $mes;
+                    $labelsMes[$mes] = \Carbon\Carbon::parse($compra->created_at)->format('m/Y');
                     $valuesMes[$mes] = 0; // Inicializa el conteo de compras
                 }
 
@@ -203,9 +249,9 @@ class ReporteGraficoController extends Controller
             // Asegurarse de incluir todo el día final
             $diaFinal = \Carbon\Carbon::parse($diaFinal)->endOfDay(); // Cambia el día final a las 23:59:59
 
-            // Filtrar las compras por rango de días y estado de transacción "Pagado" o "Recibido"
+            // Filtrar las compras por rango de días y estado de transacción "Pagada" o "Recibida"
             $compras = Compra::whereHas('estadoTransaccion', function ($query) {
-                $query->whereIn('descripcionET', ['Pagado', 'Recibido']);
+                $query->whereIn('descripcionET', ['Pagada', 'Recibida']);
             })
                 ->whereBetween('created_at', [$diaInicio, $diaFinal])
                 ->with('pago') // Asegurarse de incluir la relación de pagos
@@ -215,7 +261,7 @@ class ReporteGraficoController extends Controller
             foreach ($compras as $compra) {
                 $fecha = \Carbon\Carbon::parse($compra->created_at)->format('Y-m-d'); // Agrupar por día
                 if (!isset($labelsDia[$fecha])) {
-                    $labelsDia[$fecha] = $fecha;
+                    $labelsDia[$fecha] = \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y');
                     $valuesDia[$fecha] = 0; // Inicializa el conteo de Compras
                 }
 
@@ -236,7 +282,107 @@ class ReporteGraficoController extends Controller
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
 
-        return view('Reporte.CompraGrafico', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+        return view('Reporte.graficoCompras', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
+    }
+
+    public function generarPdfCompras(Request $request)
+    {
+        $diaInicio = $request->input('diaInicio');
+        $diaFinal = Carbon::parse($request->input('diaFinal'))->endOfDay();
+        $chartImage = $request->input('chartImage');
+        $tipo = $request->input('tipo', 'dia'); // 'mes' o 'dia'
+
+        if (!$diaInicio || !$diaFinal) {
+            abort(400, 'El rango de fechas es obligatorio.');
+        }
+
+        if (!$chartImage || !str_starts_with($chartImage, 'data:image/')) {
+            abort(400, 'La imagen del gráfico no es válida.');
+        }
+
+        // Filtrar compras con relaciones
+        $compras = Compra::whereHas('estadoTransaccion', function ($query) {
+            $query->whereIn('descripcionET', ['Pagada', 'Recibida']);
+        })
+            ->with(['proveedor', 'detalles.producto', 'pago', 'comprobante', 'estadoTransaccion'])
+            ->whereBetween('created_at', [$diaInicio, $diaFinal])
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Calcular resumen general
+        $totalCompras = $compras->sum(fn($c) => $c->pago ? $c->pago->importe : 0);
+        $totalIGV = $compras->sum('igv');
+        $totalSubtotal = $compras->sum('subtotal');
+        $totalProductos = $compras->sum(fn($c) => $c->detalles->sum('cantidad'));
+
+        // Agrupar datos según tipo
+        $datosAgrupados = [];
+        if ($tipo === 'mes') {
+            foreach ($compras as $compra) {
+                $clave = Carbon::parse($compra->created_at)->format('Y-m');
+                if (!isset($datosAgrupados[$clave])) {
+                    $datosAgrupados[$clave] = [
+                        'periodo' => Carbon::parse($compra->created_at)->format('m/Y'),
+                        'cantidadCompras' => 0,
+                        'subtotal' => 0,
+                        'igv' => 0,
+                        'total' => 0,
+                        'productos' => 0,
+                    ];
+                }
+                $datosAgrupados[$clave]['cantidadCompras']++;
+                $datosAgrupados[$clave]['subtotal'] += $compra->subtotal;
+                $datosAgrupados[$clave]['igv'] += $compra->igv;
+                $datosAgrupados[$clave]['total'] += $compra->pago ? $compra->pago->importe : 0;
+                $datosAgrupados[$clave]['productos'] += $compra->detalles->sum('cantidad');
+            }
+            ksort($datosAgrupados);
+        } else {
+            foreach ($compras as $compra) {
+                $clave = Carbon::parse($compra->created_at)->format('Y-m-d');
+                if (!isset($datosAgrupados[$clave])) {
+                    $datosAgrupados[$clave] = [
+                        'periodo' => Carbon::parse($compra->created_at)->format('d/m/Y'),
+                        'cantidadCompras' => 0,
+                        'subtotal' => 0,
+                        'igv' => 0,
+                        'total' => 0,
+                        'productos' => 0,
+                    ];
+                }
+                $datosAgrupados[$clave]['cantidadCompras']++;
+                $datosAgrupados[$clave]['subtotal'] += $compra->subtotal;
+                $datosAgrupados[$clave]['igv'] += $compra->igv;
+                $datosAgrupados[$clave]['total'] += $compra->pago ? $compra->pago->importe : 0;
+                $datosAgrupados[$clave]['productos'] += $compra->detalles->sum('cantidad');
+            }
+            ksort($datosAgrupados);
+        }
+
+        // Formatear rango de fechas
+        $fechaDesde = Carbon::parse($diaInicio)->format('d/m/Y');
+        $fechaHasta = Carbon::parse($request->input('diaFinal'))->format('d/m/Y');
+
+        // Procesar imagen base64
+        $chartImageData = str_replace('data:image/png;base64,', '', $chartImage);
+        $chartImageData = base64_decode($chartImageData);
+        $tempImagePath = storage_path('app/public/temp_chart_compras.png');
+        file_put_contents($tempImagePath, $chartImageData);
+
+        $pdf = Pdf::loadView('Reporte.reporteGraficoCompras', [
+            'datosAgrupados' => array_values($datosAgrupados),
+            'tipo' => $tipo,
+            'chartImage' => $tempImagePath,
+            'totalCompras' => $totalCompras,
+            'totalIGV' => $totalIGV,
+            'totalSubtotal' => $totalSubtotal,
+            'totalProductos' => $totalProductos,
+            'totalRegistros' => $compras->count(),
+            'fechaDesde' => $fechaDesde,
+            'fechaHasta' => $fechaHasta,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('Reporte_Compras.pdf');
     }
 
 

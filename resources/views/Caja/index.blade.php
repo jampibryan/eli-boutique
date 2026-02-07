@@ -14,7 +14,8 @@
                 <h4 class="mb-0" style="color: #2C2C2C;">
                     <i class="fas fa-cash-register" style="color: #D4AF37;"></i> Historial de Caja
                 </h4>
-                <small class="text-muted">Registros: <span class="badge bg-dark" id="totalCajas">{{ $cajas->count() }}</span></small>
+                <small class="text-muted">Registros: <span class="badge bg-dark"
+                        id="totalCajas">{{ $cajas->count() }}</span></small>
             </div>
             <div>
                 <a href="{{ route('cajas.pdf') }}" target="_blank" class="btn btn-boutique-dark">
@@ -50,9 +51,8 @@
     <div class="container-fluid">
         <div class="row g-3" id="cajasGrid">
             @foreach ($cajas as $caja)
-                <div class="col-lg-3 col-md-4 col-sm-6 caja-item"
-                     data-codigo="{{ $caja->codigoCaja }}"
-                     data-fecha="{{ $caja->fecha }}">
+                <div class="col-lg-3 col-md-4 col-sm-6 caja-item" data-codigo="{{ $caja->codigoCaja }}"
+                    data-fecha="{{ $caja->fecha }}">
                     <div class="boutique-card">
                         <!-- Header con fecha -->
                         <div class="boutique-card-header text-center">
@@ -97,6 +97,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Botón de informe completo -->
+                            <div class="mt-3 text-center">
+                                <a href="{{ route('cajas.informe', $caja->id) }}" target="_blank"
+                                    class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-file-alt"></i> Ver informe completo
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,29 +132,29 @@
             const searchFecha = document.getElementById('buscarFecha').value;
             const items = document.querySelectorAll('.caja-item');
             let visibleCount = 0;
-            
+
             items.forEach(item => {
                 const codigo = item.dataset.codigo;
                 const fecha = item.dataset.fecha;
                 let mostrar = true;
-                
+
                 // Filtrar por ID (ignorando ceros a la izquierda)
                 if (searchId !== '') {
                     const searchAsNum = parseInt(searchId);
                     const codigoNum = parseInt(codigo);
-                    
+
                     if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
                         mostrar = mostrar && codigoNum.toString().startsWith(searchAsNum.toString());
                     } else {
                         mostrar = mostrar && codigo.toLowerCase().includes(searchId.toLowerCase());
                     }
                 }
-                
+
                 // Filtrar por fecha
                 if (searchFecha !== '') {
                     mostrar = mostrar && fecha === searchFecha;
                 }
-                
+
                 if (mostrar) {
                     item.style.display = '';
                     visibleCount++;
@@ -155,10 +162,10 @@
                     item.style.display = 'none';
                 }
             });
-            
+
             document.getElementById('totalCajas').textContent = visibleCount;
         }
-        
+
         document.getElementById('buscarCaja').addEventListener('input', filtrarCajas);
         document.getElementById('buscarFecha').addEventListener('change', filtrarCajas);
     </script>

@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Route::post('api/prediccion-ventas', [VentaController::class, 'predecirVentas']);
@@ -54,6 +54,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 // Caja
 Route::get('cajas/reporte', [CajaController::class, 'pdfCajas'])->name('cajas.pdf');
 Route::get('cajas', [CajaController::class, 'index'])->name('cajas.index');
+Route::get('cajas/{caja}/informe', [CajaController::class, 'informe'])->name('cajas.informe');
 Route::post('/caja/abrir', [CajaController::class, 'abrirCaja'])->name('caja.abrir');
 Route::post('/caja/cerrar', [CajaController::class, 'cerrarCaja'])->name('caja.cerrar');
 
@@ -121,6 +122,7 @@ Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('
 Route::POST('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
 Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
 Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'compras'])->name('reporte.grafico.compras');
+Route::post('/reportes/graficos/compras/pdf', [ReporteGraficoController::class, 'generarPdfCompras'])->name('reporte.grafico.compras.pdf');
 // Route::post('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
 
 

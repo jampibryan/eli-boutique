@@ -40,10 +40,9 @@
                         <label for="cargo_id" class="form-label fw-semibold">
                             <i class="fas fa-user-tag text-muted"></i> Cargo <span class="text-danger">*</span>
                         </label>
-                        <select id="cargo_id" name="cargo_id" 
-                                class="form-select @error('cargo_id') is-invalid @enderror">
+                        <select id="cargo_id" name="cargo_id" class="form-select @error('cargo_id') is-invalid @enderror">
                             <option value="">Seleccionar cargo</option>
-                            @foreach($cargos as $cargo)
+                            @foreach ($cargos as $cargo)
                                 <option value="{{ $cargo->id }}" {{ old('cargo_id') == $cargo->id ? 'selected' : '' }}>
                                     {{ $cargo->descripcionCargo }}
                                 </option>
@@ -66,9 +65,9 @@
                         <label for="nombreColab" class="form-label fw-semibold">
                             <i class="fas fa-signature text-muted"></i> Nombre <span class="text-danger">*</span>
                         </label>
-                        <input id="nombreColab" name="nombreColab" type="text" 
-                               class="form-control @error('nombreColab') is-invalid @enderror" 
-                               value="{{ old('nombreColab') }}" placeholder="Ingrese el nombre">
+                        <input id="nombreColab" name="nombreColab" type="text"
+                            class="form-control @error('nombreColab') is-invalid @enderror" value="{{ old('nombreColab') }}"
+                            placeholder="Ingrese el nombre">
                         @error('nombreColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -79,9 +78,9 @@
                         <label for="apellidosColab" class="form-label fw-semibold">
                             <i class="fas fa-signature text-muted"></i> Apellidos <span class="text-danger">*</span>
                         </label>
-                        <input id="apellidosColab" name="apellidosColab" type="text" 
-                               class="form-control @error('apellidosColab') is-invalid @enderror" 
-                               value="{{ old('apellidosColab') }}" placeholder="Ingrese los apellidos">
+                        <input id="apellidosColab" name="apellidosColab" type="text"
+                            class="form-control @error('apellidosColab') is-invalid @enderror"
+                            value="{{ old('apellidosColab') }}" placeholder="Ingrese los apellidos">
                         @error('apellidosColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -92,11 +91,12 @@
                         <label for="tipo_genero_id" class="form-label fw-semibold">
                             <i class="fas fa-venus-mars text-muted"></i> Género <span class="text-danger">*</span>
                         </label>
-                        <select id="tipo_genero_id" name="tipo_genero_id" 
-                                class="form-select @error('tipo_genero_id') is-invalid @enderror">
+                        <select id="tipo_genero_id" name="tipo_genero_id"
+                            class="form-select @error('tipo_genero_id') is-invalid @enderror">
                             <option value="">Seleccionar género</option>
-                            @foreach($generos as $genero)
-                                <option value="{{ $genero->id }}" {{ old('tipo_genero_id') == $genero->id ? 'selected' : '' }}>
+                            @foreach ($generos as $genero)
+                                <option value="{{ $genero->id }}"
+                                    {{ old('tipo_genero_id') == $genero->id ? 'selected' : '' }}>
                                     {{ $genero->descripcionTG }}
                                 </option>
                             @endforeach
@@ -112,8 +112,8 @@
                             <i class="fas fa-id-card text-muted"></i> DNI <span class="text-danger">*</span>
                         </label>
                         <input id="dniColab" name="dniColab" type="text" maxlength="8"
-                               class="form-control @error('dniColab') is-invalid @enderror" 
-                               value="{{ old('dniColab') }}" placeholder="12345678">
+                            class="form-control @error('dniColab') is-invalid @enderror" value="{{ old('dniColab') }}"
+                            placeholder="12345678">
                         @error('dniColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -125,8 +125,8 @@
                             <i class="fas fa-calendar-alt text-muted"></i> Edad <span class="text-danger">*</span>
                         </label>
                         <input id="edadColab" name="edadColab" type="number" min="18" max="99"
-                               class="form-control @error('edadColab') is-invalid @enderror" 
-                               value="{{ old('edadColab') }}" placeholder="18">
+                            class="form-control @error('edadColab') is-invalid @enderror" value="{{ old('edadColab') }}"
+                            placeholder="18">
                         @error('edadColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -142,11 +142,12 @@
                     <!-- Correo -->
                     <div class="col-md-6">
                         <label for="correoColab" class="form-label fw-semibold">
-                            <i class="fas fa-envelope text-muted"></i> Correo Electrónico <span class="text-danger">*</span>
+                            <i class="fas fa-envelope text-muted"></i> Correo Electrónico <span
+                                class="text-danger">*</span>
                         </label>
-                        <input id="correoColab" name="correoColab" type="email" 
-                               class="form-control @error('correoColab') is-invalid @enderror" 
-                               value="{{ old('correoColab') }}" placeholder="ejemplo@correo.com">
+                        <input id="correoColab" name="correoColab" type="email"
+                            class="form-control @error('correoColab') is-invalid @enderror"
+                            value="{{ old('correoColab') }}" placeholder="ejemplo@correo.com">
                         @error('correoColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -158,8 +159,8 @@
                             <i class="fas fa-phone text-muted"></i> Teléfono <span class="text-danger">*</span>
                         </label>
                         <input id="telefonoColab" name="telefonoColab" type="text" maxlength="9"
-                               class="form-control @error('telefonoColab') is-invalid @enderror" 
-                               value="{{ old('telefonoColab') }}" placeholder="987654321">
+                            class="form-control @error('telefonoColab') is-invalid @enderror"
+                            value="{{ old('telefonoColab') }}" placeholder="987654321">
                         @error('telefonoColab')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -186,32 +187,34 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/boutique-cards.css') }}">
-    
+
     <style>
         body {
             background: #f4f6f9;
         }
-        
+
         .page-header {
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .form-label {
             color: #495057;
             margin-bottom: 0.5rem;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             border: 1px solid #dee2e6;
             border-radius: 8px;
             padding: 0.625rem 0.875rem;
             transition: all 0.3s;
         }
-        
-        .form-control:focus, .form-select:focus {
+
+        .form-control:focus,
+        .form-select:focus {
             border-color: #17a2b8;
             box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.15);
         }
@@ -224,11 +227,11 @@
         document.getElementById('dniColab').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
-        
+
         document.getElementById('telefonoColab').addEventListener('input', function(e) {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
-        
+
         document.getElementById('edadColab').addEventListener('input', function(e) {
             if (this.value < 18) this.value = 18;
             if (this.value > 99) this.value = 99;

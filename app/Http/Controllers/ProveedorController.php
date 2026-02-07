@@ -15,17 +15,20 @@ class ProveedorController extends Controller
         // Aplicar middleware para verificar permisos
         $this->middleware('permission:gestionar proveedores', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     }
-    
+
     public function apiProveedores()
     {
         $proveedores = Proveedor::all();
         return response()->json($proveedores);
     }
-    
+
 
     public function pdfProveedores()
     {
-        $proveedores = Proveedor::whereNotNull('id')->get();
+        // Ordenar por nombre completo (nombre + apellido)
+        $proveedores = Proveedor::whereNotNull('id')
+            ->orderByRaw("CONCAT(nombreProveedor, ' ', apellidoProveedor) ASC")
+            ->get();
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Proveedor.reporte', compact('proveedores')));
@@ -36,7 +39,9 @@ class ProveedorController extends Controller
 
     public function index()
     {
-        $proveedores = Proveedor::all();
+        // Ordenar por nombre completo (nombre + apellido)
+        $proveedores = Proveedor::orderByRaw("CONCAT(nombreProveedor, ' ', apellidoProveedor) ASC")
+            ->get();
 
         return view('Proveedor.index', compact('proveedores'));
     }
@@ -85,7 +90,7 @@ class ProveedorController extends Controller
     public function update(StoreProveedor $request, Proveedor $proveedore)
     {
         $proveedore->update($request->all());
-        
+
         return redirect()->route('proveedores.index');
     }
 

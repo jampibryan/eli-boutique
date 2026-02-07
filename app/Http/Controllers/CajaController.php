@@ -10,10 +10,47 @@ use Illuminate\Support\Facades\App;
 
 class CajaController extends Controller
 {
+    /**
+     * Muestra el informe detallado de una caja (ventas, clientes, productos, cantidades, etc.)
+     */
+    public function informe(Caja $caja)
+    {
+        // Obtener ventas del día de la caja
+        $ventas = $caja->ventas()->with(['cliente', 'detalles.producto'])->get();
+
+        // Clientes únicos
+        $clientes = $ventas->pluck('cliente')->unique('id');
+
+        // Productos vendidos y cantidades
+        $productosVendidos = collect();
+        foreach ($ventas as $venta) {
+            foreach ($venta->detalles as $detalle) {
+                $producto = $detalle->producto;
+                if ($producto) {
+                    $existente = $productosVendidos->firstWhere('id', $producto->id);
+                    if ($existente) {
+                        $existente->cantidad += $detalle->cantidad;
+                    } else {
+                        $productosVendidos->push((object)[
+                            'id' => $producto->id,
+                            'descripcion' => $producto->descripcionP,
+                            'cantidad' => $detalle->cantidad
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('Caja.informeCaja', compact('caja', 'ventas', 'clientes', 'productosVendidos')));
+        $nombreArchivo = 'Informe_Caja_' . $caja->codigoCaja . '.pdf';
+        return $pdf->stream($nombreArchivo);
+    }
     public function __construct()
     {
         // Aplicar middleware para verificar permisos
-        $this->middleware('permission:ver cajas');
+        $this->middleware('permission:ver cajas|gestionar cajas', ['only' => ['index', 'pdfCajas']]);
+        $this->middleware('permission:gestionar cajas', ['only' => ['abrirCaja', 'cerrarCaja']]);
     }
 
     public function pdfCajas()

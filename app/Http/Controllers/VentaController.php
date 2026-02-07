@@ -21,7 +21,10 @@ class VentaController extends Controller
     public function __construct()
     {
         // Aplicar middleware para verificar permisos
-        $this->middleware('permission:gestionar ventas', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy', 'calcularTotales']]);
+        $this->middleware('permission:gestionar ventas|crear ventas', ['only' => ['index', 'show']]);
+        $this->middleware('permission:crear ventas|gestionar ventas', ['only' => ['create', 'store', 'calcularTotales']]);
+        $this->middleware('permission:anular ventas', ['only' => ['anularVenta']]);
+        $this->middleware('permission:gestionar ventas', ['only' => ['edit', 'update', 'destroy']]);
     }
 
     public function apiVentas()
@@ -107,26 +110,23 @@ class VentaController extends Controller
         $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago.comprobante'])
             ->findOrFail($id);
 
-        $colaborador = Colaborador::find(1);
-
         $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
 
         $pdf = App::make('dompdf.wrapper');
-
-        if ($tipoComprobante === 'Boleta') {
-            $pdf->loadHTML(view('Venta.boletaV', compact('venta', 'colaborador')));
-            return $pdf->stream('Boleta_' . $venta->codigoVenta . '.pdf');
-        } elseif ($tipoComprobante === 'Factura') {
-            $pdf->loadHTML(view('Venta.facturaV', compact('venta', 'colaborador')));
-            return $pdf->stream('Factura_' . $venta->codigoVenta . '.pdf');
-        } else {
-            return abort(404, 'Comprobante no válido');
-        }
+        $view = view('Venta.comprobante', [
+            'venta' => $venta,
+            'tipoComprobante' => $tipoComprobante
+        ]);
+        $pdf->loadHTML($view);
+        $nombreArchivo = ($tipoComprobante === 'Factura' ? 'Factura_' : 'Boleta_') . $venta->codigoVenta . '.pdf';
+        return $pdf->stream($nombreArchivo);
     }
 
     public function index()
     {
-        $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago'])->get();
+        $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago'])
+            ->orderBy('id', 'desc')
+            ->get();
         return view('Venta.index', compact('ventas'));
     }
 
@@ -209,25 +209,29 @@ class VentaController extends Controller
         // VALIDAR STOCK ANTES DE PROCESAR LA VENTA (con sistema de tallas)
         foreach ($request->productos as $productoData) {
             $productoValidar = Producto::find($productoData['id']);
-            
+
             if (!$productoValidar) {
                 return redirect()->back()->with('error', 'Producto no encontrado.');
             }
-            
+
             // Validar stock de la talla específica
             $tallaStock = ProductoTallaStock::where('producto_id', $productoData['id'])
                 ->where('producto_talla_id', $productoData['talla_id'])
                 ->first();
-            
+
             if (!$tallaStock) {
-                return redirect()->back()->with('error', 
-                    "No se encontró stock para la talla seleccionada de {$productoValidar->descripcionP}.");
+                return redirect()->back()->with(
+                    'error',
+                    "No se encontró stock para la talla seleccionada de {$productoValidar->descripcionP}."
+                );
             }
-            
+
             if ($tallaStock->stock < $productoData['cantidad']) {
                 $tallaNombre = ProductoTalla::find($productoData['talla_id'])->descripcion ?? '';
-                return redirect()->back()->with('error', 
-                    "Stock insuficiente para {$productoValidar->descripcionP} talla {$tallaNombre}. Stock disponible: {$tallaStock->stock}, solicitado: {$productoData['cantidad']}");
+                return redirect()->back()->with(
+                    'error',
+                    "Stock insuficiente para {$productoValidar->descripcionP} talla {$tallaNombre}. Stock disponible: {$tallaStock->stock}, solicitado: {$productoData['cantidad']}"
+                );
             }
         }
 
@@ -242,7 +246,7 @@ class VentaController extends Controller
             $precioConIGV = $productoSeleccionado->precioP; // Precio final que ve el cliente
             $baseImponible = round($precioConIGV / 1.18, 2); // Precio sin IGV
             $igv = round($precioConIGV - $baseImponible, 2); // Monto del IGV
-            
+
             $productoDetalle->precio_unitario = $precioConIGV;
             $productoDetalle->base_imponible = $baseImponible;
             $productoDetalle->igv = $igv;
@@ -254,7 +258,7 @@ class VentaController extends Controller
             $tallaStock = ProductoTallaStock::where('producto_id', $productoData['id'])
                 ->where('producto_talla_id', $productoData['talla_id'])
                 ->first();
-            
+
             $tallaStock->stock -= $productoData['cantidad'];
             $tallaStock->save();
         }
@@ -350,7 +354,7 @@ class VentaController extends Controller
         // PRIMERO: VALIDAR STOCK PARA TODOS LOS CAMBIOS
         foreach ($request->productos as $productoData) {
             $producto = Producto::find($productoData['id']);
-            
+
             if (!$producto) {
                 return redirect()->back()->with('error', 'Producto no encontrado.');
             }
@@ -365,8 +369,10 @@ class VentaController extends Controller
             // Validar stock si se está aumentando la cantidad
             if ($diferencia > 0) {
                 if ($producto->stockP < $diferencia) {
-                    return redirect()->back()->with('error', 
-                        "Stock insuficiente para {$producto->descripcionP}. Stock disponible: {$producto->stockP}, adicional solicitado: {$diferencia}");
+                    return redirect()->back()->with(
+                        'error',
+                        "Stock insuficiente para {$producto->descripcionP}. Stock disponible: {$producto->stockP}, adicional solicitado: {$diferencia}"
+                    );
                 }
             }
         }

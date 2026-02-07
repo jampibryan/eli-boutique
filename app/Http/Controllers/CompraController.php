@@ -67,7 +67,9 @@ class CompraController extends Controller
     public function index()
     {
         // Cargar las compras con sus detalles y pagos
-        $compras = Compra::with(['proveedor', 'detalles.producto', 'detalles.talla', 'pago', 'estadoTransaccion', 'comprobante'])->get();
+        $compras = Compra::with(['proveedor', 'detalles.producto', 'detalles.talla', 'pago', 'estadoTransaccion', 'comprobante'])
+            ->orderBy('id', 'desc')
+            ->get();
         return view('Compra.index', compact('compras'));
     }
 

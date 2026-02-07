@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Reporte de Clientes - Eli Boutique</title>
+    <title>Informe Diario de Caja - Eli Boutique</title>
     <style>
         * {
             margin: 0;
@@ -93,22 +93,6 @@
             border-radius: 5px;
         }
 
-        .summary-section {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-            border-radius: 3px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .summary-section strong {
-            color: #667eea;
-            font-size: 12px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -141,6 +125,13 @@
             text-align: center;
             border: 1px solid #dee2e6;
             font-size: 10px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 18px 0 8px 0;
         }
 
         .footer {
@@ -177,39 +168,92 @@
                 <p>RUC: 20123456789 | Teléfono: 987 654 321</p>
             </div>
             <div class="report-info">
-                <p><strong>Fecha:</strong> {{ date('d/m/Y') }}</p>
-                <p><strong>Hora:</strong> {{ date('h:i A') }}</p>
-                <p><strong>Usuario:</strong> {{ Auth::user()->name ?? 'Sistema' }}</p>
+                <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($caja->fecha)->format('d/m/Y') }}</p>
+                <p><strong>Código Caja:</strong> {{ $caja->codigoCaja }}</p>
             </div>
         </div>
     </div>
 
     <!-- Report Title -->
     <div class="report-title">
-        📊 REPORTE DE CLIENTES
+        📊 INFORME DETALLADO DE CAJA
     </div>
 
-    <!-- Table -->
+    <!-- Resumen de Caja -->
+    <div class="section-title">Resumen del Día</div>
     <table>
         <thead>
             <tr>
-                <th width="8%">CÓDIGO</th>
-                <th width="18%">NOMBRE</th>
-                <th width="18%">APELLIDOS</th>
-                <th width="12%">DNI</th>
-                <th width="24%">EMAIL</th>
-                <th width="20%">TELÉFONO</th>
+                <th>Clientes Atendidos</th>
+                <th>Productos Vendidos</th>
+                <th>Ingreso Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ $caja->clientesHoy }}</td>
+                <td>{{ $caja->productosVendidos }}</td>
+                <td>S/ {{ number_format($caja->ingresoDiario, 2) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Ventas del Día -->
+    <div class="section-title">Ventas Realizadas</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Código Venta</th>
+                <th>Cliente</th>
+                <th>Hora</th>
+                <th>Monto Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($ventas as $venta)
+                <tr>
+                    <td>{{ $venta->codigoVenta }}</td>
+                    <td>{{ $venta->cliente->nombreCliente }} {{ $venta->cliente->apellidoCliente }}</td>
+                    <td>{{ \Carbon\Carbon::parse($venta->created_at)->format('h:i A') }}</td>
+                    <td>S/ {{ number_format($venta->montoTotal, 2) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Clientes Atendidos -->
+    <div class="section-title">Clientes Atendidos</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>DNI</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($clientes as $cliente)
                 <tr>
-                    <td>{{ str_pad($cliente->id, 4, '0', STR_PAD_LEFT) }}</td>
-                    <td>{{ strtoupper($cliente->nombreCliente) }}</td>
-                    <td>{{ strtoupper($cliente->apellidoCliente) }}</td>
+                    <td>{{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }}</td>
                     <td>{{ $cliente->dniCliente }}</td>
-                    <td>{{ $cliente->correoCliente }}</td>
-                    <td>{{ $cliente->telefonoCliente }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Productos Vendidos -->
+    <div class="section-title">Productos Vendidos</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Cantidad Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($productosVendidos as $producto)
+                <tr>
+                    <td>{{ $producto->descripcion }}</td>
+                    <td>{{ $producto->cantidad }}</td>
                 </tr>
             @endforeach
         </tbody>

@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>Eli Boutique</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/logo_eli_boutique.webp',
+    'logo_img' => 'vendor/adminlte/dist/img/logo_eli_boutique.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -346,7 +346,7 @@ return [
             'text' => 'Clientes',
             'url' => 'clientes',
             'icon' => 'fas fa-user-friends',
-            'can' => 'gestionar clientes',
+            'can' => ['ver clientes', 'gestionar clientes'],
         ],
         [
             'text' => 'Colaboradores',
@@ -364,13 +364,13 @@ return [
             'text' => 'Productos',
             'url' => 'productos',
             'icon' => 'fas fa-shopping-basket',
-            'can' => 'gestionar productos',
+            'can' => ['ver productos', 'gestionar productos'],
         ],
         [
             'text' => 'Ventas',
             'url' => 'ventas',
             'icon' => 'fas fa-chart-line',
-            'can' => 'gestionar ventas',
+            'can' => ['crear ventas', 'gestionar ventas'],
         ],
         [
             'text' => 'Compras',
@@ -382,7 +382,7 @@ return [
             'text' => 'Cajas',
             'url' => 'cajas',
             'icon' => 'fas fa-box',
-            'can' => 'ver cajas',
+            'can' => ['ver cajas', 'gestionar cajas'],
         ],
         [
             'text' => 'Predicción',
@@ -390,7 +390,7 @@ return [
             'url' => 'https://eliboutique.streamlit.app/',
             'icon' => 'fas fa-brain',
             'target' => '_blank',
-            // 'can' => 'ver predicción',
+            'can' => 'ver reportes gráficos', // Solo admin y gerente
         ],
         [
             'text' => 'Reportes',

@@ -19,7 +19,10 @@ class ColaboradorController extends Controller
 
     public function pdfColaboradores()
     {
-        $colaboradores = Colaborador::whereNotNull('id')->get();
+        // Ordenar por nombre completo (nombre + apellido)
+        $colaboradores = Colaborador::whereNotNull('id')
+            ->orderByRaw("CONCAT(nombreColab, ' ', apellidosColab) ASC")
+            ->get();
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Colaborador.reporte', compact('colaboradores')));
@@ -30,7 +33,9 @@ class ColaboradorController extends Controller
 
     public function index()
     {
-        $colaboradores = Colaborador::all();
+        // Ordenar por nombre completo (nombre + apellido)
+        $colaboradores = Colaborador::orderByRaw("CONCAT(nombreColab, ' ', apellidosColab) ASC")
+            ->get();
 
         return view('Colaborador.index', compact('colaboradores'));
     }
@@ -51,7 +56,7 @@ class ColaboradorController extends Controller
         return redirect()->route('colaboradores.index');
     }
 
- 
+
     public function show(string $id)
     {
         //
@@ -65,11 +70,11 @@ class ColaboradorController extends Controller
         return view('Colaborador.edit', compact('colaborador', 'cargos', 'generos'));
     }
 
- 
+
     public function update(StoreColaborador $request, Colaborador $colaboradore)
     {
         $colaboradore->update($request->all());
-        
+
         return redirect()->route('colaboradores.index');
     }
 

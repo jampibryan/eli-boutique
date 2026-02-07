@@ -17,9 +17,10 @@ class ClienteController extends Controller
     public function __construct()
     {
         // Aplicar middleware para verificar permisos
-        $this->middleware('permission:gestionar clientes', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
+        $this->middleware('permission:ver clientes|gestionar clientes', ['only' => ['index', 'show']]);
+        $this->middleware('permission:gestionar clientes', ['only' => ['create', 'store', 'edit', 'update', 'destroy']]);
     }
-    
+
     public function apiClientes()
     {
         $clientes = Cliente::with('tipoGenero')->get();
@@ -28,9 +29,10 @@ class ClienteController extends Controller
 
     public function pdfClientes()
     {
-        // $clientes = Cliente::whereNotNull('id')->orderBy('apellidoCliente')->get();
-        $clientes = Cliente::whereNotNull('id')->get();
-
+        // Ordenar por nombre completo (nombre + apellido)
+        $clientes = Cliente::whereNotNull('id')
+            ->orderByRaw("CONCAT(nombreCliente, ' ', apellidoCliente) ASC")
+            ->get();
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Cliente.reporte', compact('clientes')));
@@ -41,7 +43,9 @@ class ClienteController extends Controller
 
     public function index()
     {
-        $clientes = Cliente::all();
+        // Ordenar por nombre completo (nombre + apellido)
+        $clientes = Cliente::orderByRaw("CONCAT(nombreCliente, ' ', apellidoCliente) ASC")
+            ->get();
 
         // return view('Cliente.index', ['clientes' => $clientes]);
         // Es lo mismo
@@ -104,7 +108,7 @@ class ClienteController extends Controller
     public function update(StoreCliente $request, Cliente $cliente)
     {
         $cliente->update($request->all());
-        
+
         return redirect()->route('clientes.index');
     }
 
@@ -116,5 +120,4 @@ class ClienteController extends Controller
         $cliente->delete(); // Soft delete: solo marca como eliminado sin borrar físicamente
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado correctamente.');
     }
-
 }
