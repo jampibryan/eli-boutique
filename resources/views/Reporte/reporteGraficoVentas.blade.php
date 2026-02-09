@@ -208,8 +208,7 @@
         }
 
         tbody td.text-right {
-            text-align: right;
-            padding-right: 6px;
+            text-align: center;
         }
 
         .badge-productos {
@@ -254,7 +253,8 @@
             margin: 8px auto 0 auto;
             border: 2px solid #667eea;
             border-radius: 8px;
-            max-width: 92%;
+            width: 95%;
+            max-width: 95%;
         }
 
         /* ===== FOOTER ===== */
@@ -331,14 +331,15 @@
     </div>
 
     <!-- ===== SECCIÓN 1: DETALLE DE VENTAS ===== -->
-    <div class="section-title">📋 {{ $tipo === 'mes' ? 'Resumen Mensual de Ventas' : 'Resumen Diario de Ventas' }}
+    <div class="section-title">📋 {{ $tipo === 'mes' ? 'Resumen Diario de Ventas' : 'Detalle Individual de Ventas' }}
     </div>
 
+    @if ($tipo === 'mes')
     <table>
         <thead>
             <tr>
                 <th style="width:8%;">N°</th>
-                <th style="width:18%;">{{ $tipo === 'mes' ? 'Mes' : 'Fecha' }}</th>
+                <th style="width:18%;">Fecha</th>
                 <th style="width:14%;">Cant. Ventas</th>
                 <th style="width:12%;">Productos</th>
                 <th style="width:16%;">Subtotal</th>
@@ -350,25 +351,63 @@
             @foreach ($datosAgrupados as $index => $grupo)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td style="font-weight:bold;color:#667eea;">{{ $grupo['periodo'] }}</td>
+                    <td style="font-weight:bold;color:#667eea;">{{ $grupo['fecha'] }}</td>
                     <td>{{ $grupo['cantidadVentas'] }}</td>
                     <td><span class="badge-productos">{{ $grupo['productos'] }}</span></td>
-                    <td class="text-right">S/ {{ number_format($grupo['subtotal'], 2) }}</td>
-                    <td class="text-right">S/ {{ number_format($grupo['igv'], 2) }}</td>
-                    <td class="text-right" style="font-weight:bold;">S/ {{ number_format($grupo['total'], 2) }}</td>
+                    <td>S/ {{ number_format($grupo['subtotal'], 2) }}</td>
+                    <td>S/ {{ number_format($grupo['igv'], 2) }}</td>
+                    <td style="font-weight:bold;">S/ {{ number_format($grupo['total'], 2) }}</td>
                 </tr>
             @endforeach
-            {{-- Fila de totales --}}
             <tr class="totals-row">
-                <td colspan="2" style="text-align:right;padding-right:8px;">TOTALES</td>
+                <td colspan="2" style="text-align:center;">TOTALES</td>
                 <td>{{ $totalRegistros }}</td>
                 <td>{{ $totalProductos }}</td>
-                <td style="text-align:right;padding-right:6px;">S/ {{ number_format($totalSubtotal, 2) }}</td>
-                <td style="text-align:right;padding-right:6px;">S/ {{ number_format($totalIGV, 2) }}</td>
-                <td style="text-align:right;padding-right:6px;">S/ {{ number_format($totalVentas, 2) }}</td>
+                <td>S/ {{ number_format($totalSubtotal, 2) }}</td>
+                <td>S/ {{ number_format($totalIGV, 2) }}</td>
+                <td>S/ {{ number_format($totalVentas, 2) }}</td>
             </tr>
         </tbody>
     </table>
+    @else
+    <table>
+        <thead>
+            <tr>
+                <th style="width:6%;">N°</th>
+                <th style="width:14%;">Código</th>
+                <th style="width:12%;">Fecha</th>
+                <th style="width:8%;">Hora</th>
+                <th style="width:18%;">Cliente</th>
+                <th style="width:8%;">Prod.</th>
+                <th style="width:12%;">Subtotal</th>
+                <th style="width:10%;">IGV</th>
+                <th style="width:12%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($datosAgrupados as $index => $item)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td style="font-weight:bold;color:#667eea;">{{ $item['codigo'] }}</td>
+                    <td>{{ $item['fecha'] }}</td>
+                    <td>{{ $item['hora'] }}</td>
+                    <td style="font-size:9px;">{{ $item['cliente'] }}</td>
+                    <td><span class="badge-productos">{{ $item['productos'] }}</span></td>
+                    <td>S/ {{ number_format($item['subtotal'], 2) }}</td>
+                    <td>S/ {{ number_format($item['igv'], 2) }}</td>
+                    <td style="font-weight:bold;">S/ {{ number_format($item['total'], 2) }}</td>
+                </tr>
+            @endforeach
+            <tr class="totals-row">
+                <td colspan="5" style="text-align:center;">TOTALES</td>
+                <td>{{ $totalProductos }}</td>
+                <td>S/ {{ number_format($totalSubtotal, 2) }}</td>
+                <td>S/ {{ number_format($totalIGV, 2) }}</td>
+                <td>S/ {{ number_format($totalVentas, 2) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    @endif
 
     <!-- ===== SECCIÓN 2: GRÁFICO ===== -->
     <div class="chart-section">

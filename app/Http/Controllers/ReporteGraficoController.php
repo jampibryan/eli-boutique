@@ -27,7 +27,6 @@ class ReporteGraficoController extends Controller
     public function ventas(Request $request)
     {
         // Obtener los parámetros de la solicitud
-        Log::info($request);
         $mesInicio = $request->input('mesInicio');
         $mesFinal = $request->input('mesFinal');
         $diaInicio = $request->input('diaInicio');
@@ -69,19 +68,20 @@ class ReporteGraficoController extends Controller
                 $query->where('descripcionET', 'Pagado');
             })
                 ->whereBetween('created_at', [$diaInicio, $diaFinal])
+                ->orderBy('created_at', 'asc')
                 ->get();
 
-            // Procesar las ventas para los días
+            // Modo día: agrupar ventas por día (totales diarios)
             foreach ($ventas as $venta) {
-                $fecha = \Carbon\Carbon::parse($venta->created_at)->format('Y-m-d'); // Agrupar por día
-                if (!isset($labelsDia[$fecha])) {
-                    $labelsDia[$fecha] = \Carbon\Carbon::parse($venta->created_at)->format('d/m/Y');
-                    $valuesDia[$fecha] = 0; // Inicializa el conteo de ventas
+                $dia = \Carbon\Carbon::parse($venta->created_at)->format('Y-m-d');
+                if (!isset($labelsDia[$dia])) {
+                    $labelsDia[$dia] = \Carbon\Carbon::parse($venta->created_at)->format('d/m/Y');
+                    $valuesDia[$dia] = 0;
                 }
-                $valuesDia[$fecha] += $venta->montoTotal;
+                $valuesDia[$dia] += $venta->montoTotal;
             }
 
-            // Ordenar los días para que estén en orden ascendente
+            // Ordenar por fecha ascendente
             ksort($labelsDia);
             ksort($valuesDia);
         }
@@ -91,11 +91,6 @@ class ReporteGraficoController extends Controller
         $valuesMes = array_values($valuesMes);
         $labelsDia = array_values($labelsDia);
         $valuesDia = array_values($valuesDia);
-
-        log::info($labelsDia);
-        log::info($valuesDia);
-        log::info($labelsMes);
-        log::info($valuesMes);
 
         return view('Reporte.graficoVentas', compact('labelsMes', 'valuesMes', 'labelsDia', 'valuesDia'));
     }
@@ -134,11 +129,12 @@ class ReporteGraficoController extends Controller
         // Agrupar datos según tipo
         $datosAgrupados = [];
         if ($tipo === 'mes') {
+            // Modo mes: PDF agrupa por DÍA (un nivel más detallado que el gráfico)
             foreach ($ventas as $venta) {
-                $clave = Carbon::parse($venta->created_at)->format('Y-m');
+                $clave = Carbon::parse($venta->created_at)->format('Y-m-d');
                 if (!isset($datosAgrupados[$clave])) {
                     $datosAgrupados[$clave] = [
-                        'periodo' => Carbon::parse($venta->created_at)->format('m/Y'),
+                        'fecha' => Carbon::parse($venta->created_at)->format('d/m/Y'),
                         'cantidadVentas' => 0,
                         'subtotal' => 0,
                         'igv' => 0,
@@ -154,25 +150,19 @@ class ReporteGraficoController extends Controller
             }
             ksort($datosAgrupados);
         } else {
+            // Modo día: cada venta individual como fila
             foreach ($ventas as $venta) {
-                $clave = Carbon::parse($venta->created_at)->format('Y-m-d');
-                if (!isset($datosAgrupados[$clave])) {
-                    $datosAgrupados[$clave] = [
-                        'periodo' => Carbon::parse($venta->created_at)->format('d/m/Y'),
-                        'cantidadVentas' => 0,
-                        'subtotal' => 0,
-                        'igv' => 0,
-                        'total' => 0,
-                        'productos' => 0,
-                    ];
-                }
-                $datosAgrupados[$clave]['cantidadVentas']++;
-                $datosAgrupados[$clave]['subtotal'] += $venta->subTotal;
-                $datosAgrupados[$clave]['igv'] += $venta->IGV;
-                $datosAgrupados[$clave]['total'] += $venta->montoTotal;
-                $datosAgrupados[$clave]['productos'] += $venta->detalles->sum('cantidad');
+                $datosAgrupados[] = [
+                    'codigo' => $venta->codigoVenta,
+                    'fecha' => Carbon::parse($venta->created_at)->format('d/m/Y'),
+                    'hora' => Carbon::parse($venta->created_at)->format('H:i'),
+                    'cliente' => $venta->cliente ? ($venta->cliente->nombreCliente . ' ' . $venta->cliente->apellidoCliente) : 'N/A',
+                    'productos' => $venta->detalles->sum('cantidad'),
+                    'subtotal' => $venta->subTotal,
+                    'igv' => $venta->IGV,
+                    'total' => $venta->montoTotal,
+                ];
             }
-            ksort($datosAgrupados);
         }
 
         // Formatear rango de fechas para mostrar
@@ -255,23 +245,20 @@ class ReporteGraficoController extends Controller
             })
                 ->whereBetween('created_at', [$diaInicio, $diaFinal])
                 ->with('pago') // Asegurarse de incluir la relación de pagos
+                ->orderBy('created_at', 'asc')
                 ->get();
 
-            // Procesar las compras para los días
+            // Modo día: agrupar compras por día (totales diarios)
             foreach ($compras as $compra) {
-                $fecha = \Carbon\Carbon::parse($compra->created_at)->format('Y-m-d'); // Agrupar por día
-                if (!isset($labelsDia[$fecha])) {
-                    $labelsDia[$fecha] = \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y');
-                    $valuesDia[$fecha] = 0; // Inicializa el conteo de Compras
+                $dia = \Carbon\Carbon::parse($compra->created_at)->format('Y-m-d');
+                if (!isset($labelsDia[$dia])) {
+                    $labelsDia[$dia] = \Carbon\Carbon::parse($compra->created_at)->format('d/m/Y');
+                    $valuesDia[$dia] = 0;
                 }
-
-                // Sumar el importe del pago relacionado con la compra
-                if ($compra->pago) {
-                    $valuesDia[$fecha] += $compra->pago->importe; // Usar el importe del pago
-                }
+                $valuesDia[$dia] += $compra->pago ? $compra->pago->importe : 0;
             }
 
-            // Ordenar los días para que estén en orden ascendente
+            // Ordenar por fecha ascendente
             ksort($labelsDia);
             ksort($valuesDia);
         }
@@ -318,11 +305,12 @@ class ReporteGraficoController extends Controller
         // Agrupar datos según tipo
         $datosAgrupados = [];
         if ($tipo === 'mes') {
+            // Modo mes: PDF agrupa por DÍA (un nivel más detallado que el gráfico)
             foreach ($compras as $compra) {
-                $clave = Carbon::parse($compra->created_at)->format('Y-m');
+                $clave = Carbon::parse($compra->created_at)->format('Y-m-d');
                 if (!isset($datosAgrupados[$clave])) {
                     $datosAgrupados[$clave] = [
-                        'periodo' => Carbon::parse($compra->created_at)->format('m/Y'),
+                        'fecha' => Carbon::parse($compra->created_at)->format('d/m/Y'),
                         'cantidadCompras' => 0,
                         'subtotal' => 0,
                         'igv' => 0,
@@ -338,25 +326,19 @@ class ReporteGraficoController extends Controller
             }
             ksort($datosAgrupados);
         } else {
+            // Modo día: cada compra individual como fila
             foreach ($compras as $compra) {
-                $clave = Carbon::parse($compra->created_at)->format('Y-m-d');
-                if (!isset($datosAgrupados[$clave])) {
-                    $datosAgrupados[$clave] = [
-                        'periodo' => Carbon::parse($compra->created_at)->format('d/m/Y'),
-                        'cantidadCompras' => 0,
-                        'subtotal' => 0,
-                        'igv' => 0,
-                        'total' => 0,
-                        'productos' => 0,
-                    ];
-                }
-                $datosAgrupados[$clave]['cantidadCompras']++;
-                $datosAgrupados[$clave]['subtotal'] += $compra->subtotal;
-                $datosAgrupados[$clave]['igv'] += $compra->igv;
-                $datosAgrupados[$clave]['total'] += $compra->pago ? $compra->pago->importe : 0;
-                $datosAgrupados[$clave]['productos'] += $compra->detalles->sum('cantidad');
+                $datosAgrupados[] = [
+                    'codigo' => $compra->codigoCompra,
+                    'fecha' => Carbon::parse($compra->created_at)->format('d/m/Y'),
+                    'hora' => Carbon::parse($compra->created_at)->format('H:i'),
+                    'proveedor' => $compra->proveedor ? $compra->proveedor->nombreEmpresa : 'N/A',
+                    'productos' => $compra->detalles->sum('cantidad'),
+                    'subtotal' => $compra->subtotal,
+                    'igv' => $compra->igv,
+                    'total' => $compra->pago ? $compra->pago->importe : 0,
+                ];
             }
-            ksort($datosAgrupados);
         }
 
         // Formatear rango de fechas

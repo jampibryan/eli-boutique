@@ -54,11 +54,8 @@ class DatabaseSeeder extends Seeder
         // Llama al seeder Estado de transacción
         $this->call(EstadoTransaccionSeeder::class);
         
-        // Llama al seeder Compra
-        //$this->call(CompraSeeder::class);
-        
-        // Llama al seeder Venta
-        //$this->call(VentaSeeder::class);
+        // Llama al seeder Venta + Compra (octubre 2025, cronológico)
+        $this->call(VentaSeeder::class);
 
     }
 }

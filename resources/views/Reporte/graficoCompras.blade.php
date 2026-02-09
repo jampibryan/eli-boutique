@@ -270,7 +270,15 @@
                 document.getElementById('diaFinal').value = diaFin;
             }
 
-            document.getElementById('txtToggle').textContent = rangoActivo ? 'Quitar mes final' : 'Agregar mes final';
+            // Para dia, activar rango si diaFinal tiene valor y es diferente de diaInicio
+            if (tipo === 'dia') {
+                const diaIniVal = document.getElementById('diaInicio').value;
+                const diaFinVal = document.getElementById('diaFinal').value;
+                if (diaFinVal && diaFinVal !== diaIniVal) {
+                    rangoActivo = true;
+                }
+            }
+
             updateUI(tipo);
         }
 
@@ -282,9 +290,12 @@
             document.getElementById('filtrosMes').style.display = isMes ? '' : 'none';
             document.getElementById('filtrosMesFinal').style.display = (isMes && rangoActivo) ? '' : 'none';
             document.getElementById('filtrosDiaInicio').style.display = isMes ? 'none' : '';
-            document.getElementById('filtrosDiaFinal').style.display = isMes ? 'none' : '';
-            document.getElementById('btnToggleRango').style.display = isMes ? '' : 'none';
-            document.getElementById('txtToggle').textContent = rangoActivo ? 'Quitar mes final' : 'Agregar mes final';
+            document.getElementById('filtrosDiaFinal').style.display = (!isMes && rangoActivo) ? '' : 'none';
+
+            // Botón toggle visible siempre, texto dinámico según tipo
+            document.getElementById('btnToggleRango').style.display = '';
+            const textoFinal = isMes ? 'mes final' : 'día final';
+            document.getElementById('txtToggle').textContent = rangoActivo ? 'Quitar ' + textoFinal : 'Agregar ' + textoFinal;
         }
 
         // ============================
@@ -296,12 +307,15 @@
 
         document.getElementById('btnToggleRango').addEventListener('click', function() {
             rangoActivo = !rangoActivo;
-            document.getElementById('txtToggle').textContent = rangoActivo ? 'Quitar mes final' :
-                'Agregar mes final';
             const tipo = document.getElementById('tipoGrafica').value;
+            const textoFinal = tipo === 'mes' ? 'mes final' : 'día final';
+            document.getElementById('txtToggle').textContent = rangoActivo ? 'Quitar ' + textoFinal : 'Agregar ' + textoFinal;
             if (tipo === 'mes') {
                 document.getElementById('filtrosMesFinal').style.display = rangoActivo ? '' : 'none';
                 if (!rangoActivo) document.getElementById('mesFinal').value = '';
+            } else {
+                document.getElementById('filtrosDiaFinal').style.display = rangoActivo ? '' : 'none';
+                if (!rangoActivo) document.getElementById('diaFinal').value = '';
             }
         });
 
@@ -320,11 +334,12 @@
                     `/reportes/graficos/compras?mesInicio=${mesInicio}&mesFinal=${mesFinal}`;
             } else {
                 const diaInicio = document.getElementById('diaInicio').value;
-                const diaFinal = document.getElementById('diaFinal').value;
-                if (!diaInicio || !diaFinal) {
-                    alert('Selecciona un rango de días válido.');
+                if (!diaInicio) {
+                    alert('Selecciona un día de inicio.');
                     return;
                 }
+                let diaFinal = document.getElementById('diaFinal').value;
+                if (!diaFinal) diaFinal = diaInicio;
                 window.location.href =
                     `/reportes/graficos/compras?diaInicio=${diaInicio}&diaFinal=${diaFinal}`;
             }
