@@ -138,15 +138,14 @@
 
                                 <div class="mb-3">
                                     <label for="pdf_cotizacion" class="form-label fw-semibold">
-                                        <i class="fas fa-file-pdf text-danger"></i> PDF de Cotización del Proveedor <span class="text-danger">*</span>
+                                        <i class="fas fa-file-pdf text-danger"></i> PDF de Cotización del Proveedor <span class="text-muted">(opcional)</span>
                                     </label>
                                     <input type="file" 
                                            class="form-control form-control-lg" 
                                            id="pdf_cotizacion" 
                                            name="pdf_cotizacion"
                                            accept=".pdf"
-                                           style="border: 2px dashed #17a2b8;"
-                                           required>
+                                           style="border: 2px dashed #17a2b8;">
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle"></i> Suba el PDF enviado por el proveedor (máx. 10MB)
                                     </small>

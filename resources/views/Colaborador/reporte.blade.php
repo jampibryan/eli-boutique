@@ -2,7 +2,6 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Reporte de Colaboradores - Eli Boutique</title>
     <style>
@@ -17,13 +16,14 @@
             font-size: 11px;
             color: #333;
             line-height: 1.4;
-            padding: 15px;
+            padding: 20px 25px;
         }
 
+        /* ===== HEADER ===== */
         .header {
-            margin-top: 15px;
             border-bottom: 3px solid #667eea;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .header-content {
@@ -33,194 +33,178 @@
 
         .logo-section {
             display: table-cell;
-            width: 20%;
+            width: 15%;
             vertical-align: middle;
-            padding-left: 10px;
         }
 
         .logo-section img {
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            border: 2px solid #667eea;
         }
 
         .company-info {
             display: table-cell;
-            width: 60%;
+            width: 55%;
             text-align: center;
             vertical-align: middle;
-            padding: 0 15px;
         }
 
         .company-info h1 {
-            font-size: 24px;
+            font-size: 22px;
             color: #667eea;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 3px;
         }
 
         .company-info p {
-            font-size: 10px;
-            color: #666;
-            margin: 2px 0;
+            font-size: 9px;
+            color: #777;
+            margin: 1px 0;
         }
 
         .report-info {
             display: table-cell;
-            width: 20%;
+            width: 30%;
             text-align: right;
             vertical-align: middle;
             font-size: 9px;
-            color: #666;
-            padding-right: 10px;
+            color: #555;
+        }
+
+        .report-info p {
+            margin: 2px 0;
         }
 
         .report-info strong {
             color: #333;
         }
 
+        /* ===== TÍTULO ===== */
         .report-title {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #667eea;
             color: white;
-            padding: 10px;
+            padding: 8px 0;
             text-align: center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 12px;
-            border-radius: 5px;
-        }
-
-        .summary-section {
-            background: #f8f9fa;
-            padding: 10px 15px;
             margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-            border-radius: 3px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 4px;
         }
 
-        .summary-section strong {
-            color: #667eea;
-            font-size: 12px;
-        }
-
-        .stats-container {
-            display: table;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .stat-box {
-            display: table-cell;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 10px;
-            text-align: center;
-            border-radius: 8px;
-            margin: 0 5px;
-            border: 2px solid #dee2e6;
-        }
-
-        .stat-box .stat-number {
-            font-size: 20px;
-            font-weight: bold;
-            color: #667eea;
-            display: block;
-            margin-bottom: 3px;
-        }
-
-        .stat-box .stat-label {
-            font-size: 9px;
-            color: #666;
-            text-transform: uppercase;
-        }
-
-        .cargo-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 9px;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .cargo-gerente {
-            background: #e3f2fd;
-            color: #1976d2;
-            border: 1px solid #1976d2;
-        }
-
-        .cargo-vendedor {
-            background: #f3e5f5;
-            color: #7b1fa2;
-            border: 1px solid #7b1fa2;
-        }
-
-        .cargo-cajero {
-            background: #fff3e0;
-            color: #ef6c00;
-            border: 1px solid #ef6c00;
-        }
-
-        .cargo-almacenero {
-            background: #e8f5e9;
-            color: #388e3c;
-            border: 1px solid #388e3c;
-        }
-
-        .cargo-default {
-            background: #f5f5f5;
-            color: #616161;
-            border: 1px solid #616161;
-        }
-
-        table {
+        /* ===== RESUMEN ===== */
+        .finance-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
-        thead {
-            background: #667eea;
+        .finance-table td {
+            text-align: center;
+            padding: 10px 5px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .finance-label {
+            font-size: 8px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .finance-value {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        /* ===== TABLA ===== */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        table.data-table thead th {
+            background-color: #667eea;
             color: white;
-        }
-
-        thead th {
-            padding: 10px 8px;
-            font-size: 10px;
+            padding: 7px 5px;
+            font-size: 9px;
             font-weight: bold;
             text-align: center;
             border: 1px solid #5568d3;
+            text-transform: uppercase;
         }
 
-        tbody tr:nth-child(even) {
+        table.data-table tbody td {
+            padding: 5px 4px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            font-size: 9.5px;
+        }
+
+        table.data-table tbody tr:nth-child(even) {
             background-color: #f8f9fa;
         }
 
-        tbody tr:hover {
-            background-color: #e9ecef;
+        .total-row td {
+            background-color: #667eea !important;
+            color: white !important;
+            font-weight: bold;
+            padding: 7px 5px !important;
+            border-color: #5568d3 !important;
+            font-size: 10px !important;
         }
 
-        tbody td {
-            padding: 8px 6px;
-            text-align: center;
-            border: 1px solid #dee2e6;
-            font-size: 10px;
+        /* ===== BADGES DE CARGO ===== */
+        .cargo-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: bold;
         }
 
+        .cargo-gerente {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .cargo-vendedor {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .cargo-cajero {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .cargo-almacenero {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .cargo-default {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        /* ===== PAGINACIÓN ===== */
+        tr { page-break-inside: avoid; }
+        thead { display: table-header-group; }
+        .finance-table { page-break-inside: avoid; }
+
+        /* ===== FOOTER ===== */
         .footer {
             position: fixed;
             bottom: 0;
             width: 100%;
             text-align: center;
-            font-size: 9px;
-            color: #666;
-            padding-top: 10px;
-            border-top: 1px solid #dee2e6;
+            font-size: 8px;
+            color: #999;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
         }
 
         .footer strong {
@@ -234,82 +218,98 @@
 </head>
 
 <body>
-    <!-- Header -->
+    @php
+        $totalColaboradores = $colaboradores->count();
+        $cargos = $colaboradores->groupBy(fn($c) => $c->cargo->descripcionCargo ?? 'Sin cargo');
+    @endphp
+
+    <!-- HEADER -->
     <div class="header">
         <div class="header-content">
             <div class="logo-section">
                 <img src="{{ public_path('img/logo_eli_boutique.png') }}" alt="Logo">
             </div>
             <div class="company-info">
-                <h1>ELI BOUTIQUE</h1>
-                <p>Sistema de Gestión Empresarial</p>
-                <p>RUC: 20123456789 | Teléfono: 987 654 321</p>
+                <h1>Eli Boutique</h1>
+                <p>RUC: 20612345678 | Av. Moda 456, Lima</p>
+                <p>Tel: (01) 555-8899 | ventas@eliboutique.pe</p>
             </div>
             <div class="report-info">
-                <p><strong>Fecha:</strong> {{ date('d/m/Y') }}</p>
-                <p><strong>Hora:</strong> {{ date('h:i A') }}</p>
-                <p><strong>Usuario:</strong> {{ Auth::user()->name ?? 'Sistema' }}</p>
+                <p><strong>Reporte generado:</strong></p>
+                <p>{{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }}</p>
+                <p><strong>Total registros:</strong> {{ $totalColaboradores }}</p>
             </div>
         </div>
     </div>
 
-    <!-- Report Title -->
+    <!-- TÍTULO -->
     <div class="report-title">
-        👥 REPORTE DE COLABORADORES
+        REPORTE GENERAL DE COLABORADORES
     </div>
 
-    <!-- Table -->
-    <table>
+    <!-- RESUMEN -->
+    <table class="finance-table">
+        <tr>
+            <td style="background-color: #f0f2ff;">
+                <div class="finance-label">Total Colaboradores</div>
+                <div class="finance-value" style="color: #667eea;">{{ $totalColaboradores }}</div>
+            </td>
+            @foreach ($cargos as $cargoNombre => $grupo)
+                <td style="background-color: #f8f9fa;">
+                    <div class="finance-label">{{ $cargoNombre }}</div>
+                    <div class="finance-value" style="color: #764ba2;">{{ $grupo->count() }}</div>
+                </td>
+            @endforeach
+        </tr>
+    </table>
+
+    <!-- TABLA DE COLABORADORES -->
+    <table class="data-table">
         <thead>
             <tr>
-                <th width="8%">N°</th>
-                <th width="18%">CARGO</th>
-                <th width="20%">NOMBRE COMPLETO</th>
-                <th width="12%">DNI</th>
-                <th width="22%">EMAIL</th>
-                <th width="12%">TELÉFONO</th>
-                <th width="8%">EDAD</th>
+                <th width="5%">N°</th>
+                <th width="14%">Cargo</th>
+                <th width="22%">Nombre Completo</th>
+                <th width="10%">DNI</th>
+                <th width="22%">Email</th>
+                <th width="12%">Teléfono</th>
+                <th width="7%">Edad</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($colaboradores as $index => $colaborador)
+                @php
+                    $cargoNombre = strtolower($colaborador->cargo->descripcionCargo ?? '');
+                    $badgeClass = 'cargo-default';
+                    if (str_contains($cargoNombre, 'gerente')) $badgeClass = 'cargo-gerente';
+                    elseif (str_contains($cargoNombre, 'vendedor')) $badgeClass = 'cargo-vendedor';
+                    elseif (str_contains($cargoNombre, 'cajero')) $badgeClass = 'cargo-cajero';
+                    elseif (str_contains($cargoNombre, 'almacen')) $badgeClass = 'cargo-almacenero';
+                @endphp
                 <tr>
                     <td style="font-weight: bold; color: #667eea;">{{ $index + 1 }}</td>
                     <td>
-                        @php
-                            $cargoNombre = strtolower($colaborador->cargo->descripcionCargo);
-                            $badgeClass = 'cargo-default';
-                            if (str_contains($cargoNombre, 'gerente')) {
-                                $badgeClass = 'cargo-gerente';
-                            } elseif (str_contains($cargoNombre, 'vendedor')) {
-                                $badgeClass = 'cargo-vendedor';
-                            } elseif (str_contains($cargoNombre, 'cajero')) {
-                                $badgeClass = 'cargo-cajero';
-                            } elseif (str_contains($cargoNombre, 'almacen')) {
-                                $badgeClass = 'cargo-almacenero';
-                            }
-                        @endphp
-                        <span class="cargo-badge {{ $badgeClass }}">
-                            {{ strtoupper($colaborador->cargo->descripcionCargo) }}
-                        </span>
+                        <span class="cargo-badge {{ $badgeClass }}">{{ $colaborador->cargo->descripcionCargo ?? '-' }}</span>
                     </td>
-                    <td style="text-align: left; padding-left: 10px;">
-                        {{ strtoupper($colaborador->nombreColab) }} {{ strtoupper($colaborador->apellidosColab) }}
-                    </td>
+                    <td style="text-align: left; padding-left: 8px;">{{ $colaborador->nombreColab }} {{ $colaborador->apellidosColab }}</td>
                     <td>{{ $colaborador->dniColab }}</td>
-                    <td>{{ $colaborador->correoColab }}</td>
-                    <td>{{ $colaborador->telefonoColab }}</td>
+                    <td style="text-align: left; padding-left: 8px; font-size: 8.5px;">{{ $colaborador->correoColab ?? '-' }}</td>
+                    <td>{{ $colaborador->telefonoColab ?? '-' }}</td>
                     <td>{{ $colaborador->edadColab }}</td>
                 </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="7" style="text-align: center;">TOTAL: {{ $totalColaboradores }} COLABORADORES REGISTRADOS</td>
+            </tr>
+        </tfoot>
     </table>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <div class="footer">
-        <p><strong>Eli Boutique</strong> - Sistema de Gestión | Generado automáticamente el {{ date('d/m/Y h:i A') }}
-        </p>
-        <p class="page-number"></p>
+        <strong>Eli Boutique</strong> — Reporte de Colaboradores generado el {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+        | <span class="page-number"></span>
     </div>
 </body>
 

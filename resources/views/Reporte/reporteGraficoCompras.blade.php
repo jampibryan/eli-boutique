@@ -36,7 +36,6 @@
             display: table-cell;
             width: 15%;
             vertical-align: middle;
-            padding-left: 5px;
         }
 
         .logo-section img {
@@ -75,7 +74,6 @@
             vertical-align: middle;
             font-size: 9px;
             color: #555;
-            padding-right: 5px;
         }
 
         .report-info p {
@@ -88,7 +86,7 @@
 
         /* ===== TÍTULO ===== */
         .report-title {
-            background: linear-gradient(135deg, #e67e22 0%, #e74c3c 100%);
+            background-color: #e67e22;
             color: white;
             padding: 9px;
             text-align: center;
@@ -211,6 +209,11 @@
             text-align: center;
         }
 
+        /* ===== PAGINACIÓN ===== */
+        tr { page-break-inside: avoid; }
+        thead { display: table-header-group; }
+        .summary-box { page-break-inside: avoid; }
+
         .badge-productos {
             background: #fef0e0;
             color: #e67e22;
@@ -297,9 +300,9 @@
                 <img src="{{ public_path('img/logo_eli_boutique.png') }}" alt="Logo">
             </div>
             <div class="company-info">
-                <h1>ELI BOUTIQUE</h1>
-                <p>Sistema de Gestión Empresarial</p>
-                <p>RUC: 20123456789 | Teléfono: 987 654 321</p>
+                <h1>Eli Boutique</h1>
+                <p>Sistema de Gestión Comercial</p>
+                <p>RUC: 20612345678 | Av. Moda 456, Lima | Tel: (01) 555-8899</p>
             </div>
             <div class="report-info">
                 <p><strong>Fecha emisión:</strong> {{ date('d/m/Y') }}</p>

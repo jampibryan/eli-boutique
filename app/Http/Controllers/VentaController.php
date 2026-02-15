@@ -97,7 +97,7 @@ class VentaController extends Controller
 
     public function pdfVentas()
     {
-        $ventas = Venta::whereNotNull('id')->get();
+        $ventas = Venta::with(['cliente', 'pago.comprobante', 'estadoTransaccion'])->get();
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Venta.reporte', compact('ventas')));

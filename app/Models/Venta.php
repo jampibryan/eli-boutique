@@ -41,7 +41,17 @@ class Venta extends Model
         static::created(function ($venta) {
             // SOLO sumar a caja si el estado es "Pagado"
             if ($venta->caja && $venta->estadoTransaccion->descripcionET === 'Pagado') {
-                $venta->caja->increment('clientesHoy', 1);
+                // Solo contar cliente si es único en esta caja (no repetir)
+                $clienteYaContado = Venta::where('caja_id', $venta->caja_id)
+                    ->where('cliente_id', $venta->cliente_id)
+                    ->where('id', '!=', $venta->id)
+                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->exists();
+
+                if (!$clienteYaContado) {
+                    $venta->caja->increment('clientesHoy', 1);
+                }
+
                 $venta->caja->increment('ingresoDiario', $venta->montoTotal);
 
                 $totalProductosVenta = $venta->detalles()->sum('cantidad');
@@ -60,8 +70,17 @@ class Venta extends Model
                 $venta->estado_transaccion_id == $estadoPagado->id &&
                 $venta->caja
             ) {
+                // Solo contar cliente si es único en esta caja
+                $clienteYaContado = Venta::where('caja_id', $venta->caja_id)
+                    ->where('cliente_id', $venta->cliente_id)
+                    ->where('id', '!=', $venta->id)
+                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->exists();
 
-                $venta->caja->increment('clientesHoy', 1);
+                if (!$clienteYaContado) {
+                    $venta->caja->increment('clientesHoy', 1);
+                }
+
                 $venta->caja->increment('ingresoDiario', $venta->montoTotal);
 
                 $totalProductosVenta = $venta->detalles()->sum('cantidad');
@@ -75,7 +94,17 @@ class Venta extends Model
                 $venta->caja
             ) {
 
-                $venta->caja->decrement('clientesHoy', 1);
+                // Solo restar cliente si no tiene otras ventas pagadas en esta caja
+                $clienteTieneOtrasVentas = Venta::where('caja_id', $venta->caja_id)
+                    ->where('cliente_id', $venta->cliente_id)
+                    ->where('id', '!=', $venta->id)
+                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->exists();
+
+                if (!$clienteTieneOtrasVentas) {
+                    $venta->caja->decrement('clientesHoy', 1);
+                }
+
                 $venta->caja->decrement('ingresoDiario', $venta->montoTotal);
 
                 $totalProductosVenta = $venta->detalles()->sum('cantidad');

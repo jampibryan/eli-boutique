@@ -16,6 +16,7 @@ class Caja extends Model
         'clientesHoy',
         'productosVendidos',
         'ingresoDiario',
+        'egresoDiario',
     ];
 
     protected static function boot()
@@ -33,5 +34,13 @@ class Caja extends Model
     public function ventas()
     {
         return $this->hasMany(Venta::class);
+    }
+
+    /**
+     * Balance del día: ingresos - egresos
+     */
+    public function getBalanceDiarioAttribute()
+    {
+        return $this->ingresoDiario - $this->egresoDiario;
     }
 }

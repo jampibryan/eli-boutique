@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caja;
+use App\Models\Compra;
+use App\Models\Pago;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
@@ -41,8 +43,18 @@ class CajaController extends Controller
             }
         }
 
+        // Obtener compras pagadas del mismo día
+        $compras = Compra::whereHas('pago', function ($q) use ($caja) {
+                $q->whereDate('created_at', $caja->fecha);
+            })
+            ->whereHas('estadoTransaccion', function ($q) {
+                $q->whereIn('descripcionET', ['Pagada', 'Recibida']);
+            })
+            ->with(['proveedor', 'pago', 'detalles.producto'])
+            ->get();
+
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('Caja.informeCaja', compact('caja', 'ventas', 'clientes', 'productosVendidos')));
+        $pdf->loadHTML(view('Caja.informeCaja', compact('caja', 'ventas', 'clientes', 'productosVendidos', 'compras')));
         $nombreArchivo = 'Informe_Caja_' . $caja->codigoCaja . '.pdf';
         return $pdf->stream($nombreArchivo);
     }
@@ -53,20 +65,30 @@ class CajaController extends Controller
         $this->middleware('permission:gestionar cajas', ['only' => ['abrirCaja', 'cerrarCaja']]);
     }
 
-    public function pdfCajas()
+    public function pdfCajas(Request $request)
     {
-        $cajas = Caja::All();
+        $query = Caja::query();
+
+        if ($request->filled('desde')) {
+            $query->where('fecha', '>=', $request->desde);
+        }
+        if ($request->filled('hasta')) {
+            $query->where('fecha', '<=', $request->hasta);
+        }
+
+        $cajas = $query->orderBy('fecha', 'asc')->get();
+        $desde = $request->desde;
+        $hasta = $request->hasta;
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('Caja.reporte', compact('cajas')));
+        $pdf->loadHTML(view('Caja.reporteGeneralCaja', compact('cajas', 'desde', 'hasta')));
 
-        // return $pdf->download(); //Descarga automática
-        return $pdf->stream('Reporte de Cajas.pdf'); //Abre una pestaña
+        return $pdf->stream('Reporte de Cajas.pdf');
     }
 
     public function index()
     {
-        $cajas = Caja::all();
+        $cajas = Caja::orderBy('fecha', 'desc')->get();
         return view('Caja.index', compact('cajas'));
     }
 
@@ -86,6 +108,7 @@ class CajaController extends Controller
             'clientesHoy' => 0,
             'productosVendidos' => 0,
             'ingresoDiario' => 0.00,
+            'egresoDiario' => 0.00,
         ]);
 
         return redirect()->back()->with('success', 'Caja abierta con éxito. Código de caja: ' . $caja->codigoCaja);

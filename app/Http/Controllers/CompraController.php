@@ -6,7 +6,6 @@ use App\Models\Caja;
 use App\Models\Colaborador;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
-use App\Models\Comprobante;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
@@ -16,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use App\Mail\OrdenCompraEnviada;
 
 class CompraController extends Controller
@@ -34,18 +32,28 @@ class CompraController extends Controller
         return view('Compra.index', compact('compras'));
     }
 
-
-
-
     public function pdfCompras()
     {
-        $compras = Compra::whereNotNull('id')->get();
+        $compras = Compra::with(['proveedor', 'detalles.producto.categoriaProducto', 'comprobante', 'estadoTransaccion'])->get();
+
+        // Calcular totales de productos comprados por categoría
+        $totalesPorCategoria = [];
+        foreach ($compras as $compra) {
+            foreach ($compra->detalles as $detalle) {
+                $categoria = $detalle->producto->categoriaProducto->nombreCP ?? 'Sin categoría';
+                if (!isset($totalesPorCategoria[$categoria])) {
+                    $totalesPorCategoria[$categoria] = ['cantidad' => 0, 'monto' => 0];
+                }
+                $totalesPorCategoria[$categoria]['cantidad'] += $detalle->cantidad;
+                $totalesPorCategoria[$categoria]['monto'] += $detalle->subtotal_linea;
+            }
+        }
+        arsort($totalesPorCategoria);
 
         $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('Compra.reporte', compact('compras')));
+        $pdf->loadHTML(view('Compra.reporte', compact('compras', 'totalesPorCategoria')));
 
-        // return $pdf->download(); //Descarga automática
-        return $pdf->stream('Reporte de Compras.pdf'); //Abre una pestaña
+        return $pdf->stream('Reporte de Compras.pdf');
     }
 
     public function pdfOrdenCompra(Compra $compra)
@@ -292,7 +300,7 @@ class CompraController extends Controller
             'precio_cotizado' => 'required|array',
             'precio_cotizado.*' => 'required|numeric|min:0',
             'notas_proveedor' => 'nullable|string',
-            'pdf_cotizacion' => 'required|file|mimes:pdf|max:10240',
+            'pdf_cotizacion' => 'nullable|file|mimes:pdf|max:10240',
             'descuento' => 'nullable|numeric|min:0'
         ]);
 
@@ -318,10 +326,13 @@ class CompraController extends Controller
         $igv = $subtotalConDescuento * 0.18;
         $total = $subtotalConDescuento + $igv;
 
-        // Subir PDF de cotización (obligatorio)
-        $file = $request->file('pdf_cotizacion');
-        $filename = 'cotizacion_' . $compra->codigoCompra . '_' . time() . '.pdf';
-        $pdfPath = $file->storeAs('cotizaciones', $filename, 'public');
+        // Subir PDF de cotización (opcional)
+        $pdfPath = $compra->pdf_cotizacion;
+        if ($request->hasFile('pdf_cotizacion')) {
+            $file = $request->file('pdf_cotizacion');
+            $filename = 'cotizacion_' . $compra->codigoCompra . '_' . time() . '.pdf';
+            $pdfPath = $file->storeAs('cotizaciones', $filename, 'public');
+        }
 
         // Cambiar estado a Cotizada (siempre pago contra entrega)
         $estadoCotizada = EstadoTransaccion::where('descripcionET', 'Cotizada')->first();

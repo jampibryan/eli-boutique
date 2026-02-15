@@ -23,16 +23,28 @@ class ProductoController extends Controller
 
     public function pdfProductos()
     {
-
-        $productos = Producto::with(['categoriaProducto', 'tallaStocks.talla'])
+        $productos = Producto::with(['categoriaProducto', 'productoGenero', 'tallaStocks.talla'])
             ->get()
             ->sortBy('categoriaProducto.nombreCP');
 
-        $pdf = App::make('dompdf.wrapper');
-        $pdf->loadHTML(view('Producto.reporte', compact('productos')));
+        // Calcular stock total por categoría
+        $stockPorCategoria = [];
+        foreach ($productos as $producto) {
+            $categoria = $producto->categoriaProducto->nombreCP ?? 'Sin categoría';
+            if (!isset($stockPorCategoria[$categoria])) {
+                $stockPorCategoria[$categoria] = ['stock' => 0, 'productos' => 0, 'valorInventario' => 0];
+            }
+            $stockProducto = $producto->tallaStocks->sum('stock');
+            $stockPorCategoria[$categoria]['stock'] += $stockProducto;
+            $stockPorCategoria[$categoria]['productos']++;
+            $stockPorCategoria[$categoria]['valorInventario'] += $stockProducto * $producto->precioP;
+        }
+        arsort($stockPorCategoria);
 
-        // return $pdf->download(); //Descarga automática
-        return $pdf->stream('Reporte de Productos.pdf'); //Abre una pestaña
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML(view('Producto.reporte', compact('productos', 'stockPorCategoria')));
+
+        return $pdf->stream('Reporte de Productos.pdf');
     }
 
     public function index(Request $request)

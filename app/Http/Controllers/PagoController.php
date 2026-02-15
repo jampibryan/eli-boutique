@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caja;
 use App\Models\Compra;
 use App\Models\Comprobante;
 use App\Models\EstadoTransaccion;
@@ -102,6 +103,12 @@ class PagoController extends Controller
             }
             
             $transaction->save();
+
+            // Sumar egreso a la caja del día (si existe caja abierta)
+            $cajaHoy = Caja::whereDate('fecha', now()->toDateString())->first();
+            if ($cajaHoy) {
+                $cajaHoy->increment('egresoDiario', $pago->importe);
+            }
         }
 
         // Limpiar carrito solo después de pagar la venta

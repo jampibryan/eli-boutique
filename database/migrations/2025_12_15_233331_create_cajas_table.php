@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('clientesHoy')->default(0); // Clientes del día
             $table->integer('productosVendidos')->default(0); // Productos vendidos hoy
             $table->decimal('ingresoDiario', 10, 2)->default(0.00); // Ingresos del día
+            $table->decimal('egresoDiario', 10, 2)->default(0.00); // Egresos del día (compras)
             $table->timestamps();
         });
     }
