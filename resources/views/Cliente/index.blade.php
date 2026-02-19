@@ -13,7 +13,7 @@
                 <h4 class="mb-0" style="color: #2C2C2C;">
                     <i class="fas fa-users" style="color: #D4AF37;"></i> Gestión de Clientes
                 </h4>
-                <small class="text-muted">Total: <span class="badge bg-dark" id="totalClientes">{{ $clientes->count() }}</span></small>
+                <small class="text-muted">Total: <span class="badge bg-dark" id="totalClientes">{{ $clientes->total() }}</span></small>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('clientes.create') }}" class="btn btn-boutique-gold">
@@ -28,21 +28,27 @@
 
     <!-- Barra de búsqueda -->
     <div class="action-bar mt-3">
-        <div class="input-group">
-            <span class="input-group-text bg-white">
-                <i class="fas fa-search" style="color: #D4AF37;"></i>
-            </span>
-            <input type="text" id="buscarCliente" class="form-control" placeholder="Buscar por nombre completo o DNI...">
-        </div>
+        <form method="GET" action="{{ route('clientes.index') }}" id="formFiltros">
+            <div class="input-group">
+                <span class="input-group-text bg-white">
+                    <i class="fas fa-search" style="color: #D4AF37;"></i>
+                </span>
+                <input type="text" name="search" id="buscarCliente" class="form-control" 
+                    placeholder="Buscar por nombre completo o DNI..." value="{{ request('search') }}">
+                @if(request('search'))
+                    <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     <!-- Grid de clientes -->
     <div class="container-fluid">
         <div class="row g-3" id="clientesGrid">
             @foreach ($clientes as $cliente)
-                <div class="col-lg-4 col-md-6 col-sm-12 cliente-item" 
-                     data-nombre="{{ strtolower($cliente->nombreCliente . ' ' . $cliente->apellidoCliente) }}"
-                     data-dni="{{ $cliente->dniCliente }}">
+                <div class="col-lg-4 col-md-6 col-sm-12 cliente-item">
                     <div class="boutique-card">
                         <div class="boutique-card-body">
                             <!-- Header con avatar -->
@@ -106,6 +112,9 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Paginación --}}
+        {{ $clientes->links('pagination.boutique') }}
     </div>
 
     <!-- Modal de Confirmación de Eliminación -->
@@ -178,21 +187,27 @@
         document.addEventListener('DOMContentLoaded', function() {
             modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
             
-            // Habilitar/deshabilitar botón según el texto ingresado
             document.getElementById('confirmacionTexto').addEventListener('input', function() {
                 const texto = this.value.trim().toUpperCase();
                 document.getElementById('btnConfirmarEliminar').disabled = texto !== 'ELIMINAR';
             });
 
-            // Confirmar eliminación
             document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
                 document.getElementById(`form-eliminar-${elementoActual.tipo}-${elementoActual.id}`).submit();
             });
 
-            // Limpiar modal al cerrarse
             document.getElementById('modalEliminar').addEventListener('hidden.bs.modal', function() {
                 document.getElementById('confirmacionTexto').value = '';
                 document.getElementById('btnConfirmarEliminar').disabled = true;
+            });
+
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('buscarCliente').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 600);
             });
         });
 
@@ -200,34 +215,7 @@
             elementoActual = { id, tipo };
             document.getElementById('nombreElemento').textContent = nombre;
             modalEliminar.show();
-            // Focus en el input
             setTimeout(() => document.getElementById('confirmacionTexto').focus(), 500);
         }
-
-        // Función para normalizar texto (eliminar acentos)
-        function normalizeText(text) {
-            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        }
-
-        // Búsqueda en tiempo real
-        document.getElementById('buscarCliente').addEventListener('input', function() {
-            const searchTerm = normalizeText(this.value.toLowerCase().trim());
-            const items = document.querySelectorAll('.cliente-item');
-            let visibleCount = 0;
-            
-            items.forEach(item => {
-                const nombre = normalizeText(item.dataset.nombre);
-                const dni = item.dataset.dni.toLowerCase();
-                
-                if (searchTerm === '' || nombre.includes(searchTerm) || dni.includes(searchTerm)) {
-                    item.style.display = '';
-                    visibleCount++;
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-            
-            document.getElementById('totalClientes').textContent = visibleCount;
-        });
     </script>
 @stop

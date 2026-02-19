@@ -23,12 +23,17 @@
                 <h4 class="mb-0" style="color: #2C2C2C;">
                     <i class="fas fa-shopping-cart" style="color: #D4AF37;"></i> Ventas Registradas
                 </h4>
-                <small class="text-muted">Total: <span class="badge bg-dark" id="totalVentas">{{ $ventas->count() }}</span></small>
+                <small class="text-muted">Total: <span class="badge bg-dark" id="totalVentas">{{ $ventas->total() }}</span></small>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('carrito.ver') }}" class="btn btn-boutique-gold">
                     <i class="fas fa-cart-plus"></i> Ver Carrito
                 </a>
+                <!--
+                <a href="{{ route('tiempoVentas.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                    <i class="fas fa-clock"></i> Tiempo de Ventas
+                </a>
+                -->
                 <a href="{{ route('ventas.pdf') }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
                 </a>
@@ -38,37 +43,41 @@
 
     <!-- Barra de búsqueda y filtros -->
     <div class="action-bar mt-3">
-        <div class="row g-3 align-items-center">
-            <!-- Buscador -->
-            <div class="col-md-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-white">
-                        <i class="fas fa-search" style="color: #D4AF37;"></i>
-                    </span>
-                    <input type="text" id="buscarVenta" class="form-control" placeholder="Buscar por ID...">
+        <form method="GET" action="{{ route('ventas.index') }}" id="formFiltros">
+            <div class="row g-3 align-items-center">
+                <!-- Buscador -->
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search" style="color: #D4AF37;"></i>
+                        </span>
+                        <input type="text" name="search" id="buscarVenta" class="form-control" 
+                            placeholder="Buscar por código..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                
+                <!-- Ordenar por fecha -->
+                <div class="col-md-3">
+                    <select name="orden" id="ordenarVenta" class="form-select" onchange="this.form.submit()">
+                        <option value="reciente" {{ request('orden', 'reciente') == 'reciente' ? 'selected' : '' }}>Más recientes</option>
+                        <option value="antigua" {{ request('orden') == 'antigua' ? 'selected' : '' }}>Más antiguas</option>
+                    </select>
+                </div>
+                
+                <!-- Filtrar por fecha -->
+                <div class="col-md-3">
+                    <input type="date" name="fecha" id="filtrarFecha" class="form-control" 
+                        value="{{ request('fecha') }}" onchange="this.form.submit()">
+                </div>
+                
+                <!-- Botón limpiar filtros -->
+                <div class="col-md-3">
+                    <a href="{{ route('ventas.index') }}" class="btn btn-boutique-dark w-100">
+                        <i class="fas fa-redo"></i> Limpiar Filtros
+                    </a>
                 </div>
             </div>
-            
-            <!-- Ordenar por fecha -->
-            <div class="col-md-3">
-                <select id="ordenarVenta" class="form-select">
-                    <option value="reciente">Más recientes</option>
-                    <option value="antigua">Más antiguas</option>
-                </select>
-            </div>
-            
-            <!-- Filtrar por fecha -->
-            <div class="col-md-3">
-                <input type="date" id="filtrarFecha" class="form-control" placeholder="Filtrar por fecha">
-            </div>
-            
-            <!-- Botón limpiar filtros -->
-            <div class="col-md-3">
-                <button type="button" id="limpiarFiltros" class="btn btn-boutique-dark w-100">
-                    <i class="fas fa-redo"></i> Limpiar Filtros
-                </button>
-            </div>
-        </div>
+        </form>
     </div>
 
     <!-- Grid de ventas -->
@@ -85,7 +94,7 @@
                                 ? 'status-success'
                                 : 'status-danger');
                 @endphp
-                <div class="col-lg-4 col-md-6 col-sm-12 venta-item" data-codigo="{{ $venta->codigoVenta }}">
+                <div class="col-lg-4 col-md-6 col-sm-12 venta-item">
                     <div class="boutique-card">
                         <!-- Header con estado -->
                         <div class="boutique-card-header d-flex justify-content-between align-items-center">
@@ -160,6 +169,9 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Paginación --}}
+        {{ $ventas->links('pagination.boutique') }}
     </div>
 @stop
 
@@ -181,121 +193,14 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Función para aplicar todos los filtros
-            function aplicarFiltros() {
-                console.log('Aplicando filtros...');
-                const searchTerm = document.getElementById('buscarVenta').value.trim();
-                const ordenar = document.getElementById('ordenarVenta').value;
-                const fechaFiltro = document.getElementById('filtrarFecha').value;
-                
-                console.log('Ordenar:', ordenar);
-                
-                const grid = document.getElementById('ventasGrid');
-                let items = Array.from(document.querySelectorAll('.venta-item'));
-                let visibleCount = 0;
-                
-                console.log('Total items:', items.length);
-                
-                // Primero ordenar TODOS los items
-                items.sort((a, b) => {
-                    const fechaTextA = a.querySelector('.text-muted').textContent.trim();
-                    const fechaTextB = b.querySelector('.text-muted').textContent.trim();
-                    
-                    // Formato: dd/mm/yyyy hh:mm AM/PM
-                    const partsA = fechaTextA.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+)\s+(AM|PM)/);
-                    const partsB = fechaTextB.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+)\s+(AM|PM)/);
-                    
-                    if (!partsA || !partsB) {
-                        console.error('Error parseando fechas');
-                        return 0;
-                    }
-                    
-                    const [, diaA, mesA, anioA, horaA, minA, ampmA] = partsA;
-                    const [, diaB, mesB, anioB, horaB, minB, ampmB] = partsB;
-                    
-                    // Convertir hora de 12h a 24h
-                    let hora24A = parseInt(horaA);
-                    if (ampmA === 'PM' && hora24A !== 12) hora24A += 12;
-                    if (ampmA === 'AM' && hora24A === 12) hora24A = 0;
-                    
-                    let hora24B = parseInt(horaB);
-                    if (ampmB === 'PM' && hora24B !== 12) hora24B += 12;
-                    if (ampmB === 'AM' && hora24B === 12) hora24B = 0;
-                    
-                    // Crear Date objects con fecha y hora completa
-                    const fechaA = new Date(parseInt(anioA), parseInt(mesA) - 1, parseInt(diaA), hora24A, parseInt(minA));
-                    const fechaB = new Date(parseInt(anioB), parseInt(mesB) - 1, parseInt(diaB), hora24B, parseInt(minB));
-                    
-                    console.log('Date A:', fechaA.toLocaleString(), 'Date B:', fechaB.toLocaleString());
-                    
-                    if (ordenar === 'reciente') {
-                        return fechaB - fechaA; // Más recientes primero
-                    } else {
-                        return fechaA - fechaB; // Más antiguas primero
-                    }
-                });
-                
-                // Limpiar el grid completamente
-                grid.innerHTML = '';
-                
-                // Reinsertar items en el nuevo orden
-                items.forEach(item => {
-                    grid.appendChild(item);
-                });
-                
-                console.log('Items reordenados');
-                
-                // Luego aplicar filtros de visibilidad
-                items.forEach(item => {
-                    const codigo = item.dataset.codigo;
-                    let visible = true;
-                    
-                    // Filtrar por búsqueda de ID
-                    if (searchTerm !== '') {
-                        const codigoNum = parseInt(codigo);
-                        const searchAsNum = parseInt(searchTerm);
-                        
-                        if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
-                            visible = codigoNum.toString().startsWith(searchAsNum.toString());
-                        } else {
-                            visible = codigo.toLowerCase().includes(searchTerm.toLowerCase());
-                        }
-                    }
-                    
-                    // Filtrar por fecha
-                    if (visible && fechaFiltro) {
-                        const fechaTexto = item.querySelector('.text-muted').textContent.trim();
-                        const fechaVenta = fechaTexto.split(' ')[0]; // Formato: dd/mm/yyyy
-                        const [dia, mes, anio] = fechaVenta.split('/');
-                        const fechaVentaISO = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-                        visible = fechaVentaISO === fechaFiltro;
-                    }
-                    
-                    item.style.display = visible ? '' : 'none';
-                    if (visible) visibleCount++;
-                });
-                
-                document.getElementById('totalVentas').textContent = visibleCount;
-            }
-
-            // Event listeners
-            document.getElementById('buscarVenta').addEventListener('input', aplicarFiltros);
-            document.getElementById('ordenarVenta').addEventListener('change', function() {
-                console.log('Select changed to:', this.value);
-                aplicarFiltros();
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('buscarVenta').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 600);
             });
-            document.getElementById('filtrarFecha').addEventListener('change', aplicarFiltros);
-            
-            // Limpiar filtros
-            document.getElementById('limpiarFiltros').addEventListener('click', function() {
-                document.getElementById('buscarVenta').value = '';
-                document.getElementById('ordenarVenta').value = 'reciente';
-                document.getElementById('filtrarFecha').value = '';
-                aplicarFiltros();
-            });
-            
-            // Aplicar filtros al cargar la página (orden inicial)
-            aplicarFiltros();
         });
     </script>
 @stop

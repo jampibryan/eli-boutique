@@ -50,33 +50,39 @@ class ProductoController extends Controller
     public function index(Request $request)
     {
         $categorias = CategoriaProducto::all();
-        $categoriaId = $request->get('categoria'); // Obtener el id de la categoría desde la solicitud
+        $categoriaId = $request->get('categoria');
 
-        // Filtrar productos por la categoría seleccionada
+        $query = Producto::withoutTrashed()->with(['categoriaProducto', 'tallaStocks.talla']);
+
         if ($categoriaId) {
-            // Si hay filtro, solo traer productos de esa categoría ordenados alfabéticamente
-            $productos = Producto::withoutTrashed()
-                ->where('categoria_producto_id', $categoriaId)
-                ->orderBy('descripcionP', 'asc')
-                ->get();
-        } else {
-            $productos = Producto::withoutTrashed()
-                ->with('categoriaProducto')
-                ->get()
-                ->sortBy([
-                    ['categoriaProducto.id', 'asc'],
-                    ['descripcionP', 'asc']
-                ]);
+            $query->where('categoria_producto_id', $categoriaId);
         }
 
-        $productos = $productos->load(['tallaStocks.talla'])->map(function ($producto) {
-            $producto->stock_total = $producto->tallaStocks->sum('stock');
-            return $producto;
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('descripcionP', 'like', "%{$search}%")
+                  ->orWhere('codigoP', 'like', "%{$search}%");
+            });
+        }
+
+        $query->orderBy('categoria_producto_id', 'asc')->orderBy('descripcionP', 'asc');
+
+        // Calcular stock total global ANTES de paginar (sobre todos los productos filtrados)
+        $totalStock = (clone $query)->get()->sum(function ($p) {
+            return $p->tallaStocks->sum('stock');
         });
+
+        $productos = $query->paginate(12)->appends($request->query());
+
+        // Calcular stock_total para cada producto de la página actual
+        foreach ($productos as $producto) {
+            $producto->stock_total = $producto->tallaStocks->sum('stock');
+        }
 
         $tallas = ProductoTalla::all();
 
-        return view('Producto.index', compact('productos', 'categorias', 'tallas'));
+        return view('Producto.index', compact('productos', 'categorias', 'tallas', 'totalStock'));
     }
 
     public function create()

@@ -122,11 +122,22 @@ class VentaController extends Controller
         return $pdf->stream($nombreArchivo);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $ventas = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago'])
-            ->orderBy('id', 'desc')
-            ->get();
+        $query = Venta::with(['cliente', 'estadoTransaccion', 'detalles', 'pago']);
+
+        if ($request->filled('search')) {
+            $query->where('codigoVenta', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('fecha')) {
+            $query->whereDate('created_at', $request->fecha);
+        }
+
+        $orden = $request->get('orden', 'reciente');
+        $query->orderBy('id', $orden === 'reciente' ? 'desc' : 'asc');
+
+        $ventas = $query->paginate(6)->appends($request->query());
         return view('Venta.index', compact('ventas'));
     }
 

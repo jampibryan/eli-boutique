@@ -37,11 +37,20 @@ class ProveedorController extends Controller
         return $pdf->stream('Reporte de Proveedores.pdf'); //Abre una pestaña
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Ordenar por nombre completo (nombre + apellido)
-        $proveedores = Proveedor::orderByRaw("CONCAT(nombreProveedor, ' ', apellidoProveedor) ASC")
-            ->get();
+        $query = Proveedor::orderByRaw("CONCAT(nombreProveedor, ' ', apellidoProveedor) ASC");
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereRaw("CONCAT(nombreProveedor, ' ', apellidoProveedor) LIKE ?", ["%{$search}%"])
+                  ->orWhere('nombreEmpresa', 'like', "%{$search}%")
+                  ->orWhere('RUC', 'like', "%{$search}%");
+            });
+        }
+
+        $proveedores = $query->paginate(6)->appends($request->query());
 
         return view('Proveedor.index', compact('proveedores'));
     }

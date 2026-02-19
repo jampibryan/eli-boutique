@@ -15,7 +15,7 @@
                     <i class="fas fa-cash-register" style="color: #D4AF37;"></i> Historial de Caja
                 </h4>
                 <small class="text-muted">Registros: <span class="badge bg-dark"
-                        id="totalCajas">{{ $cajas->count() }}</span></small>
+                        id="totalCajas">{{ $cajas->total() }}</span></small>
             </div>
             <div>
                 <a href="{{ route('cajas.pdf') }}" target="_blank" class="btn btn-boutique-dark" id="btnReporte">
@@ -27,50 +27,54 @@
 
     <!-- Filtros de búsqueda -->
     <div class="action-bar mt-3">
-        <div class="row g-2 align-items-end">
-            <div class="col-md-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-white">
-                        <i class="fas fa-search" style="color: #D4AF37;"></i>
-                    </span>
-                    <input type="text" id="buscarCaja" class="form-control" placeholder="Buscar por código de caja...">
+        <form method="GET" action="{{ route('cajas.index') }}" id="formFiltros">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search" style="color: #D4AF37;"></i>
+                        </span>
+                        <input type="text" name="search" id="buscarCaja" class="form-control" 
+                            placeholder="Buscar por código de caja..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
+                        <i class="fas fa-sort" style="color:#D4AF37;"></i> Orden
+                    </label>
+                    <select name="orden" id="ordenCaja" class="form-select" onchange="this.form.submit()">
+                        <option value="recientes" {{ request('orden', 'recientes') == 'recientes' ? 'selected' : '' }}>Más recientes</option>
+                        <option value="antiguos" {{ request('orden') == 'antiguos' ? 'selected' : '' }}>Más antiguos</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
+                        <i class="fas fa-calendar" style="color:#D4AF37;"></i> Desde
+                    </label>
+                    <input type="date" name="desde" id="fechaDesde" class="form-control" 
+                        value="{{ request('desde') }}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
+                        <i class="fas fa-calendar-check" style="color:#D4AF37;"></i> Hasta
+                    </label>
+                    <input type="date" name="hasta" id="fechaHasta" class="form-control" 
+                        value="{{ request('hasta') }}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-1">
+                    <a href="{{ route('cajas.index') }}" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                        <i class="fas fa-eraser"></i>
+                    </a>
                 </div>
             </div>
-            <div class="col-md-2">
-                <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
-                    <i class="fas fa-sort" style="color:#D4AF37;"></i> Orden
-                </label>
-                <select id="ordenCaja" class="form-select">
-                    <option value="recientes" selected>Más recientes</option>
-                    <option value="antiguos">Más antiguos</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
-                    <i class="fas fa-calendar" style="color:#D4AF37;"></i> Desde
-                </label>
-                <input type="date" id="fechaDesde" class="form-control">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label mb-1" style="font-size:0.8rem; color:#666;">
-                    <i class="fas fa-calendar-check" style="color:#D4AF37;"></i> Hasta
-                </label>
-                <input type="date" id="fechaHasta" class="form-control">
-            </div>
-            <div class="col-md-1">
-                <button id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
-                    <i class="fas fa-eraser"></i>
-                </button>
-            </div>
-        </div>
+        </form>
     </div>
 
     <!-- Grid de cajas -->
     <div class="container-fluid">
         <div class="row g-3" id="cajasGrid">
             @foreach ($cajas as $caja)
-                <div class="col-lg-3 col-md-4 col-sm-6 caja-item" data-codigo="{{ $caja->codigoCaja }}"
-                    data-fecha="{{ $caja->fecha }}">
+                <div class="col-lg-3 col-md-4 col-sm-6 caja-item">
                     <div class="boutique-card">
                         <!-- Header con fecha -->
                         <div class="boutique-card-header text-center">
@@ -153,6 +157,9 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Paginación --}}
+        {{ $cajas->links('pagination.boutique') }}
     </div>
 @stop
 
@@ -171,93 +178,28 @@
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function ordenarCajas() {
-            const grid = document.getElementById('cajasGrid');
-            const items = Array.from(grid.querySelectorAll('.caja-item'));
-            const orden = document.getElementById('ordenCaja').value;
-
-            items.sort((a, b) => {
-                const fechaA = a.dataset.fecha;
-                const fechaB = b.dataset.fecha;
-                return orden === 'recientes' ? fechaB.localeCompare(fechaA) : fechaA.localeCompare(fechaB);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('buscarCaja').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 600);
             });
 
-            items.forEach(item => grid.appendChild(item));
-        }
-
-        function filtrarCajas() {
-            const searchId = document.getElementById('buscarCaja').value.trim();
-            const fechaDesde = document.getElementById('fechaDesde').value;
-            const fechaHasta = document.getElementById('fechaHasta').value;
-            const items = document.querySelectorAll('.caja-item');
-            let visibleCount = 0;
-
-            items.forEach(item => {
-                const codigo = item.dataset.codigo;
-                const fecha = item.dataset.fecha;
-                let mostrar = true;
-
-                // Filtrar por código
-                if (searchId !== '') {
-                    const searchAsNum = parseInt(searchId);
-                    const codigoNum = parseInt(codigo);
-
-                    if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
-                        mostrar = mostrar && codigoNum.toString().startsWith(searchAsNum.toString());
-                    } else {
-                        mostrar = mostrar && codigo.toLowerCase().includes(searchId.toLowerCase());
-                    }
-                }
-
-                // Filtrar por rango de fechas
-                if (fechaDesde !== '') {
-                    mostrar = mostrar && fecha >= fechaDesde;
-                }
-                if (fechaHasta !== '') {
-                    mostrar = mostrar && fecha <= fechaHasta;
-                }
-
-                if (mostrar) {
-                    item.style.display = '';
-                    visibleCount++;
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-
-            document.getElementById('totalCajas').textContent = visibleCount;
-        }
-
-        function actualizarReporteUrl() {
-            const desde = document.getElementById('fechaDesde').value;
-            const hasta = document.getElementById('fechaHasta').value;
-            const btn = document.getElementById('btnReporte');
-            let url = "{{ route('cajas.pdf') }}";
-            const params = [];
-            if (desde) params.push('desde=' + desde);
-            if (hasta) params.push('hasta=' + hasta);
-            if (params.length > 0) url += '?' + params.join('&');
-            btn.href = url;
-        }
-
-        document.getElementById('buscarCaja').addEventListener('input', filtrarCajas);
-        document.getElementById('fechaDesde').addEventListener('change', function() {
-            filtrarCajas();
-            actualizarReporteUrl();
-        });
-        document.getElementById('fechaHasta').addEventListener('change', function() {
-            filtrarCajas();
-            actualizarReporteUrl();
-        });
-        document.getElementById('ordenCaja').addEventListener('change', ordenarCajas);
-
-        document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
-            document.getElementById('buscarCaja').value = '';
-            document.getElementById('fechaDesde').value = '';
-            document.getElementById('fechaHasta').value = '';
-            document.getElementById('ordenCaja').value = 'recientes';
-            ordenarCajas();
-            filtrarCajas();
+            // Actualizar URL del reporte con fechas
+            function actualizarReporteUrl() {
+                const desde = document.getElementById('fechaDesde').value;
+                const hasta = document.getElementById('fechaHasta').value;
+                const btn = document.getElementById('btnReporte');
+                let url = "{{ route('cajas.pdf') }}";
+                const params = [];
+                if (desde) params.push('desde=' + desde);
+                if (hasta) params.push('hasta=' + hasta);
+                if (params.length > 0) url += '?' + params.join('&');
+                btn.href = url;
+            }
             actualizarReporteUrl();
         });
     </script>

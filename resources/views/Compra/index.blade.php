@@ -17,12 +17,17 @@
                 <h4 class="mb-0" style="color: #2C2C2C;">
                     <i class="fas fa-box" style="color: #D4AF37;"></i> Órdenes de Compra
                 </h4>
-                <small class="text-muted">Total: <span class="badge bg-dark" id="totalCompras">{{ $compras->count() }}</span></small>
+                <small class="text-muted">Total: <span class="badge bg-dark" id="totalCompras">{{ $compras->total() }}</span></small>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('compras.create') }}" class="btn btn-boutique-gold">
                     <i class="fas fa-plus"></i> Nueva Orden
                 </a>
+                <!--
+                <a href="{{ route('tiempoCompras.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                    <i class="fas fa-clock"></i> Tiempo de Orden de Compras
+                </a>
+                -->
                 <a href="{{ route('compras.pdf') }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
                 </a>
@@ -32,43 +37,50 @@
 
     <!-- Barra de búsqueda y filtros -->
     <div class="action-bar mt-3">
-        <div class="row g-3 align-items-center">
-            <!-- Buscador -->
-            <div class="col-md-3">
-                <div class="input-group">
-                    <span class="input-group-text bg-white">
-                        <i class="fas fa-search" style="color: #D4AF37;"></i>
-                    </span>
-                    <input type="text" id="buscarCompra" class="form-control" placeholder="Buscar por ID...">
+        <form method="GET" action="{{ route('compras.index') }}" id="formFiltros">
+            <div class="row g-3 align-items-center">
+                <!-- Buscador -->
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search" style="color: #D4AF37;"></i>
+                        </span>
+                        <input type="text" name="search" id="buscarCompra" class="form-control" 
+                            placeholder="Buscar por código..." value="{{ request('search') }}">
+                    </div>
+                </div>
+                
+                <!-- Filtrar por estado -->
+                <div class="col-md-3">
+                    <select name="estado" id="filtrarEstado" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos los estados</option>
+                        <option value="Borrador" {{ request('estado') == 'Borrador' ? 'selected' : '' }}>Borrador</option>
+                        <option value="Enviada" {{ request('estado') == 'Enviada' ? 'selected' : '' }}>Enviada</option>
+                        <option value="Cotizada" {{ request('estado') == 'Cotizada' ? 'selected' : '' }}>Cotizada</option>
+                        <option value="Aprobada" {{ request('estado') == 'Aprobada' ? 'selected' : '' }}>Aprobada</option>
+                        <option value="Recibida" {{ request('estado') == 'Recibida' ? 'selected' : '' }}>Recibida</option>
+                        <option value="Pagada" {{ request('estado') == 'Pagada' ? 'selected' : '' }}>Pagada</option>
+                        <option value="Anulada" {{ request('estado') == 'Anulada' ? 'selected' : '' }}>Anulada</option>
+                        <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                    </select>
+                </div>
+                
+                <!-- Ordenar por fecha -->
+                <div class="col-md-3">
+                    <select name="orden" id="ordenarCompra" class="form-select" onchange="this.form.submit()">
+                        <option value="reciente" {{ request('orden', 'reciente') == 'reciente' ? 'selected' : '' }}>Más recientes</option>
+                        <option value="antigua" {{ request('orden') == 'antigua' ? 'selected' : '' }}>Más antiguas</option>
+                    </select>
+                </div>
+                
+                <!-- Botón limpiar filtros -->
+                <div class="col-md-3">
+                    <a href="{{ route('compras.index') }}" class="btn btn-boutique-dark w-100">
+                        <i class="fas fa-redo"></i> Limpiar Filtros
+                    </a>
                 </div>
             </div>
-            
-            <!-- Filtrar por estado -->
-            <div class="col-md-3">
-                <select id="filtrarEstado" class="form-select">
-                    <option value="">Todos los estados</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Pagado">Pagado</option>
-                    <option value="Recibido">Recibido</option>
-                    <option value="Anulado">Anulado</option>
-                </select>
-            </div>
-            
-            <!-- Ordenar por fecha -->
-            <div class="col-md-3">
-                <select id="ordenarCompra" class="form-select">
-                    <option value="reciente">Más recientes</option>
-                    <option value="antigua">Más antiguas</option>
-                </select>
-            </div>
-            
-            <!-- Botón limpiar filtros -->
-            <div class="col-md-3">
-                <button type="button" id="limpiarFiltros" class="btn btn-boutique-dark w-100">
-                    <i class="fas fa-redo"></i> Limpiar Filtros
-                </button>
-            </div>
-        </div>
+        </form>
     </div>
 
     <!-- Grid de compras -->
@@ -94,10 +106,7 @@
                     // Definir monto total de la compra
                     $pagoCompra = $compra->total ?? 0;
                 @endphp
-                <div class="col-lg-4 col-md-6 col-sm-12 compra-item"
-                     data-codigo="{{ $compra->codigoCompra }}"
-                     data-empresa="{{ $compra->proveedor ? strtolower($compra->proveedor->nombreEmpresa) : 'eliminado' }}"
-                     data-contacto="{{ $compra->proveedor ? strtolower($compra->proveedor->nombreProveedor . ' ' . $compra->proveedor->apellidoProveedor) : 'eliminado' }}">
+                <div class="col-lg-4 col-md-6 col-sm-12 compra-item">
                     <div class="boutique-card">
                         <!-- Header con estado -->
                         <div class="boutique-card-header d-flex justify-content-between align-items-center">
@@ -138,7 +147,7 @@
                             <div>
                                 <div class="info-row">
                                     <i class="fas fa-file-invoice icon"></i>
-                                    <span class="label">Comprobante:</span>
+                                    <span class="label">Comprobante: </span>
                                     <span class="value">{{ $comprobanteDescripcion }}</span>
                                 </div>
                                 <div class="info-row">
@@ -320,6 +329,9 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Paginación --}}
+        {{ $compras->links('pagination.boutique') }}
     </div>
 
     <!-- Modal de Confirmación de Anulación -->
@@ -475,84 +487,14 @@
                 }
             });
 
-            // Función para aplicar todos los filtros
-            function aplicarFiltros() {
-                const searchTerm = document.getElementById('buscarCompra').value.trim();
-                const filtroEstado = document.getElementById('filtrarEstado').value;
-                const ordenar = document.getElementById('ordenarCompra').value;
-                
-                const grid = document.getElementById('comprasGrid');
-                let items = Array.from(document.querySelectorAll('.compra-item'));
-                let visibleCount = 0;
-                
-                // Primero ordenar TODOS los items por fecha
-                items.sort((a, b) => {
-                    const fechaTextA = a.querySelector('.text-muted').textContent.trim();
-                    const fechaTextB = b.querySelector('.text-muted').textContent.trim();
-                    
-                    // Formato: dd/mm/yyyy
-                    const [diaA, mesA, anioA] = fechaTextA.split('/');
-                    const [diaB, mesB, anioB] = fechaTextB.split('/');
-                    
-                    const fechaA = new Date(parseInt(anioA), parseInt(mesA) - 1, parseInt(diaA));
-                    const fechaB = new Date(parseInt(anioB), parseInt(mesB) - 1, parseInt(diaB));
-                    
-                    if (ordenar === 'reciente') {
-                        return fechaB - fechaA;
-                    } else {
-                        return fechaA - fechaB;
-                    }
-                });
-                
-                // Limpiar y reordenar
-                grid.innerHTML = '';
-                items.forEach(item => grid.appendChild(item));
-                
-                // Aplicar filtros de visibilidad
-                items.forEach(item => {
-                    const codigo = item.dataset.codigo;
-                    const estado = item.querySelector('.status-badge').textContent.trim();
-                    let visible = true;
-                    
-                    // Filtrar por búsqueda de ID
-                    if (searchTerm !== '') {
-                        const codigoNum = parseInt(codigo);
-                        const searchAsNum = parseInt(searchTerm);
-                        
-                        if (!isNaN(searchAsNum) && !isNaN(codigoNum)) {
-                            visible = codigoNum.toString().startsWith(searchAsNum.toString());
-                        } else {
-                            visible = codigo.toLowerCase().includes(searchTerm.toLowerCase());
-                        }
-                    }
-                    
-                    // Filtrar por estado
-                    if (visible && filtroEstado) {
-                        visible = estado === filtroEstado;
-                    }
-                    
-                    item.style.display = visible ? '' : 'none';
-                    if (visible) visibleCount++;
-                });
-                
-                document.getElementById('totalCompras').textContent = visibleCount;
-            }
-
-            // Event listeners
-            document.getElementById('buscarCompra').addEventListener('input', aplicarFiltros);
-            document.getElementById('filtrarEstado').addEventListener('change', aplicarFiltros);
-            document.getElementById('ordenarCompra').addEventListener('change', aplicarFiltros);
-            
-            // Limpiar filtros
-            document.getElementById('limpiarFiltros').addEventListener('click', function() {
-                document.getElementById('buscarCompra').value = '';
-                document.getElementById('filtrarEstado').value = '';
-                document.getElementById('ordenarCompra').value = 'reciente';
-                aplicarFiltros();
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('buscarCompra').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 600);
             });
-            
-            // Aplicar filtros al cargar
-            aplicarFiltros();
         });
 
         function confirmarAccion(accion, id, nombre) {

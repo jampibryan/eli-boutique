@@ -117,6 +117,7 @@
     font-weight: 600;
     color: #6c757d;
     min-width: 100px;
+    margin-right: 0.35rem;
 }
 .info-row .value {
     color: #2C2C2C;

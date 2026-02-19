@@ -41,14 +41,20 @@ class ClienteController extends Controller
         return $pdf->stream('Reporte de Clientes.pdf'); //Abre una pestaña
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Ordenar por nombre completo (nombre + apellido)
-        $clientes = Cliente::orderByRaw("CONCAT(nombreCliente, ' ', apellidoCliente) ASC")
-            ->get();
+        $query = Cliente::orderByRaw("CONCAT(nombreCliente, ' ', apellidoCliente) ASC");
 
-        // return view('Cliente.index', ['clientes' => $clientes]);
-        // Es lo mismo
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereRaw("CONCAT(nombreCliente, ' ', apellidoCliente) LIKE ?", ["%{$search}%"])
+                  ->orWhere('dniCliente', 'like', "%{$search}%");
+            });
+        }
+
+        $clientes = $query->paginate(6)->appends($request->query());
+
         return view('Cliente.index', compact('clientes'));
     }
 

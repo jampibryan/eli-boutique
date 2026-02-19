@@ -10,6 +10,7 @@ use App\Http\Controllers\PrediccionController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteGraficoController;
+use App\Http\Controllers\TiempoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Auth;
@@ -97,9 +98,15 @@ Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('vent
 Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
 Route::resource('ventas', VentaController::class);
 
+// TIEMPO DE VENTAS
+Route::get('/tiempo-ventas/reporte', [TiempoController::class, 'pdfTiempoVentas'])->name('tiempoVentas.pdf');
+
 // COMPRAS
 Route::get('/compras/reporte', [CompraController::class, 'pdfCompras'])->name('compras.pdf');
 Route::get('/compras/{compra}/orden', [CompraController::class, 'pdfOrdenCompra'])->name('ordenCompras.pdf');
+
+// TIEMPO DE ORDEN DE COMPRAS
+Route::get('/tiempo-compras/reporte', [TiempoController::class, 'pdfTiempoOrdenCompras'])->name('tiempoCompras.pdf');
 
 Route::resource('compras', CompraController::class);
 Route::post('/compras/{id}/anular', [CompraController::class, 'anularCompra'])->name('compras.anular');

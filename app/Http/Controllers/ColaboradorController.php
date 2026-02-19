@@ -31,11 +31,19 @@ class ColaboradorController extends Controller
         return $pdf->stream('Reporte de Colaboradores.pdf'); //Abre una pestaña
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Ordenar por nombre completo (nombre + apellido)
-        $colaboradores = Colaborador::orderByRaw("CONCAT(nombreColab, ' ', apellidosColab) ASC")
-            ->get();
+        $query = Colaborador::orderByRaw("CONCAT(nombreColab, ' ', apellidosColab) ASC");
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereRaw("CONCAT(nombreColab, ' ', apellidosColab) LIKE ?", ["%{$search}%"])
+                  ->orWhere('dniColab', 'like', "%{$search}%");
+            });
+        }
+
+        $colaboradores = $query->paginate(6)->appends($request->query());
 
         return view('Colaborador.index', compact('colaboradores'));
     }

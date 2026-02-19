@@ -72,12 +72,24 @@ class CompraController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        // Cargar las compras con sus detalles y pagos
-        $compras = Compra::with(['proveedor', 'detalles.producto', 'detalles.talla', 'pago', 'estadoTransaccion', 'comprobante'])
-            ->orderBy('id', 'desc')
-            ->get();
+        $query = Compra::with(['proveedor', 'detalles.producto', 'detalles.talla', 'pago', 'estadoTransaccion', 'comprobante']);
+
+        if ($request->filled('search')) {
+            $query->where('codigoCompra', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('estado')) {
+            $query->whereHas('estadoTransaccion', function($q) use ($request) {
+                $q->where('descripcionET', $request->estado);
+            });
+        }
+
+        $orden = $request->get('orden', 'reciente');
+        $query->orderBy('id', $orden === 'reciente' ? 'desc' : 'asc');
+
+        $compras = $query->paginate(6)->appends($request->query());
         return view('Compra.index', compact('compras'));
     }
 

@@ -29,14 +29,14 @@
     <!-- Segunda barra de acciones: Filtros y búsqueda -->
     <div class="card shadow-sm mb-4" style="border: none; border-left: 4px solid #D4AF37;">
         <div class="card-body py-3">
-            <div class="row align-items-center">
-                <div class="col-md-3">
-                    <a href="{{ route('productos.create') }}" class="btn btn-boutique-gold w-100">
-                        <i class="fas fa-plus-circle"></i> Nuevo Producto
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <form method="GET" class="mb-0">
+            <form method="GET" action="{{ route('productos.index') }}" id="formFiltros">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <a href="{{ route('productos.create') }}" class="btn btn-boutique-gold w-100">
+                            <i class="fas fa-plus-circle"></i> Nuevo Producto
+                        </a>
+                    </div>
+                    <div class="col-md-3">
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-filter" style="color: #D4AF37;"></i>
@@ -52,37 +52,42 @@
                                 @endforeach
                             </select>
                         </div>
-                    </form>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white">
-                            <i class="fas fa-search" style="color: #D4AF37;"></i>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="fas fa-search" style="color: #D4AF37;"></i>
+                            </span>
+                            <input type="text" name="search" id="buscarProducto" class="form-control" 
+                                placeholder="Buscar producto..." value="{{ request('search') }}">
+                            @if(request('search'))
+                                <a href="{{ route('productos.index', request()->except('search', 'page')) }}" 
+                                    class="input-group-text bg-white" style="cursor:pointer;">
+                                    <i class="fas fa-times text-danger"></i>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <span class="badge bg-light text-dark px-3 py-2">
+                            <i class="fas fa-boxes" style="color: #D4AF37;"></i>
+                            <span id="totalProductos">{{ $productos->total() }}</span> producto(s)
                         </span>
-                        <input type="text" id="buscarProducto" class="form-control" placeholder="Buscar producto...">
+                        <span class="badge bg-light text-dark px-3 py-2 mt-1">
+                            <i class="fas fa-warehouse" style="color: #28a745;"></i>
+                            <span id="totalStock">{{ $totalStock }}</span>
+                            en stock
+                        </span>
                     </div>
                 </div>
-                <div class="col-md-2 text-end">
-                    <span class="badge bg-light text-dark px-3 py-2">
-                        <i class="fas fa-boxes" style="color: #D4AF37;"></i>
-                        <span id="totalProductos">{{ $productos->count() }}</span> producto(s)
-                    </span>
-                    <span class="badge bg-light text-dark px-3 py-2 mt-1">
-                        <i class="fas fa-warehouse" style="color: #28a745;"></i>
-                        <span
-                            id="totalStock">{{ $productos->sum(function ($p) {return $p->tallas->sum('pivot.stock');}) }}</span>
-                        en stock
-                    </span>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- Grid de productos premium -->
     <div class="row g-4" id="productosGrid">
         @foreach ($productos as $producto)
-            <div class="col-lg-3 col-md-4 col-sm-6 producto-item" data-nombre="{{ strtolower($producto->descripcionP) }}"
-                data-stock="{{ $producto->tallas->sum('pivot.stock') }}">
+            <div class="col-lg-3 col-md-4 col-sm-6 producto-item">
                 <div class="producto-card">
                     <!-- Badge de categoría -->
                     <div class="categoria-badge">
@@ -116,7 +121,7 @@
 
                         <!-- Botones de acción -->
                         <div class="producto-acciones">
-                            @if($producto->stock_total > 0)
+                            @if ($producto->stock_total > 0)
                                 <button type="button" class="btn btn-carrito btn-agregar-carrito"
                                     data-producto-id="{{ $producto->id }}">
                                     <i class="fas fa-cart-plus"></i> Agregar
@@ -127,18 +132,17 @@
                                 </button>
                             @endif
                             <div class="btn-group" role="group">
-                                <a href="{{ route('productos.edit', $producto) }}" class="btn btn-accion"
-                                    title="Editar">
+                                <a href="{{ route('productos.edit', $producto) }}" class="btn btn-accion" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button class="btn btn-accion btn-eliminar"
-                                    onclick="confirmarEliminacion('{{ $producto->id }}', '{{ addslashes($producto->descripcionP) }}', 'producto')" 
+                                    onclick="confirmarEliminacion('{{ $producto->id }}', '{{ addslashes($producto->descripcionP) }}', 'producto')"
                                     title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <form id="form-eliminar-producto-{{ $producto->id }}" 
-                                    action="{{ route('productos.destroy', $producto) }}" 
-                                    method="post" style="display: none;">
+                                <form id="form-eliminar-producto-{{ $producto->id }}"
+                                    action="{{ route('productos.destroy', $producto) }}" method="post"
+                                    style="display: none;">
                                     @csrf
                                     @method('delete')
                                 </form>
@@ -157,6 +161,9 @@
         </div>
     @endif
 
+    {{-- Paginación --}}
+    {{ $productos->links('pagination.boutique') }}
+
     <!-- Modal de Confirmación de Eliminación -->
     <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -173,21 +180,21 @@
                         <i class="fas fa-info-circle me-2"></i>
                         <strong>¡Atención!</strong> Esta acción marcará el registro como eliminado.
                     </div>
-                    
+
                     <p class="mb-3">Estás a punto de eliminar:</p>
                     <div class="alert alert-light border shadow-sm">
                         <strong id="nombreElemento" class="text-danger"></strong>
                     </div>
-                    
+
                     <p class="mb-2"><strong>Para confirmar, escribe:</strong></p>
                     <div class="input-group mb-3">
                         <span class="input-group-text bg-light">
                             <i class="fas fa-keyboard"></i>
                         </span>
-                        <input type="text" id="confirmacionTexto" class="form-control" 
-                            placeholder="Escribe ELIMINAR" autocomplete="off">
+                        <input type="text" id="confirmacionTexto" class="form-control" placeholder="Escribe ELIMINAR"
+                            autocomplete="off">
                     </div>
-                    
+
                     <small class="text-muted">
                         <i class="fas fa-shield-alt me-1"></i>
                         Los registros históricos seguirán mostrando esta información.
@@ -265,8 +272,17 @@
                                             @php
                                                 $stockTotal = 0;
                                                 // Orden personalizado de tallas
-                                                $ordenTallas = ['XS' => 1, 'S' => 2, 'M' => 3, 'L' => 4, 'XL' => 5, 'XXL' => 6];
-                                                $tallasOrdenadas = $producto->tallaStocks->sortBy(function($tallaStock) use ($ordenTallas) {
+                                                $ordenTallas = [
+                                                    'XS' => 1,
+                                                    'S' => 2,
+                                                    'M' => 3,
+                                                    'L' => 4,
+                                                    'XL' => 5,
+                                                    'XXL' => 6,
+                                                ];
+                                                $tallasOrdenadas = $producto->tallaStocks->sortBy(function (
+                                                    $tallaStock,
+                                                ) use ($ordenTallas) {
                                                     $descripcion = strtoupper($tallaStock->talla->descripcion);
                                                     return $ordenTallas[$descripcion] ?? 999; // Si no está en el orden, va al final
                                                 });
@@ -588,33 +604,15 @@
     </script>
 
     <script>
-        // Función para normalizar texto (eliminar acentos)
-        function normalizeText(text) {
-            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        }
-
-        // Búsqueda de productos
-        document.getElementById('buscarProducto').addEventListener('input', function() {
-            const searchTerm = normalizeText(this.value.toLowerCase().trim());
-            const items = document.querySelectorAll('.producto-item');
-            let visibleCount = 0;
-            let totalStock = 0;
-
-            items.forEach(item => {
-                const nombre = normalizeText(item.dataset.nombre);
-                const stock = parseInt(item.dataset.stock) || 0;
-
-                if (searchTerm === '' || nombre.includes(searchTerm)) {
-                    item.style.display = '';
-                    visibleCount++;
-                    totalStock += stock;
-                } else {
-                    item.style.display = 'none';
-                }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Búsqueda con debounce
+            let searchTimeout;
+            document.getElementById('buscarProducto').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 600);
             });
-
-            document.getElementById('totalProductos').textContent = visibleCount;
-            document.getElementById('totalStock').textContent = totalStock;
         });
 
         $(document).ready(function() {
@@ -693,18 +691,22 @@
 
         // Sistema de confirmación de eliminación
         let modalEliminar;
-        let elementoActual = { id: null, tipo: null };
+        let elementoActual = {
+            id: null,
+            tipo: null
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminar'));
-            
+
             document.getElementById('confirmacionTexto').addEventListener('input', function() {
                 const texto = this.value.trim().toUpperCase();
                 document.getElementById('btnConfirmarEliminar').disabled = texto !== 'ELIMINAR';
             });
 
             document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
-                document.getElementById(`form-eliminar-${elementoActual.tipo}-${elementoActual.id}`).submit();
+                document.getElementById(`form-eliminar-${elementoActual.tipo}-${elementoActual.id}`)
+                .submit();
             });
 
             document.getElementById('modalEliminar').addEventListener('hidden.bs.modal', function() {
@@ -714,7 +716,10 @@
         });
 
         function confirmarEliminacion(id, nombre, tipo) {
-            elementoActual = { id, tipo };
+            elementoActual = {
+                id,
+                tipo
+            };
             document.getElementById('nombreElemento').textContent = nombre;
             modalEliminar.show();
             setTimeout(() => document.getElementById('confirmacionTexto').focus(), 500);

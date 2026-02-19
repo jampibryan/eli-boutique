@@ -86,9 +86,26 @@ class CajaController extends Controller
         return $pdf->stream('Reporte de Cajas.pdf');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $cajas = Caja::orderBy('fecha', 'desc')->get();
+        $query = Caja::query();
+
+        if ($request->filled('search')) {
+            $query->where('codigoCaja', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('desde')) {
+            $query->where('fecha', '>=', $request->desde);
+        }
+
+        if ($request->filled('hasta')) {
+            $query->where('fecha', '<=', $request->hasta);
+        }
+
+        $orden = $request->get('orden', 'recientes');
+        $query->orderBy('fecha', $orden === 'recientes' ? 'desc' : 'asc');
+
+        $cajas = $query->paginate(4)->appends($request->query());
         return view('Caja.index', compact('cajas'));
     }
 
