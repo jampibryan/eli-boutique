@@ -22,3 +22,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Ruta para la predicción de ventas
 // Route::post('api/prediccion-ventas', [VentaController::class, 'predecirVentas']);
+// Ruta para obtener datos de ventas
+Route::get('/obtener-datos-ventas', [VentaController::class, 'obtenerDatosVentas']);

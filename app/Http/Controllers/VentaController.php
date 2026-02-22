@@ -1,10 +1,8 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Caja;
 use App\Models\Cliente;
-use App\Models\Colaborador;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
@@ -13,8 +11,6 @@ use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class VentaController extends Controller
 {
@@ -37,6 +33,8 @@ class VentaController extends Controller
         return response()->json($ventas);
     }
 
+    // Detalle de venta para API (incluye cliente, estado, detalles con producto, pago y comprobante)
+
     public function apiVentaDetalle($id)
     {
         $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto', 'pago.comprobante'])
@@ -45,54 +43,37 @@ class VentaController extends Controller
         return response()->json($venta);
     }
 
-    public function exportarVentasCsv()
-    {
-        $ventas = Venta::with('detalles.producto')->get();
-
-        $csvFileName = 'ventas.csv';
-        $file = fopen($csvFileName, 'w');
-
-        fputcsv($file, ['producto_id', 'cantidad_vendida', 'año', 'mes', 'día']);
-
-        foreach ($ventas as $venta) {
-            foreach ($venta->detalles as $detalle) {
-                $fecha = $venta->created_at;
-                fputcsv($file, [
-                    'producto_id' => $detalle->producto_id,
-                    'cantidad_vendida' => $detalle->cantidad,
-                    'año' => $fecha->year,
-                    'mes' => $fecha->month,
-                    'día' => $fecha->day
-                ]);
-            }
-        }
-
-        fclose($file);
-
-        return response()->download($csvFileName)->deleteFileAfterSend(true);
-    }
 
     public function obtenerDatosVentas(Request $request)
-    {
-        $ventas = Venta::with('detalles.producto')->get();
+        {
+            // Obtiene todas las ventas con detalles y producto asociado
+            $ventas = Venta::with(['detalles.producto'])->get();
 
-        $resultados = [];
+            // Estructura de respuesta
+            $resultados = collect();
 
-        foreach ($ventas as $venta) {
-            foreach ($venta->detalles as $detalle) {
-                $resultados[] = [
-                    'producto_nombre' => $detalle->producto->descripcionP,
-                    'cantidad_vendida' => $detalle->cantidad,
-                    'año' => $venta->created_at->year,
-                    'mes' => $venta->created_at->month,
-                    'dia' => $venta->created_at->day,
-                    'producto_id' => $detalle->producto_id,
-                ];
+            foreach ($ventas as $venta) {
+                // Validar que existan detalles
+                if ($venta->detalles && $venta->detalles->count() > 0) {
+                    foreach ($venta->detalles as $detalle) {
+                        // Validar que exista producto
+                        if ($detalle->producto) {
+                            $resultados->push([
+                                'producto_id' => $detalle->producto_id,
+                                'producto_nombre' => $detalle->producto->descripcionP,
+                                'cantidad_vendida' => $detalle->cantidad,
+                                'año' => $venta->created_at->year,
+                                'mes' => $venta->created_at->month,
+                                'dia' => $venta->created_at->day,
+                            ]);
+                        }
+                    }
+                }
             }
-        }
 
-        return response()->json($resultados);
-    }
+            // Devuelve la colección como array JSON
+            return response()->json($resultados->all());
+        }
 
 
     public function pdfVentas()
