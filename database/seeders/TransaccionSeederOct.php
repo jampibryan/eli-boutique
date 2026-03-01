@@ -17,7 +17,7 @@ use App\Models\Cliente;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
-class VentaSeeder extends Seeder
+class TransaccionSeederOct extends Seeder
 {
     // =====================================================================
     // OCTUBRE 2025 — 256 ventas + 50 compras | 27 dias operativos
@@ -521,7 +521,7 @@ class VentaSeeder extends Seeder
                     $stockDisponible = $tallaInfo['stock'];
                     break;
                 }
-                $intentos++;    
+                $intentos++;
             }
 
             if (!$productoId) continue;

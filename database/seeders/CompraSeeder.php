@@ -7,12 +7,13 @@ use Illuminate\Database\Seeder;
 class CompraSeeder extends Seeder
 {
     /**
-     * Las compras de octubre 2025 se procesan cronológicamente
-     * dentro de VentaSeeder para mantener coherencia de stock.
-     * (4 compras los sábados: Oct 4, 11, 18, 25)
+     * Las compras se procesan cronológicamente dentro de:
+     * - TransaccionSeederOct (octubre 2025)
+     * - TransaccionSeeder (noviembre 2025 - enero 2026)
+     * para mantener coherencia de stock.
      */
     public function run()
     {
-        echo "ℹ️  Las compras se procesan dentro de VentaSeeder (orden cronológico)\n";
+        echo "ℹ️  Las compras se procesan dentro de TransaccionSeederOct / TransaccionSeeder (orden cronológico)\n";
     }
 }

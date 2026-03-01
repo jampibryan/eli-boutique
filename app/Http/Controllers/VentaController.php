@@ -59,6 +59,7 @@ class VentaController extends Controller
                         // Validar que exista producto
                         if ($detalle->producto) {
                             $resultados->push([
+                                'venta_id' => $venta->id,
                                 'producto_id' => $detalle->producto_id,
                                 'producto_nombre' => $detalle->producto->descripcionP,
                                 'cantidad_vendida' => $detalle->cantidad,
