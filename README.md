@@ -6,22 +6,61 @@
 
 <p align="center">
   Sistema integral de gestión para boutique de ropa desarrollado con <strong>Laravel 10</strong>.<br>
-  Control de ventas, compras, inventario, caja diaria, reportes gráficos y generación de PDFs profesionales.
+  Control de ventas, compras, inventario, caja diaria, reportes gráficos, generación de PDFs profesionales<br>
+  y <strong>API REST</strong> para consumo desde aplicación móvil Flutter y análisis predictivo con Streamlit.
 </p>
 
 ---
 
 ## 📋 Tabla de Contenidos
 
+- [Arquitectura del Sistema](#-arquitectura-del-sistema)
 - [Requisitos del Sistema](#-requisitos-del-sistema)
 - [Instalación](#-instalación)
 - [Módulos del Sistema](#-módulos-del-sistema)
+- [API REST](#-api-rest)
 - [Sistema de Roles y Permisos](#-sistema-de-roles-y-permisos)
 - [Reportes y PDFs](#-reportes-y-pdfs)
 - [Tecnologías Utilizadas](#️-tecnologías-utilizadas)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Notas Importantes](#-notas-importantes)
 - [Despliegue en Producción](#-despliegue-en-producción)
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+El sistema opera con una arquitectura de tres capas conectadas por red local (LAN):
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        RED LOCAL (LAN)                          │
+│                                                                 │
+│  ┌──────────────────┐   HTTP/JSON   ┌────────────────────────┐  │
+│  │  📱 Flutter App  │ ◄───────────► │  🖥️ Laravel Backend   │  │
+│  │  (Dart)          │    /api/*     │  PHP 8.2 + MySQL       │  │
+│  │  App Móvil       │               │  192.168.0.102:8000    │  │
+│  └──────────────────┘               └────────────┬───────────┘  │
+│                                                  │              │
+│  ┌──────────────────┐   HTTP/JSON                │              │
+│  │  📊 Streamlit    │ ◄─────────────────────────►│              │
+│  │  (Python)        │  /api/obtener-datos-ventas │              │
+│  │  ML Predicción   │                            │              │
+│  └──────────────────┘                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Componente | Tecnología | Función |
+|------------|------------|--------|
+| **Backend** | Laravel 10 (PHP 8.2) | API REST + Aplicación web + Base de datos |
+| **App Móvil** | Flutter (Dart) | Consulta de datos en tiempo real vía API |
+| **ML/Predicción** | Streamlit (Python) | Análisis predictivo de ventas |
+
+**Servidor de desarrollo:**
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
+Accesible en LAN desde cualquier dispositivo en `http://192.168.0.102:8000`
 
 ---
 
@@ -153,11 +192,58 @@ Accede a: `http://localhost:8000`
   - Por mes: resumen mensual (cantidad de operaciones, productos, subtotal, IGV, total)
   - Por día: resumen diario con totales
 
+### ⏱️ Reportes de Tiempo
+- **Tiempo de Ventas**: Reporte PDF con tiempo estimado de atención por venta (rango 40-80 segundos)
+- **Tiempo de Orden de Compras**: Reporte PDF con tiempo estimado de procesamiento por compra (rango 80-120 segundos)
+- Fórmula determinista basada en cantidad de ítems, unidades y hash CRC32
+- Incluye promedio, mínimo y máximo por período
+
 ### 🔮 Predicción de Ventas
 - Módulo de análisis predictivo con datos históricos de ventas
+- Endpoint API dedicado para alimentar modelo Streamlit (Python)
 
 ### 📖 Guía de Ventas
 - Documentación HTML interactiva para el proceso de ventas
+
+---
+
+## 🌐 API REST
+
+API de solo lectura (GET) para consumo desde Flutter y Streamlit. No requiere autenticación (uso en red local).
+
+**Base URL:** `http://192.168.0.102:8000/api`
+
+**Controlador:** `App\Http\Controllers\Api\ApiController`
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /api/dashboard` | Resumen del día: caja activa, ventas, totales de clientes/productos/proveedores |
+| `GET /api/clientes` | Listado de clientes con tipo de género |
+| `GET /api/clientes/{id}` | Detalle de un cliente específico |
+| `GET /api/productos` | Catálogo con categoría, género y stock desglosado por talla |
+| `GET /api/productos/{id}` | Detalle de producto con stock por talla |
+| `GET /api/categorias` | Catálogo de categorías de producto |
+| `GET /api/tallas` | Catálogo de tallas disponibles |
+| `GET /api/ventas` | Listado de ventas con cliente, estado, detalles y comprobante |
+| `GET /api/ventas/{id}` | Detalle de venta con productos vendidos |
+| `GET /api/compras` | Listado de compras con proveedor, detalles y estado |
+| `GET /api/compras/{id}` | Detalle de compra |
+| `GET /api/proveedores` | Listado de proveedores |
+| `GET /api/proveedores/{id}` | Detalle de proveedor |
+| `GET /api/cajas` | Historial de cajas ordenado por fecha |
+| `GET /api/cajas/{id}` | Detalle de caja con ventas y balance diario |
+| `GET /api/estados-transaccion` | Catálogo de estados (Pendiente, Pagado, Anulado, etc.) |
+| `GET /api/obtener-datos-ventas` | Datos aplanados para ML/predicción (Streamlit) |
+
+**Formato de respuesta estándar:**
+```json
+{
+  "success": true,
+  "data": [ ... ]
+}
+```
+
+**Configuración CORS** (`config/cors.php`): Permite cualquier origen (`*`) para acceso desde dispositivos en la red local.
 
 ---
 
@@ -201,6 +287,8 @@ Todos los reportes utilizan **DomPDF** con diseño profesional (A4 landscape):
 | Informe de Caja | Métricas financieras diarias |
 | Gráfico de Ventas (PDF) | Resumen agrupado por mes o día + imagen del gráfico |
 | Gráfico de Compras (PDF) | Resumen agrupado por mes o día + imagen del gráfico |
+| Tiempo de Ventas | Tiempo estimado de atención por venta |
+| Tiempo de O. Compras | Tiempo estimado de procesamiento por orden de compra |
 
 Características comunes:
 - Header con logo, datos de la empresa y fecha de emisión
@@ -240,7 +328,12 @@ Características comunes:
 |------------|-----------|
 | MySQL | Base de datos relacional |
 | SMTP (Gmail) | Envío de emails con órdenes de compra |
-
+### Ecosistema Multi-plataforma
+| Tecnología | Versión | Propósito |
+|------------|---------|----------|
+| Flutter | — | Aplicación móvil (consultas vía API REST) |
+| Streamlit | — | Dashboard de predicción ML (Python) |
+| CORS | — | Acceso entre plataformas en red local |
 ---
 
 ## 📁 Estructura del Proyecto
@@ -249,6 +342,7 @@ Características comunes:
 eli-boutique/
 ├── app/
 │   ├── Http/Controllers/       # Controladores por módulo
+│   │   └── Api/                # ApiController — endpoints REST
 │   ├── Models/                 # 20 modelos Eloquent
 │   ├── Mail/                   # Mailable para órdenes de compra
 │   └── Providers/              # Service Providers
@@ -274,8 +368,8 @@ eli-boutique/
 │   ├── guiaventas/             # Guía HTML de ventas
 │   └── help/                   # Documentación de ayuda
 ├── routes/
-│   ├── web.php                 # Rutas principales
-│   └── api.php                 # API (clientes, proveedores, ventas)
+│   ├── web.php                 # Rutas web (vistas, PDFs, carrito)
+│   └── api.php                 # API REST — 18 endpoints GET para Flutter/Streamlit
 └── config/
     ├── adminlte.php            # Configuración del menú lateral
     └── permission.php          # Configuración de Spatie Permission

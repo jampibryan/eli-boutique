@@ -19,33 +19,27 @@ class Venta extends Model
         'montoTotal',
     ];
 
-    // App\Models\Venta.php
     protected static function booted()
     {
         parent::booted();
 
         static::creating(function ($venta) {
-            // Estado predeterminado "Pendiente"
             if (!$venta->estado_transaccion_id) {
                 $estadoPendiente = EstadoTransaccion::where('descripcionET', 'Pendiente')->first();
                 $venta->estado_transaccion_id = $estadoPendiente->id;
             }
 
-            // Generar código de venta
             $ultimoCodigo = Venta::max('codigoVenta');
-            $nuevoCodigo = str_pad((int)$ultimoCodigo + 1, 7, '0', STR_PAD_LEFT);
+            $nuevoCodigo = str_pad((int) $ultimoCodigo + 1, 7, '0', STR_PAD_LEFT);
             $venta->codigoVenta = $nuevoCodigo;
         });
 
-        // ==================== EVENTO: AL CREAR VENTA ====================
         static::created(function ($venta) {
-            // SOLO sumar a caja si el estado es "Pagado"
             if ($venta->caja && $venta->estadoTransaccion->descripcionET === 'Pagado') {
-                // Solo contar cliente si es único en esta caja (no repetir)
                 $clienteYaContado = Venta::where('caja_id', $venta->caja_id)
                     ->where('cliente_id', $venta->cliente_id)
                     ->where('id', '!=', $venta->id)
-                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->whereHas('estadoTransaccion', fn ($q) => $q->where('descripcionET', 'Pagado'))
                     ->exists();
 
                 if (!$clienteYaContado) {
@@ -59,22 +53,19 @@ class Venta extends Model
             }
         });
 
-        // ==================== EVENTO: AL ACTUALIZAR VENTA ====================
         static::updated(function ($venta) {
             $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
             $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
 
-            // Caso 1: Cambió de Pendiente → Pagado (SUMA a caja)
             if (
                 $venta->wasChanged('estado_transaccion_id') &&
                 $venta->estado_transaccion_id == $estadoPagado->id &&
                 $venta->caja
             ) {
-                // Solo contar cliente si es único en esta caja
                 $clienteYaContado = Venta::where('caja_id', $venta->caja_id)
                     ->where('cliente_id', $venta->cliente_id)
                     ->where('id', '!=', $venta->id)
-                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->whereHas('estadoTransaccion', fn ($q) => $q->where('descripcionET', 'Pagado'))
                     ->exists();
 
                 if (!$clienteYaContado) {
@@ -87,18 +78,15 @@ class Venta extends Model
                 $venta->caja->increment('productosVendidos', $totalProductosVenta);
             }
 
-            // Caso 2: Cambió de Pagado → Anulado (RESTA de caja)
             if (
                 $venta->wasChanged('estado_transaccion_id') &&
                 $venta->estado_transaccion_id == $estadoAnulado->id &&
                 $venta->caja
             ) {
-
-                // Solo restar cliente si no tiene otras ventas pagadas en esta caja
                 $clienteTieneOtrasVentas = Venta::where('caja_id', $venta->caja_id)
                     ->where('cliente_id', $venta->cliente_id)
                     ->where('id', '!=', $venta->id)
-                    ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                    ->whereHas('estadoTransaccion', fn ($q) => $q->where('descripcionET', 'Pagado'))
                     ->exists();
 
                 if (!$clienteTieneOtrasVentas) {
@@ -113,7 +101,6 @@ class Venta extends Model
         });
     }
 
-    // ==================== RELACIONES ====================
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
@@ -141,25 +128,26 @@ class Venta extends Model
 
     public function anular()
     {
-        // Cambiar el estado de la venta a "Anulado"
         $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
+
         if ($estadoAnulado) {
             $this->estado_transaccion_id = $estadoAnulado->id;
             $this->save();
         }
 
-        // Devolver los productos al stock por talla
         foreach ($this->detalles as $detalle) {
-            $productoTallaStock = \App\Models\ProductoTallaStock::where('producto_id', $detalle->producto_id)
+            if (!$detalle->producto_talla_id) {
+                continue;
+            }
+
+            $productoTallaStock = ProductoTallaStock::where('producto_id', $detalle->producto_id)
                 ->where('producto_talla_id', $detalle->producto_talla_id)
                 ->first();
-            
+
             if ($productoTallaStock) {
                 $productoTallaStock->stock += $detalle->cantidad;
                 $productoTallaStock->save();
             }
         }
-
-        // NOTA: La resta de la caja se hace automáticamente en el evento 'updated'
     }
 }

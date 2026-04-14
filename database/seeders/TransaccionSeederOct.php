@@ -573,6 +573,7 @@ class TransaccionSeederOct extends Seeder
             VentaDetalle::create([
                 'venta_id' => $venta->id,
                 'producto_id' => $det['producto_id'],
+                'producto_talla_id' => $det['talla_id'],
                 'cantidad' => $det['cantidad'],
                 'precio_unitario' => $det['precio_unitario'],
                 'base_imponible' => $det['base_imponible'],

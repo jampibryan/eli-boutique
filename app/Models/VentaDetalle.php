@@ -12,6 +12,7 @@ class VentaDetalle extends Model
     protected $fillable = [
         'venta_id',
         'producto_id',
+        'producto_talla_id',
         'cantidad',
         'precio_unitario',
         'base_imponible',
@@ -27,5 +28,10 @@ class VentaDetalle extends Model
     public function producto()
     {
         return $this->belongsTo(Producto::class);
+    }
+
+    public function talla()
+    {
+        return $this->belongsTo(ProductoTalla::class, 'producto_talla_id');
     }
 }
