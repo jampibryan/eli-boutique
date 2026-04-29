@@ -91,6 +91,7 @@ Route::middleware([
 
     // VENTAS (API movida a routes/api.php → GET /api/ventas, /api/ventas/{id})
     Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
+    Route::get('/ventas/{venta}/comprobante-moderno', [VentaController::class, 'pdfComprobanteModerno'])->name('ventas.comprobante.moderno');
     Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
     Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
     Route::resource('ventas', VentaController::class);

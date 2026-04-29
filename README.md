@@ -1,443 +1,355 @@
-# 🛍️ Eli Boutique - Sistema de Gestión Empresarial
+# Eli Boutique - Sistema de Gestion Empresarial
 
-<p align="center">
-  <img src="public/img/logo_eli_boutique.png" alt="Eli Boutique Logo" width="120" style="border-radius: 50%;">
-</p>
+Sistema web desarrollado con Laravel 10 para la gestion operativa de una boutique de ropa. Incluye ventas, compras, inventario por tallas, caja diaria, reportes PDF, reportes graficos y una API REST protegida para integraciones externas.
 
-<p align="center">
-  Sistema integral de gestión para boutique de ropa desarrollado con <strong>Laravel 10</strong>.<br>
-  Control de ventas, compras, inventario, caja diaria, reportes gráficos, generación de PDFs profesionales<br>
-  y <strong>API REST</strong> para consumo desde aplicación móvil Flutter y análisis predictivo con Streamlit.
-</p>
+## Resumen
 
----
+- Backend en Laravel 10 con PHP 8.2.
+- Autenticacion web con Jetstream Livewire.
+- API protegida con Laravel Sanctum.
+- Roles y permisos con Spatie Permission.
+- Inventario por talla mediante `producto_talla_stock`.
+- Flujos transaccionales para ventas, compras y pagos.
+- Reportes PDF con DomPDF.
+- Integracion prevista para Flutter y Streamlit.
 
-## 📋 Tabla de Contenidos
+## Modulos principales
 
-- [Arquitectura del Sistema](#-arquitectura-del-sistema)
-- [Requisitos del Sistema](#-requisitos-del-sistema)
-- [Instalación](#-instalación)
-- [Módulos del Sistema](#-módulos-del-sistema)
-- [API REST](#-api-rest)
-- [Sistema de Roles y Permisos](#-sistema-de-roles-y-permisos)
-- [Reportes y PDFs](#-reportes-y-pdfs)
-- [Tecnologías Utilizadas](#️-tecnologías-utilizadas)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Notas Importantes](#-notas-importantes)
-- [Despliegue en Producción](#-despliegue-en-producción)
+- Usuarios, roles y permisos.
+- Clientes, colaboradores y proveedores.
+- Productos e inventario por tallas.
+- Carrito y punto de venta.
+- Compras con flujo de estados.
+- Caja diaria.
+- Reportes PDF y graficos.
+- Prediccion de ventas via consumo de API.
 
----
+## Stack tecnico
 
-## 🏗️ Arquitectura del Sistema
+### Backend
 
-El sistema opera con una arquitectura de tres capas conectadas por red local (LAN):
+- PHP 8.2
+- Laravel 10
+- Laravel Jetstream
+- Laravel Sanctum
+- Livewire 3
+- Spatie Laravel Permission
+- DomPDF
+- MySQL o MariaDB
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        RED LOCAL (LAN)                          │
-│                                                                 │
-│  ┌──────────────────┐   HTTP/JSON   ┌────────────────────────┐  │
-│  │  📱 Flutter App  │ ◄───────────► │  🖥️ Laravel Backend   │  │
-│  │  (Dart)          │    /api/*     │  PHP 8.2 + MySQL       │  │
-│  │  App Móvil       │               │  192.168.0.102:8000    │  │
-│  └──────────────────┘               └────────────┬───────────┘  │
-│                                                  │              │
-│  ┌──────────────────┐   HTTP/JSON                │              │
-│  │  📊 Streamlit    │ ◄─────────────────────────►│              │
-│  │  (Python)        │  /api/obtener-datos-ventas │              │
-│  │  ML Predicción   │                            │              │
-│  └──────────────────┘                                           │
-└─────────────────────────────────────────────────────────────────┘
-```
+### Frontend
 
-| Componente | Tecnología | Función |
-|------------|------------|--------|
-| **Backend** | Laravel 10 (PHP 8.2) | API REST + Aplicación web + Base de datos |
-| **App Móvil** | Flutter (Dart) | Consulta de datos en tiempo real vía API |
-| **ML/Predicción** | Streamlit (Python) | Análisis predictivo de ventas |
+- Vite
+- Bootstrap 5
+- Tailwind CSS
+- Sass
+- Chart.js
+- Axios
 
-**Servidor de desarrollo:**
-```bash
-php artisan serve --host=0.0.0.0 --port=8000
-```
-Accesible en LAN desde cualquier dispositivo en `http://192.168.0.102:8000`
+## Requisitos
 
----
+- PHP >= 8.2
+- Composer >= 2
+- Node.js >= 16
+- MySQL / MariaDB
+- Extension PHP `gd`
+- Extension PHP `pdo_mysql`
+- Extension PHP `mbstring`
+- Extension PHP `xml`
+- Extension PHP `curl`
+- Extension PHP `zip`
 
-## 📌 Requisitos del Sistema
-
-| Requisito | Versión mínima |
-|-----------|---------------|
-| PHP | >= 8.2 |
-| Composer | >= 2.0 |
-| MySQL / MariaDB | >= 5.7 / >= 10.3 |
-| Node.js | >= 16.x |
-
-### Extensiones PHP Requeridas
-
-- `ext-gd` — Procesamiento de imágenes para PDFs
-- `ext-pdo` — Conexión a base de datos
-- `ext-mbstring` — Manejo de strings multibyte
-- `ext-xml` — Procesamiento XML
-- `ext-curl` — Peticiones HTTP
-- `ext-zip` — Manejo de archivos comprimidos
-
----
-
-## 🚀 Instalación
+## Instalacion
 
 ```bash
-# 1. Clonar el repositorio
 git clone https://github.com/tu-usuario/eli-boutique.git
 cd eli-boutique
-
-# 2. Instalar dependencias
 composer install
 npm install
-
-# 3. Configurar entorno
 cp .env.example .env
 php artisan key:generate
+```
 
-# 4. Configurar base de datos en .env
-# DB_DATABASE=eli_boutique
-# DB_USERNAME=root
-# DB_PASSWORD=
+Configura la conexion a base de datos en `.env`:
 
-# 5. Configurar correo en .env (para envío de órdenes de compra)
-# MAIL_MAILER=smtp
-# MAIL_HOST=smtp.gmail.com
-# MAIL_PORT=587
-# MAIL_USERNAME=tu-correo@gmail.com
-# MAIL_PASSWORD=tu-contraseña-de-aplicacion
-# MAIL_ENCRYPTION=tls
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=eli_boutique
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-# 6. Ejecutar migraciones y seeders
-php artisan migrate:fresh --seed
+Ejecuta migraciones y seeders:
 
-# 7. Compilar assets
+```bash
+php artisan migrate --seed
+```
+
+Levanta assets y aplicacion:
+
+```bash
 npm run dev
-
-# 8. Iniciar servidor
 php artisan serve
 ```
 
-Accede a: `http://localhost:8000`
+La aplicacion quedara disponible en:
 
----
+```text
+http://localhost:8000
+```
 
-## 📦 Módulos del Sistema
+## Variables de entorno importantes
 
-### 👥 Gestión de Usuarios
-- CRUD completo de usuarios del sistema
-- Asignación de roles (Administrador, Gerente, Vendedor)
-- Control de acceso basado en permisos
+Ademas de la base de datos, revisa estas variables:
 
-### 📊 Clientes
-- Registro y administración de clientes
-- Búsqueda rápida vía API
-- Reporte PDF con listado ordenado alfabéticamente
-- Eliminación lógica (SoftDeletes)
+```env
+APP_URL=http://localhost
 
-### 🤝 Colaboradores
-- Gestión de personal con cargo asociado
-- Relación con tipo de género y cargo
-- Reporte PDF profesional
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,localhost:8000,127.0.0.1,127.0.0.1:3000,127.0.0.1:8000
+CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:3000,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:3000,http://127.0.0.1:8000,http://localhost:8501,http://127.0.0.1:8501
+CORS_SUPPORTS_CREDENTIALS=false
 
-### 🏢 Proveedores
-- Administración de proveedores (persona natural y jurídica)
-- Búsqueda rápida vía API
-- Reporte PDF generado con DomPDF
-- Eliminación lógica (SoftDeletes)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=tu-correo@example.com
+MAIL_PASSWORD=tu-password-de-aplicacion
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=tu-correo@example.com
+MAIL_FROM_NAME="Eli Boutique"
+```
 
-### 📦 Productos e Inventario
-- Catálogo con categorías: Polos & Camisetas, Jeans & Pantalones, Shorts & Bermudas, Abrigos & Chaquetas, Ropa Deportiva
-- Gestión de tallas (S, M, L, XL, 28, 30, 32, 34) con stock individual por talla
-- Género de producto (Unisex, Hombre, Mujer)
-- Control automático de stock total calculado
-- Validación de inventario antes de vender
-- Reporte PDF del catálogo
+Notas:
 
-### 🛒 Ventas
-- Punto de venta con carrito de compras interactivo
-- Agregar, duplicar, cambiar talla, actualizar cantidad de ítems
-- Generación automática de código secuencial (0000001, 0000002...)
-- Comprobante PDF por venta (Boleta / Factura)
-- Anulación de ventas con devolución automática de stock por talla
-- Sincronización automática con la caja del día (ingresos, productos vendidos, clientes atendidos)
-- Exportación a CSV
-- Reporte PDF general de ventas
+- `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` deben ajustarse si Flutter, Streamlit u otro cliente consume la API desde otra direccion.
+- El registro publico de usuarios esta deshabilitado. Los usuarios deben ser creados por un administrador.
+- Para envio de correos se recomienda usar password de aplicacion.
 
-### 💰 Compras
-- Flujo profesional de estados: **Borrador → Enviada → Cotizada → Aprobada → Recibida/Pagada**
-- Generación de orden de compra en PDF
-- Envío automático de email al proveedor con PDF adjunto
-- Cotización con condiciones de pago y días de crédito
-- Anulación de compras
-- Reporte PDF de compras
+## Autenticacion y seguridad
 
-### 💵 Cajas
-- Apertura y cierre de caja diaria
-- Código de caja auto-generado
-- Informe individual por caja con métricas financieras (ingresos, gastos, balance)
-- Control de estados: pendiente, abierta, cerrada
-- Reporte PDF de caja
+### Web
 
-### 📈 Reportes Gráficos
-- **Ventas**: Gráfico interactivo con Chart.js (barras + línea de tendencia)
-- **Compras**: Gráfico interactivo con esquema de colores diferenciado
-- Filtros por **mes** (con rango opcional de meses) o por **día**
-- Las etiquetas del gráfico usan formato dd/mm/yyyy y mm/yyyy
-- Exportación a PDF agrupado:
-  - Por mes: resumen mensual (cantidad de operaciones, productos, subtotal, IGV, total)
-  - Por día: resumen diario con totales
+- El acceso al backoffice requiere inicio de sesion.
+- La aplicacion usa Jetstream con stack Livewire.
+- Las sesiones autenticadas pasan por `auth` y `AuthenticateSession`.
 
-### ⏱️ Reportes de Tiempo
-- **Tiempo de Ventas**: Reporte PDF con tiempo estimado de atención por venta (rango 40-80 segundos)
-- **Tiempo de Orden de Compras**: Reporte PDF con tiempo estimado de procesamiento por compra (rango 80-120 segundos)
-- Fórmula determinista basada en cantidad de ítems, unidades y hash CRC32
-- Incluye promedio, mínimo y máximo por período
+### API
 
-### 🔮 Predicción de Ventas
-- Módulo de análisis predictivo con datos históricos de ventas
-- Endpoint API dedicado para alimentar modelo Streamlit (Python)
+- La API sensible ya no es publica.
+- Los endpoints de `api/*` requieren `auth:sanctum`.
+- Puedes consumirla mediante sesion autenticada o Bearer Token.
+- Jetstream tiene habilitada la gestion de API tokens desde el perfil del usuario.
 
-### 📖 Guía de Ventas
-- Documentación HTML interactiva para el proceso de ventas
+Ejemplo de uso con token:
 
----
+```http
+GET /api/productos
+Authorization: Bearer TU_TOKEN
+Accept: application/json
+```
 
-## 🌐 API REST
+## Endpoints API principales
 
-API de solo lectura (GET) para consumo desde Flutter y Streamlit. No requiere autenticación (uso en red local).
+Base URL local:
 
-**Base URL:** `http://192.168.0.102:8000/api`
+```text
+http://localhost:8000/api
+```
 
-**Controlador:** `App\Http\Controllers\Api\ApiController`
+Endpoints disponibles:
 
-| Endpoint | Descripción |
-|----------|-------------|
-| `GET /api/dashboard` | Resumen del día: caja activa, ventas, totales de clientes/productos/proveedores |
-| `GET /api/clientes` | Listado de clientes con tipo de género |
-| `GET /api/clientes/{id}` | Detalle de un cliente específico |
-| `GET /api/productos` | Catálogo con categoría, género y stock desglosado por talla |
-| `GET /api/productos/{id}` | Detalle de producto con stock por talla |
-| `GET /api/categorias` | Catálogo de categorías de producto |
-| `GET /api/tallas` | Catálogo de tallas disponibles |
-| `GET /api/ventas` | Listado de ventas con cliente, estado, detalles y comprobante |
-| `GET /api/ventas/{id}` | Detalle de venta con productos vendidos |
-| `GET /api/compras` | Listado de compras con proveedor, detalles y estado |
-| `GET /api/compras/{id}` | Detalle de compra |
-| `GET /api/proveedores` | Listado de proveedores |
-| `GET /api/proveedores/{id}` | Detalle de proveedor |
-| `GET /api/cajas` | Historial de cajas ordenado por fecha |
-| `GET /api/cajas/{id}` | Detalle de caja con ventas y balance diario |
-| `GET /api/estados-transaccion` | Catálogo de estados (Pendiente, Pagado, Anulado, etc.) |
-| `GET /api/obtener-datos-ventas` | Datos aplanados para ML/predicción (Streamlit) |
+- `GET /api/dashboard`
+- `GET /api/clientes`
+- `GET /api/clientes/{id}`
+- `GET /api/productos`
+- `GET /api/productos/{id}`
+- `GET /api/categorias`
+- `GET /api/tallas`
+- `GET /api/ventas`
+- `GET /api/ventas/{id}`
+- `GET /api/compras`
+- `GET /api/compras/{id}`
+- `GET /api/proveedores`
+- `GET /api/proveedores/{id}`
+- `GET /api/cajas`
+- `GET /api/cajas/{id}`
+- `GET /api/estados-transaccion`
+- `GET /api/obtener-datos-ventas`
 
-**Formato de respuesta estándar:**
+Formato de respuesta usual:
+
 ```json
 {
   "success": true,
-  "data": [ ... ]
+  "data": []
 }
 ```
 
-**Configuración CORS** (`config/cors.php`): Permite cualquier origen (`*`) para acceso desde dispositivos en la red local.
+## Flujos de negocio relevantes
 
----
+### Ventas
 
-## 🔐 Sistema de Roles y Permisos
+- Carrito con seleccion de talla y cantidad.
+- Validacion de stock por talla antes de confirmar.
+- Registro transaccional de venta y detalles.
+- Anulacion con reposicion de stock por talla.
+- Comprobante PDF y exportacion CSV.
 
-El sistema utiliza **Spatie Laravel Permission** con 3 roles y 14 permisos:
+### Compras
 
-| Permiso | Administrador | Gerente | Vendedor |
-|---------|:---:|:---:|:---:|
-| Gestionar usuarios | ✅ | ❌ | ❌ |
-| Gestionar clientes | ✅ | ✅ | ✅ |
-| Ver clientes | ✅ | ✅ | ✅ |
-| Gestionar colaboradores | ✅ | ✅ | ✅ |
-| Gestionar proveedores | ✅ | ✅ | ❌ |
-| Gestionar productos | ✅ | ✅ | ✅ |
-| Ver productos | ✅ | ✅ | ✅ |
-| Gestionar ventas | ✅ | ✅ | ✅ |
-| Crear ventas | ✅ | ✅ | ✅ |
-| Anular ventas | ✅ | ✅ | ✅ |
-| Gestionar compras | ✅ | ✅ | ❌ |
-| Ver cajas | ✅ | ✅ | ✅ |
-| Gestionar cajas | ✅ | ✅ | ✅ |
-| Ver reportes gráficos | ✅ | ✅ | ❌ |
+Flujo general:
 
----
-
-## 📄 Reportes y PDFs
-
-Todos los reportes utilizan **DomPDF** con diseño profesional (A4 landscape):
-
-| Reporte | Descripción |
-|---------|-------------|
-| Reporte de Clientes | Listado ordenado alfabéticamente con datos de contacto |
-| Reporte de Colaboradores | Personal con cargo y datos personales |
-| Reporte de Proveedores | Empresas/personas proveedoras con RUC y contacto |
-| Reporte de Productos | Catálogo completo con stock por tallas |
-| Comprobante de Venta | Boleta/Factura individual por venta |
-| Reporte de Ventas | Listado filtrado por rango de fechas |
-| Orden de Compra | PDF profesional enviado por email al proveedor |
-| Reporte de Compras | Listado filtrado con detalle de estados |
-| Informe de Caja | Métricas financieras diarias |
-| Gráfico de Ventas (PDF) | Resumen agrupado por mes o día + imagen del gráfico |
-| Gráfico de Compras (PDF) | Resumen agrupado por mes o día + imagen del gráfico |
-| Tiempo de Ventas | Tiempo estimado de atención por venta |
-| Tiempo de O. Compras | Tiempo estimado de procesamiento por orden de compra |
-
-Características comunes:
-- Header con logo, datos de la empresa y fecha de emisión
-- Diseño con gradientes y colores temáticos por módulo
-- Tabla con fila de totales destacada
-- Footer con paginación automática
-
----
-
-## 🛠️ Tecnologías Utilizadas
-
-### Backend
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| Laravel | ^10.10 | Framework PHP principal |
-| Laravel Jetstream | ^4.3 | Autenticación y gestión de sesiones |
-| Laravel Sanctum | ^3.3 | Autenticación SPA/API |
-| Livewire | ^3.0 | Componentes reactivos |
-| Spatie Permission | ^6.9 | Sistema de roles y permisos |
-| DomPDF | ^3.0 | Generación de reportes PDF |
-| Laravel AdminLTE | ^3.13 | Template de administración |
-| GuzzleHTTP | ^7.2 | Cliente HTTP |
-
-### Frontend
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| Bootstrap | ^5.2.3 | Framework CSS principal |
-| Tailwind CSS | ^3.1.0 | Utilidades CSS complementarias |
-| Chart.js | ^4.4.5 | Gráficos interactivos |
-| Vite | ^5.0.0 | Build tool y HMR |
-| Sass | ^1.56.1 | Preprocesador CSS |
-| Axios | ^1.6.4 | Peticiones HTTP asíncronas |
-| Font Awesome | — | Iconografía |
-
-### Infraestructura
-| Tecnología | Propósito |
-|------------|-----------|
-| MySQL | Base de datos relacional |
-| SMTP (Gmail) | Envío de emails con órdenes de compra |
-### Ecosistema Multi-plataforma
-| Tecnología | Versión | Propósito |
-|------------|---------|----------|
-| Flutter | — | Aplicación móvil (consultas vía API REST) |
-| Streamlit | — | Dashboard de predicción ML (Python) |
-| CORS | — | Acceso entre plataformas en red local |
----
-
-## 📁 Estructura del Proyecto
-
-```
-eli-boutique/
-├── app/
-│   ├── Http/Controllers/       # Controladores por módulo
-│   │   └── Api/                # ApiController — endpoints REST
-│   ├── Models/                 # 20 modelos Eloquent
-│   ├── Mail/                   # Mailable para órdenes de compra
-│   └── Providers/              # Service Providers
-├── database/
-│   ├── migrations/             # Esquema de base de datos
-│   └── seeders/                # Datos iniciales (roles, permisos, catálogos)
-├── resources/views/
-│   ├── Caja/                   # Vistas de caja (index, informe, reporte)
-│   ├── Carrito/                # Carrito de compras
-│   ├── Cliente/                # CRUD de clientes
-│   ├── Colaborador/            # CRUD de colaboradores
-│   ├── Compra/                 # Compras (index, create, edit, cotizar, orden)
-│   ├── Pago/                   # Formulario de pagos
-│   ├── Predecir/               # Predicción de ventas
-│   ├── Producto/               # CRUD de productos
-│   ├── Proveedor/              # CRUD de proveedores
-│   ├── Reporte/                # Gráficos y reportes PDF
-│   ├── User/                   # Gestión de usuarios
-│   ├── Venta/                  # Ventas (index, create, comprobante, reporte)
-│   └── emails/                 # Templates de correo
-├── public/
-│   ├── img/                    # Imágenes del sistema y productos
-│   ├── guiaventas/             # Guía HTML de ventas
-│   └── help/                   # Documentación de ayuda
-├── routes/
-│   ├── web.php                 # Rutas web (vistas, PDFs, carrito)
-│   └── api.php                 # API REST — 18 endpoints GET para Flutter/Streamlit
-└── config/
-    ├── adminlte.php            # Configuración del menú lateral
-    └── permission.php          # Configuración de Spatie Permission
+```text
+Borrador -> Enviada -> Cotizada -> Aprobada -> Recibida -> Pagada
 ```
 
----
+Incluye:
 
-## 📝 Notas Importantes
+- Orden de compra PDF.
+- Envio por correo al proveedor.
+- Recepcion de mercaderia con actualizacion de stock por talla.
+- Registro de pagos.
 
-### Extensión GD (requerida para PDFs con imágenes)
+### Inventario
 
-Si aparece el error `Function imagecreatefromwebp() not found`:
+- El stock oficial se maneja por talla.
+- El total de un producto se obtiene sumando su stock por talla.
+- La relacion principal se encuentra en `producto_talla_stock`.
 
-**XAMPP (Windows):**
-1. Edita `C:\xampp\php\php.ini`
-2. Busca `;extension=gd` y quita el `;`
-3. Reinicia Apache
+## Roles y permisos
 
-**Linux:**
-```bash
-sudo apt-get install php8.2-gd
-sudo systemctl restart apache2
-```
+El proyecto usa Spatie Permission para controlar acceso por modulo. Algunos permisos del sistema son:
 
-### Logo del Sistema
-- Ubicación: `public/img/logo_eli_boutique.png`
-- Formato: PNG (requerido por DomPDF)
-- Tamaño recomendado: 512x512px
+- gestionar usuarios
+- gestionar clientes
+- ver clientes
+- gestionar colaboradores
+- gestionar proveedores
+- gestionar productos
+- ver productos
+- gestionar ventas
+- crear ventas
+- anular ventas
+- gestionar compras
+- ver cajas
+- gestionar cajas
+- ver reportes graficos
 
-### Correo Electrónico
-Para el envío de órdenes de compra por email, se necesita configurar Gmail con una **contraseña de aplicación** (no usar la contraseña regular de la cuenta). Se genera en: [Contraseñas de aplicación de Google](https://myaccount.google.com/apppasswords)
+## Reportes
 
----
+El sistema genera reportes PDF para:
 
-## 🌐 Despliegue en Producción
+- clientes
+- colaboradores
+- proveedores
+- productos
+- ventas
+- compras
+- caja
+- ordenes de compra
+- reportes graficos
+- tiempos de ventas y compras
+
+Tambien incluye reportes graficos con Chart.js para ventas y compras.
+
+## Pruebas
+
+Para ejecutar la suite:
 
 ```bash
-# Verificar requisitos
-composer check-platform-reqs
+php artisan test
+```
 
-# Instalar sin dependencias de desarrollo
-composer install --optimize-autoloader --no-dev
+La base del proyecto ya incluye pruebas para:
 
-# Compilar assets para producción
+- autenticacion y sesion
+- proteccion de rutas web
+- proteccion de API con Sanctum
+- transacciones de ventas
+- flujo de compras y pagos
+
+Si compilas frontend en produccion:
+
+```bash
 npm run build
+```
 
-# Cachear configuración
+## Estructura del proyecto
+
+```text
+app/
+  Http/Controllers/
+    Api/
+  Models/
+  Services/
+  Mail/
+database/
+  migrations/
+  seeders/
+resources/
+  views/
+routes/
+  web.php
+  api.php
+config/
+tests/
+public/
+```
+
+Directorios clave:
+
+- `app/Services`: logica de negocio para ventas, compras y pagos.
+- `app/Http/Controllers/Api`: endpoints para consumo externo.
+- `resources/views`: vistas Blade por modulo.
+- `database/seeders`: datos base del sistema.
+- `tests/Feature`: pruebas funcionales del negocio.
+
+## Desarrollo local
+
+Comandos utiles:
+
+```bash
+php artisan optimize:clear
+php artisan route:list
+php artisan migrate
+php artisan db:seed
+php artisan test
+```
+
+Para desarrollo frontend:
+
+```bash
+npm run dev
+```
+
+## Produccion
+
+Pasos basicos recomendados:
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm run build
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-**Configuración del servidor:**
-1. Document root apuntando a `/public`
-2. Módulo `mod_rewrite` habilitado
-3. Permisos correctos:
-```bash
-chmod -R 755 storage bootstrap/cache
-```
+Ademas:
 
----
+- Apunta el document root a `public/`.
+- Configura correctamente `APP_URL`.
+- Define `CORS_ALLOWED_ORIGINS` segun los clientes autorizados.
+- Usa HTTPS si la API saldra de red local.
+- Revisa permisos de `storage/` y `bootstrap/cache/`.
 
-## 📄 Licencia
+## Notas operativas
 
-Este proyecto es privado y de uso exclusivo para **Eli Boutique**.
+- La extension `gd` es necesaria para ciertos reportes con imagenes.
+- El logo principal se ubica en `public/img/logo_eli_boutique.png`.
+- La guia de ventas estatica se encuentra en `public/guiaventas/`.
 
----
+## Licencia
 
-<p align="center">
-  Desarrollado por JampiBryan
-</p>
+Proyecto privado de uso interno para Eli Boutique.

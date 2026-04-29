@@ -13,40 +13,43 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Crear usuario administrador
-        $admin = User::create([
-            'name' => 'admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('admin123'),
-        ]);
+        $users = [
+            [
+                'name' => 'admin',
+                'email' => 'admin@gmail.com',
+                'password' => 'admin123',
+                'role' => 'administrador',
+            ],
+            [
+                'name' => 'Elyana',
+                'email' => 'elyana_mostacero@gmail.com',
+                'password' => 'elyana123',
+                'role' => 'gerente',
+            ],
+            [
+                'name' => 'Laura',
+                'email' => 'laura_salcedo@gmail.com',
+                'password' => 'laura123',
+                'role' => 'vendedor',
+            ],
+            [
+                'name' => 'Sofia',
+                'email' => 'sofia_ramirez@gmail.com',
+                'password' => 'sofia123',
+                'role' => 'vendedor',
+            ],
+        ];
 
-        $admin->assignRole('administrador'); // Asignar el rol de administrador
+        foreach ($users as $seededUser) {
+            $user = User::updateOrCreate(
+                ['email' => $seededUser['email']],
+                [
+                    'name' => $seededUser['name'],
+                    'password' => bcrypt($seededUser['password']),
+                ]
+            );
 
-        // Crear un usuario gerente
-        $gerente = User::create([
-            'name' => 'Elyana',
-            'email' => 'elyana_mostacero@gmail.com',
-            'password' => bcrypt('elyana123'),
-        ]);
-
-        $gerente->assignRole('gerente'); 
-
-        // Crear un usuario vendedor
-        $vendedor = User::create([
-            'name' => 'Laura',
-            'email' => 'laura_salcedo@gmail.com',
-            'password' => bcrypt('laura123'),
-        ]);
-
-        $vendedor->assignRole('vendedor');
-        
-        // Crear un usuario vendedor
-        $vendedor = User::create([
-            'name' => 'Sofia',
-            'email' => 'sofia_ramirez@gmail.com',
-            'password' => bcrypt('sofia123'),
-        ]);
-
-        $vendedor->assignRole('vendedor');
+            $user->syncRoles([$seededUser['role']]);
+        }
     }
 }
