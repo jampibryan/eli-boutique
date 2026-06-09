@@ -302,7 +302,7 @@
             <div class="company-info">
                 <h1>Eli Boutique</h1>
                 <p>Sistema de Gestión Comercial</p>
-                <p>RUC: 20612345678 | Av. Moda 456, Lima | Tel: (01) 555-8899</p>
+                <p>RUC: 20276544711 | Calle Ayacucho 624, Pacanga | Cel: 922 070 116</p>
             </div>
             <div class="report-info">
                 <p><strong>Fecha emisión:</strong> {{ date('d/m/Y') }}</p>

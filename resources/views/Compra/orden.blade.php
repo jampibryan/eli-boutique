@@ -334,7 +334,7 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Dirección:</span>
-                    Ayacucho #624 - Pacanga
+                    Calle Ayacucho 624, Pacanga
                 </div>
                 <div class="info-row">
                     <span class="info-label">Contacto:</span>
@@ -478,7 +478,7 @@
     <!-- Footer -->
     <div class="footer">
         <strong>ELI BOUTIQUE E.I.R.L</strong><br>
-        Ayacucho #624 - Pacanga | Tel: {{ $colaborador->telefonoColab }}<br>
+        Calle Ayacucho 624, Pacanga | Cel: 922 070 116<br>
         Generado: {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}
     </div>
 </body>

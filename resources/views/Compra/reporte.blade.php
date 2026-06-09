@@ -292,8 +292,8 @@
             </div>
             <div class="company-info">
                 <h1>Eli Boutique</h1>
-                <p>RUC: 20612345678 | Av. Moda 456, Lima</p>
-                <p>Tel: (01) 555-8899 | ventas@eliboutique.pe</p>
+                <p>RUC: 20276544711 | Calle Ayacucho 624, Pacanga</p>
+                <p>Cel: 922 070 116 | compras@eliboutique.pe</p>
             </div>
             <div class="report-info">
                 <p><strong>Reporte generado:</strong></p>

@@ -336,8 +336,8 @@
                                     <div class="brand-name">Eli Boutique</div>
                                     <p class="brand-copy">
                                         Boutique de ropa y accesorios<br>
-                                        Sistema de gestion comercial e inventario<br>
-                                        RUC: 20123456789 | Telefono: 987 654 321
+                                        RUC: 20276544711 | Celular: 922 070 116<br>
+                                        Calle Ayacucho 624, Pacanga
                                     </p>
                                 </td>
                             </tr>

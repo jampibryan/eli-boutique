@@ -235,8 +235,8 @@
             </div>
             <div class="company-info">
                 <h1>ELI BOUTIQUE</h1>
-                <p>Sistema de Gestión Empresarial</p>
-                <p>RUC: 20123456789 | Teléfono: 987 654 321</p>
+                <p>Calle Ayacucho 624, Pacanga</p>
+                <p>RUC: 20276544711 | Celular: 922 070 116</p>
             </div>
             <div class="report-info">
                 <p><strong>Período:</strong> {{ $rangoTexto }}</p>

@@ -70,16 +70,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configura la conexion a base de datos en `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=eli_boutique
-DB_USERNAME=root
-DB_PASSWORD=
-```
+Configura la conexión a la base de datos en el archivo `.env` recién creado.
 
 Ejecuta migraciones y seeders:
 
@@ -102,24 +93,10 @@ http://localhost:8000
 
 ## Variables de entorno importantes
 
-Ademas de la base de datos, revisa estas variables:
+Además de la base de datos, asegúrate de configurar las siguientes secciones en el archivo `.env`:
 
-```env
-APP_URL=http://localhost
-
-SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,localhost:8000,127.0.0.1,127.0.0.1:3000,127.0.0.1:8000
-CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:3000,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:3000,http://127.0.0.1:8000,http://localhost:8501,http://127.0.0.1:8501
-CORS_SUPPORTS_CREDENTIALS=false
-
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=tu-correo@example.com
-MAIL_PASSWORD=tu-password-de-aplicacion
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=tu-correo@example.com
-MAIL_FROM_NAME="Eli Boutique"
-```
+- **Conexión API (Sanctum y CORS):** Define `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` si planeas consumir la API desde clientes externos (como Flutter o Streamlit).
+- **Envío de Correos (SMTP):** Configura las variables `MAIL_*` con las credenciales de tu servidor de correo (se recomienda usar contraseñas de aplicación si utilizas Gmail).
 
 Notas:
 
@@ -134,6 +111,7 @@ Notas:
 - El acceso al backoffice requiere inicio de sesion.
 - La aplicacion usa Jetstream con stack Livewire.
 - Las sesiones autenticadas pasan por `auth` y `AuthenticateSession`.
+- **Validación de Identidad:** El registro y edición de clientes valida de forma estricta que el identificador sea un DNI (8 dígitos) o un RUC (11 dígitos).
 
 ### API
 
@@ -191,11 +169,14 @@ Formato de respuesta usual:
 
 ### Ventas
 
-- Carrito con seleccion de talla y cantidad.
-- Validacion de stock por talla antes de confirmar.
+- Carrito con selección de talla y cantidad.
+- Validación de stock por talla antes de confirmar.
 - Registro transaccional de venta y detalles.
-- Anulacion con reposicion de stock por talla.
-- Comprobante PDF y exportacion CSV.
+- Anulación con reposición de stock por talla.
+- **Comprobantes Inteligentes:** Generación de PDF adaptado al tipo de cliente: botón "Generar Boleta" para clientes con DNI (8 dígitos) y "Generar Factura" para clientes con RUC (11 dígitos).
+- **Diseño Premium:** Formato moderno en PDF con colores institucionales (Carbón y Dorado), incluyendo cálculos automáticos de subtotal, IGV y total multiplicados por cantidad.
+- **Soporte de Ventas Históricas:** Resuelve de forma segura el reporte de tallas en ventas antiguas que carecen del identificador mediante un fallback automático al primer stock registrado del producto.
+- Exportación de ventas a CSV.
 
 ### Compras
 
@@ -217,6 +198,12 @@ Incluye:
 - El stock oficial se maneja por talla.
 - El total de un producto se obtiene sumando su stock por talla.
 - La relacion principal se encuentra en `producto_talla_stock`.
+
+### Caja
+
+- Apertura y cierre de caja diaria con control de saldos y transacciones.
+- **Seguridad en Cierre de Caja:** El cálculo de saldos y el estado final se procesa de forma interna en el servidor para evitar que el usuario altere los totales de efectivo en el flujo frontend.
+- Reporte detallado de movimientos e informes generales en PDF.
 
 ## Roles y permisos
 

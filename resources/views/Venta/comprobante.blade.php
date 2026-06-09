@@ -212,8 +212,8 @@
             <img src="{{ public_path('img/logo_eli_boutique.png') }}" alt="Logo">
             <div class="info">
                 <h1>ELI BOUTIQUE</h1>
-                <p>Sistema de Gestión Empresarial</p>
-                <p class="ruc">RUC: 20123456789 | Teléfono: 987 654 321</p>
+                <p>Calle Ayacucho 624, Pacanga</p>
+                <p class="ruc">RUC: 20276544711 | Celular: 922 070 116</p>
             </div>
             <div class="fecha">
                 <p><strong>Fecha:</strong> {{ $venta->created_at->format('d/m/Y') }}</p>
