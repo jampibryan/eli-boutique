@@ -83,27 +83,7 @@ class VentaController extends Controller
 
     public function pdfComprobante($id)
     {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto', 'detalles.talla', 'pago.comprobante'])
-            ->findOrFail($id);
-
-        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
-
-        $pdf = App::make('dompdf.wrapper');
-        $view = view('Venta.comprobante', [
-            'venta' => $venta,
-            'tipoComprobante' => $tipoComprobante,
-        ]);
-
-        $pdf->loadHTML($view);
-
-        $nombreArchivo = ($tipoComprobante === 'Factura' ? 'Factura_' : 'Boleta_') . $venta->codigoVenta . '.pdf';
-
-        return $pdf->stream($nombreArchivo);
-    }
-
-    public function pdfComprobanteModerno($id)
-    {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto', 'detalles.talla', 'pago.comprobante'])
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante'])
             ->findOrFail($id);
 
         $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
@@ -116,7 +96,7 @@ class VentaController extends Controller
 
         $pdf->loadHTML($view);
 
-        $nombreArchivo = ($tipoComprobante === 'Factura' ? 'Factura_' : 'Boleta_') . $venta->codigoVenta . '_moderno.pdf';
+        $nombreArchivo = ($tipoComprobante === 'Factura' ? 'Factura_' : 'Boleta_') . $venta->codigoVenta . '.pdf';
 
         return $pdf->stream($nombreArchivo);
     }

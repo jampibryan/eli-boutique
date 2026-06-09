@@ -9,44 +9,44 @@
 <style>
     .payment-card {
         background: white;
-        border-radius: 15px;
+        border-radius: 13px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        padding: 30px;
-        margin-bottom: 20px;
+        padding: 24px;
+        margin-bottom: 16px;
     }
     
     .transaction-info {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 25px;
-        border-radius: 12px;
-        margin-bottom: 25px;
+        padding: 20px 22px;
+        border-radius: 11px;
+        margin-bottom: 18px;
     }
     
     .transaction-info h3 {
-        margin: 0 0 10px 0;
-        font-size: 24px;
+        margin: 0 0 8px 0;
+        font-size: 21px;
         font-weight: bold;
     }
     
     .transaction-info .amount {
-        font-size: 36px;
+        font-size: 30px;
         font-weight: bold;
-        margin: 10px 0;
+        margin: 8px 0;
     }
     
     .form-group label {
         font-weight: 600;
         color: #333;
-        margin-bottom: 8px;
-        font-size: 14px;
+        margin-bottom: 6px;
+        font-size: 13px;
     }
     
     .form-control {
         border-radius: 8px;
         border: 2px solid #e0e0e0;
-        padding: 12px 15px;
-        font-size: 16px;
+        padding: 10px 14px;
+        font-size: 15px;
         transition: all 0.3s;
     }
     
@@ -58,21 +58,21 @@
     .amount-display {
         background: #f8f9fa;
         border-left: 4px solid #667eea;
-        padding: 15px 20px;
+        padding: 12px 16px;
         border-radius: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     
     .amount-display .label {
-        font-size: 12px;
+        font-size: 11px;
         color: #666;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
     
     .amount-display .value {
-        font-size: 28px;
+        font-size: 24px;
         font-weight: bold;
         color: #333;
     }
@@ -80,10 +80,10 @@
     .vuelto-display {
         background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         color: white;
-        padding: 20px;
-        border-radius: 10px;
+        padding: 16px;
+        border-radius: 9px;
         text-align: center;
-        margin-top: 20px;
+        margin-top: 14px;
     }
     
     .vuelto-display.negative {
@@ -91,13 +91,13 @@
     }
     
     .vuelto-display .label {
-        font-size: 14px;
-        margin-bottom: 5px;
+        font-size: 13px;
+        margin-bottom: 4px;
         opacity: 0.9;
     }
     
     .vuelto-display .value {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: bold;
     }
     
@@ -105,12 +105,12 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
         color: white;
-        padding: 15px 40px;
-        font-size: 18px;
+        padding: 13px 32px;
+        font-size: 16px;
         font-weight: bold;
-        border-radius: 10px;
+        border-radius: 9px;
         width: 100%;
-        margin-top: 20px;
+        margin-top: 16px;
         transition: all 0.3s;
     }
     
@@ -130,7 +130,7 @@
         background: white;
         border: 2px solid #667eea;
         color: #667eea;
-        padding: 10px 25px;
+        padding: 8px 20px;
         border-radius: 8px;
         font-weight: 600;
         transition: all 0.3s;
@@ -145,8 +145,8 @@
         background: white;
         border: 2px solid #e0e0e0;
         border-radius: 8px;
-        padding: 12px 15px;
-        font-size: 16px;
+        padding: 10px 14px;
+        font-size: 15px;
         height: auto;
         line-height: 1.5;
     }
@@ -156,8 +156,72 @@
         color: white;
         border: none;
         font-weight: bold;
-        font-size: 18px;
-        padding: 0 15px;
+        font-size: 16px;
+        padding: 0 13px;
+    }
+
+    #pagoForm hr {
+        margin: 22px 0 !important;
+    }
+
+    #pagoForm .form-group {
+        margin-bottom: 1rem;
+    }
+
+    #pagoForm small.text-muted {
+        font-size: 0.85rem;
+    }
+
+    @media (max-height: 920px) {
+        .payment-card {
+            padding: 20px;
+        }
+
+        .transaction-info {
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+
+        .transaction-info h3 {
+            font-size: 19px;
+        }
+
+        .transaction-info .amount {
+            font-size: 27px;
+            margin: 6px 0;
+        }
+
+        .amount-display {
+            padding: 10px 14px;
+            margin-bottom: 12px;
+        }
+
+        .amount-display .value {
+            font-size: 22px;
+        }
+
+        .vuelto-display {
+            padding: 13px;
+            margin-top: 10px;
+        }
+
+        .vuelto-display .value {
+            font-size: 24px;
+        }
+
+        .btn-registrar {
+            padding: 11px 26px;
+            font-size: 15px;
+            margin-top: 12px;
+        }
+
+        #pagoForm hr {
+            margin: 16px 0 !important;
+        }
+
+        #pagoForm .form-group {
+            margin-bottom: 0.85rem;
+        }
     }
 </style>
 @stop

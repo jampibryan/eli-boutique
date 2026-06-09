@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Colaborador;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ColaboradorSeeder extends Seeder
 {
@@ -13,8 +13,7 @@ class ColaboradorSeeder extends Seeder
      */
     public function run(): void
     {
-        // Inserta los registros en la tabla cargos
-        DB::table('colaboradores')->insert([
+        $colaboradores = [
             [
                 'cargo_id' => 1,
                 'nombreColab' => 'Elyana',
@@ -44,7 +43,24 @@ class ColaboradorSeeder extends Seeder
                 'edadColab' => 25,
                 'correoColab' => 'sofia_ramirez@gmail.com',
                 'telefonoColab' => '963456789',
-            ]
-        ]);
+            ],
+            [
+                'cargo_id' => 2,
+                'nombreColab' => 'Jacky',
+                'apellidosColab' => 'Cubas',
+                'tipo_genero_id' => 2,
+                'dniColab' => '75841236',
+                'edadColab' => 24,
+                'correoColab' => 'jacky_cubas@gmail.com',
+                'telefonoColab' => '954321678',
+            ],
+        ];
+
+        foreach ($colaboradores as $colaborador) {
+            Colaborador::updateOrCreate(
+                ['correoColab' => $colaborador['correoColab']],
+                $colaborador
+            );
+        }
     }
 }

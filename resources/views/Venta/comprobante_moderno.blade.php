@@ -4,8 +4,8 @@
     $isFactura = $tipoComprobante === 'Factura';
     $usuario = Auth::user();
     $clienteNombre = trim(($venta->cliente->nombreCliente ?? '') . ' ' . ($venta->cliente->apellidoCliente ?? ''));
-    $baseImponible = $venta->detalles->sum('base_imponible');
-    $igvTotal = $venta->detalles->sum('igv');
+    $baseImponible = $venta->detalles->sum(fn($d) => $d->cantidad * $d->base_imponible);
+    $igvTotal = $venta->detalles->sum(fn($d) => $d->cantidad * $d->igv);
 @endphp
 
 <!DOCTYPE html>
@@ -36,7 +36,7 @@
 
         .topbar {
             height: 10px;
-            background: #183153;
+            background: linear-gradient(90deg, #2C2C2C 0%, #D4AF37 100%);
         }
 
         .shell {
@@ -74,15 +74,15 @@
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            border: 4px solid #f3d4df;
-            background: #fff5f8;
+            border: 4px solid #D4AF37;
+            background: #fdfcf7;
         }
 
         .brand-name {
             font-size: 28px;
             font-weight: 800;
             letter-spacing: 0.5px;
-            color: #183153;
+            color: #2C2C2C;
             margin: 0 0 4px 0;
         }
 
@@ -101,14 +101,14 @@
         .doc-card {
             display: inline-block;
             width: 215px;
-            border: 2px solid #183153;
+            border: 2px solid #2C2C2C;
             border-radius: 14px;
             overflow: hidden;
             text-align: center;
         }
 
         .doc-card .label {
-            background: #183153;
+            background: #2C2C2C;
             color: #ffffff;
             padding: 10px 12px;
             font-size: 13px;
@@ -119,7 +119,7 @@
 
         .doc-card .series {
             padding: 16px 12px;
-            color: #183153;
+            color: #D4AF37;
             font-size: 22px;
             font-weight: 800;
         }
@@ -145,7 +145,7 @@
 
         .panel-title {
             background: #f7f9fc;
-            color: #183153;
+            color: #2C2C2C;
             padding: 10px 14px;
             font-size: 11px;
             font-weight: 700;
@@ -188,7 +188,7 @@
         }
 
         .items thead th {
-            background: #183153;
+            background: #2C2C2C;
             color: #ffffff;
             padding: 10px 8px;
             font-size: 10px;
@@ -254,7 +254,7 @@
         }
 
         .note-title {
-            color: #183153;
+            color: #2C2C2C;
             font-weight: 700;
             margin: 0 0 8px 0;
             font-size: 12px;
@@ -302,8 +302,8 @@
         }
 
         .totals .grand td {
-            background: #183153;
-            color: #ffffff;
+            background: #2C2C2C;
+            color: #D4AF37;
             font-size: 13px;
             font-weight: 800;
         }
@@ -419,7 +419,7 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                {{ $detalle->talla->talla ?? 'No registrada' }}
+                                {{ $detalle->talla->descripcion ?? ($detalle->producto->tallas->first()->descripcion ?? '-') }}
                             </td>
                             <td class="text-center">{{ $detalle->cantidad }}</td>
                             <td class="text-right">S/. {{ number_format($detalle->precio_unitario, 2) }}</td>

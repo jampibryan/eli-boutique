@@ -8,32 +8,65 @@
 
 
 @section('content')
+@php
+    $usuarioActual = auth()->user();
+    $rolUsuario = $usuarioActual?->roleLabel() ?? 'Usuario';
+    $nombreVisible = $usuarioActual?->firstName() ?? 'Usuario';
+    $saludo = now()->hour < 12 ? 'Buenos días' : (now()->hour < 19 ? 'Buenas tardes' : 'Buenas noches');
+    $estadoCajaTexto = $cajaAbierta ? 'Caja abierta' : ($cajaCerrada ? 'Caja cerrada' : 'Pendiente de apertura');
+    $estadoCajaIcono = $cajaAbierta ? 'fa-lock-open' : ($cajaCerrada ? 'fa-lock' : 'fa-clock');
+    $estadoCajaClase = $cajaAbierta ? 'status-text-success' : ($cajaCerrada ? 'status-text-danger' : 'status-text-warning');
+@endphp
 <div class="dashboard-background">
-    <div class="container">
-        <!-- Sistema de Control de Caja -->
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-xl-6">
-                <div class="caja-control-card">
-                    <div class="caja-status">
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="row g-4 align-items-stretch mb-4">
+            <div class="col-xl-7">
+                <div class="dashboard-welcome-card h-100">
+                    <span class="dashboard-section-tag">Sesion activa</span>
+                    <div class="dashboard-welcome-layout">
+                        <div class="dashboard-welcome-copy">
+                            <h1>{{ $saludo }}, {{ $nombreVisible }}</h1>
+                            <p>{{ $usuarioActual->dashboardWelcomeMessage() }}</p>
+
+                            <div class="dashboard-identity-pills">
+                                <span class="dashboard-pill dashboard-pill-light">
+                                    <i class="fas fa-id-badge"></i>
+                                    {{ $rolUsuario }}
+                                </span>
+                                <span class="dashboard-pill dashboard-pill-light">
+                                    <i class="far fa-calendar-alt"></i>
+                                    {{ now()->format('d/m/Y') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-user-panel">
+                            <div class="dashboard-user-avatar">{{ $usuarioActual->initials() }}</div>
+                            <div class="dashboard-user-meta">
+                                <span class="dashboard-user-label">Usuario conectado</span>
+                                <strong>{{ $nombreVisible }}</strong>
+                                <span>{{ $rolUsuario }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="caja-control-card h-100 mb-0">
+                    <span class="dashboard-section-tag dashboard-section-tag-muted">Estado de caja</span>
+                    <div class="caja-status mb-0">
                         <div class="status-indicator {{ $cajaAbierta ? 'active' : ($cajaCerrada ? 'closed' : 'pending') }}">
                             <i class="fas {{ $cajaAbierta ? 'fa-check-circle' : ($cajaCerrada ? 'fa-lock' : 'fa-clock') }}"></i>
                         </div>
                         <div class="status-info">
                             <h5 class="mb-1 fw-bold">Estado de Caja</h5>
-                            <p class="mb-0 {{ $cajaAbierta ? 'text-success' : ($cajaCerrada ? 'text-danger' : 'text-warning') }}">
-                                @if($cajaAbierta)
-                                    Caja Abierta
-                                @elseif($cajaCerrada)
-                                    Caja Cerrada
-                                @else
-                                    Pendiente de Apertura
-                                @endif
-                            </p>
+                            <p class="mb-1 {{ $estadoCajaClase }}">{{ $estadoCajaTexto }}</p>
                             <small class="text-muted">{{ now()->format('d/m/Y') }}</small>
                         </div>
                     </div>
                     
-                    <div class="caja-actions">
+                    <div class="caja-actions mt-4">
                         <form action="{{ route('caja.abrir') }}" method="POST" class="caja-form">
                             @csrf
                             <button 
@@ -383,36 +416,36 @@
         .dashboard-background {
             background: #ffffff;
             min-height: 100vh;
-            padding: 40px 0;
+            padding: 28px 0;
         }
         
         /* Sistema de Control de Caja */
         .caja-control-card {
             background: #ffffff;
-            border-radius: 20px;
-            padding: 35px 30px;
+            border-radius: 18px;
+            padding: 28px 24px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             border: 1px solid #f0f0f0;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .caja-status {
             display: flex;
             align-items: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
+            padding: 14px 0;
+            margin-bottom: 20px;
             border-bottom: 2px solid #f0f0f0;
         }
         
         .status-indicator {
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            margin-right: 20px;
+            font-size: 28px;
+            margin-right: 16px;
             transition: all 0.3s ease;
         }
         
@@ -430,15 +463,15 @@
         }
         
         .status-indicator.closed {
-            background: linear-gradient(135deg, #c33764 0%, #e94057 100%);
+            background: linear-gradient(135deg, #3b4252 0%, #1f2937 100%);
             color: white;
-            box-shadow: 0 8px 20px rgba(233, 64, 87, 0.3);
+            box-shadow: 0 8px 20px rgba(31, 41, 55, 0.28);
         }
         
         .status-indicator.pending {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #d9a441 0%, #b7811d 100%);
             color: white;
-            box-shadow: 0 8px 20px rgba(240, 147, 251, 0.3);
+            box-shadow: 0 8px 20px rgba(183, 129, 29, 0.28);
         }
         
         @keyframes pulse {
@@ -464,13 +497,13 @@
         .btn-caja {
             width: 100%;
             border: none;
-            padding: 20px;
-            border-radius: 15px;
+            padding: 16px;
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            font-size: 16px;
+            gap: 12px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -505,14 +538,14 @@
         }
         
         .btn-cerrar {
-            background: linear-gradient(135deg, #c33764 0%, #e94057 100%);
+            background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
             color: white;
-            box-shadow: 0 8px 20px rgba(233, 64, 87, 0.3);
+            box-shadow: 0 8px 20px rgba(31, 41, 55, 0.28);
         }
         
         .btn-cerrar:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(233, 64, 87, 0.4);
+            box-shadow: 0 12px 30px rgba(31, 41, 55, 0.36);
         }
         
         .btn-caja:disabled {
@@ -522,26 +555,26 @@
         }
         
         .btn-icon {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
         }
         
         .btn-text {
-            font-size: 16px;
+            font-size: 15px;
             letter-spacing: 0.5px;
         }
         
         /* Tarjetas de métricas mejoradas */
         .metric-card {
             background: #fff;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 13px;
+            padding: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
             border: 1px solid #f0f0f0;
@@ -566,14 +599,14 @@
         }
         
         .metric-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            font-size: 24px;
+            margin-bottom: 10px;
+            font-size: 20px;
             color: white;
         }
         
@@ -582,7 +615,7 @@
         }
         
         .metric-label {
-            font-size: 13px;
+            font-size: 12px;
             color: #6c757d;
             text-transform: uppercase;
             font-weight: 600;
@@ -590,10 +623,10 @@
         }
         
         .metric-value {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             color: #2c3e50;
-            margin: 8px 0 5px 0;
+            margin: 6px 0 4px 0;
             line-height: 1;
         }
         
@@ -608,8 +641,8 @@
         /* Contenedor del gráfico financiero */
         .chart-container-financial {
             background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
+            border-radius: 13px;
+            padding: 20px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -619,14 +652,14 @@
         .financial-summary {
             display: flex;
             justify-content: space-around;
-            gap: 20px;
+            gap: 14px;
             flex-wrap: wrap;
         }
         
         .financial-item {
             flex: 1;
             min-width: 200px;
-            padding: 15px;
+            padding: 12px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -662,7 +695,7 @@
         
         /* Tarjetas modernas para gráficos */
         .modern-card {
-            border-radius: 20px;
+            border-radius: 18px;
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -673,13 +706,13 @@
         }
         
         .card-header-modern {
-            padding: 25px;
+            padding: 20px;
             color: white;
             border: none;
         }
         
         .bg-warning-gradient {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #d9a441 0%, #b7811d 100%);
         }
         
         .bg-success-gradient {
@@ -691,23 +724,23 @@
         }
         
         .header-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 15px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            font-size: 22px;
             color: white;
-            margin-right: 15px;
+            margin-right: 12px;
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
         }
         
         .chart-container-full {
             background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 13px;
+            padding: 16px;
         }
         
         /* Estilos para modales */
@@ -731,6 +764,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="{{ asset('js/animations.js') }}"></script>
     
     <!-- JavaScript para modales de caja -->
     <script>
@@ -1103,25 +1137,6 @@
         });
     </script>
 @stop
-
-
-@section('css')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/boutique-theme.css') }}">
-@stop
-
-
-@section('js')
-    {{-- <script> console.log("Hi, I'm using the Laravel-AdminLTE package!"); </script> --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-    <script src="{{ asset('js/animations.js') }}"></script>
-@stop
-
-
-
-
 
 
 {{-- @extends('layouts.app')

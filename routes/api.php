@@ -19,39 +19,35 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Ruta publica de prueba para Streamlit / ML
+// Rutas publicas de solo lectura para consumidores frontend / ML
+Route::get('/dashboard', [ApiController::class, 'dashboard']);
 Route::get('/obtener-datos-ventas', [ApiController::class, 'ventasDatosML']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    // Dashboard / Resumen
-    Route::get('/dashboard', [ApiController::class, 'dashboard']);
+// Clientes
+Route::get('/clientes', [ApiController::class, 'clientes']);
+Route::get('/clientes/{id}', [ApiController::class, 'clienteShow']);
 
-    // Clientes
-    Route::get('/clientes', [ApiController::class, 'clientes']);
-    Route::get('/clientes/{id}', [ApiController::class, 'clienteShow']);
+// Productos
+Route::get('/productos', [ApiController::class, 'productos']);
+Route::get('/productos/{id}', [ApiController::class, 'productoShow']);
+Route::get('/categorias', [ApiController::class, 'categorias']);
+Route::get('/tallas', [ApiController::class, 'tallas']);
 
-    // Productos
-    Route::get('/productos', [ApiController::class, 'productos']);
-    Route::get('/productos/{id}', [ApiController::class, 'productoShow']);
-    Route::get('/categorias', [ApiController::class, 'categorias']);
-    Route::get('/tallas', [ApiController::class, 'tallas']);
+// Ventas
+Route::get('/ventas', [ApiController::class, 'ventas']);
+Route::get('/ventas/{id}', [ApiController::class, 'ventaShow']);
 
-    // Ventas
-    Route::get('/ventas', [ApiController::class, 'ventas']);
-    Route::get('/ventas/{id}', [ApiController::class, 'ventaShow']);
+// Compras
+Route::get('/compras', [ApiController::class, 'compras']);
+Route::get('/compras/{id}', [ApiController::class, 'compraShow']);
 
-    // Compras
-    Route::get('/compras', [ApiController::class, 'compras']);
-    Route::get('/compras/{id}', [ApiController::class, 'compraShow']);
+// Proveedores
+Route::get('/proveedores', [ApiController::class, 'proveedores']);
+Route::get('/proveedores/{id}', [ApiController::class, 'proveedorShow']);
 
-    // Proveedores
-    Route::get('/proveedores', [ApiController::class, 'proveedores']);
-    Route::get('/proveedores/{id}', [ApiController::class, 'proveedorShow']);
+// Cajas
+Route::get('/cajas', [ApiController::class, 'cajas']);
+Route::get('/cajas/{id}', [ApiController::class, 'cajaShow']);
 
-    // Cajas
-    Route::get('/cajas', [ApiController::class, 'cajas']);
-    Route::get('/cajas/{id}', [ApiController::class, 'cajaShow']);
-
-    // Catalogos
-    Route::get('/estados-transaccion', [ApiController::class, 'estadosTransaccion']);
-});
+// Catalogos
+Route::get('/estados-transaccion', [ApiController::class, 'estadosTransaccion']);

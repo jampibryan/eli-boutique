@@ -13,17 +13,26 @@
     @php( $logout_url = $logout_url ? url($logout_url) : '' )
 @endif
 
+@php( $user = Auth::user() )
+@php( $role_label = method_exists($user, 'roleLabel') ? $user->roleLabel() : ucfirst($user->getRoleNames()->first() ?? 'Usuario') )
+@php( $user_initials = method_exists($user, 'initials') ? $user->initials() : strtoupper(substr($user->name, 0, 1)) )
+@php( $user_display_name = method_exists($user, 'firstName') ? $user->firstName() : strtok($user->name, ' ') )
+
 <li class="nav-item dropdown user-menu">
 
     {{-- User menu toggler --}}
-    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+    <a href="#" class="nav-link dropdown-toggle user-menu-toggle" data-toggle="dropdown">
         @if(config('adminlte.usermenu_image'))
-            <img src="{{ Auth::user()->adminlte_image() }}"
+            <img src="{{ $user->adminlte_image() }}"
                  class="user-image img-circle elevation-2"
-                 alt="{{ Auth::user()->name }}">
+                 alt="{{ $user->name }}">
         @endif
-        <span @if(config('adminlte.usermenu_image')) class="d-none d-md-inline" @endif>
-            {{ Auth::user()->name }}
+        @if(!config('adminlte.usermenu_image'))
+            <span class="user-mini-avatar">{{ $user_initials }}</span>
+        @endif
+        <span class="user-identity-compact @if(config('adminlte.usermenu_image')) d-none d-md-inline-flex @endif">
+            <span class="user-name">{{ $user_display_name }}</span>
+            <span class="user-role">{{ $role_label }}</span>
         </span>
     </a>
 
@@ -35,14 +44,14 @@
             <li class="user-header {{ config('adminlte.usermenu_header_class', 'bg-primary') }}
                 @if(!config('adminlte.usermenu_image')) h-auto @endif">
                 @if(config('adminlte.usermenu_image'))
-                    <img src="{{ Auth::user()->adminlte_image() }}"
+                    <img src="{{ $user->adminlte_image() }}"
                          class="img-circle elevation-2"
-                         alt="{{ Auth::user()->name }}">
+                         alt="{{ $user->name }}">
                 @endif
                 <p class="@if(!config('adminlte.usermenu_image')) mt-0 @endif">
-                    {{ Auth::user()->name }}
+                    {{ $user->name }}
                     @if(config('adminlte.usermenu_desc'))
-                        <small>{{ Auth::user()->adminlte_desc() }}</small>
+                        <small>{{ $user->adminlte_desc() }}</small>
                     @endif
                 </p>
             </li>

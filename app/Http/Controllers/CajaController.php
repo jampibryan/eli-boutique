@@ -146,9 +146,6 @@ class CajaController extends Controller
         // Actualizar datos de cierre
         $caja->update([
             'hora_cierre' => now()->format('H:i:s'),
-            'clientesHoy' => $request->clientesHoy ?? 0,
-            'productosVendidos' => $request->productosVendidos ?? 0,
-            'ingresoDiario' => $request->ingresoDiario ?? 0
         ]);
 
         return redirect()->route('home')->with('success', 'Caja cerrada correctamente.');
