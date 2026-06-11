@@ -139,6 +139,26 @@
                                     <span class="value" style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/
                                         {{ number_format($venta->montoTotal, 2) }}</span>
                                 </div>
+                                @if ($estadoDescripcion == 'Pagado')
+                                    <div class="info-row">
+                                        <i class="fas fa-cloud-upload-alt icon" style="color: #17a2b8;"></i>
+                                        <span class="label">SUNAT:</span>
+                                        @php
+                                            $docSunat = $venta->documentoSunat;
+                                        @endphp
+                                        @if(!$docSunat)
+                                            <span class="badge bg-secondary text-white" style="font-size: 0.75rem;">Pendiente</span>
+                                        @elseif($docSunat->estado_envio == 'aceptado')
+                                            <span class="badge bg-success text-white" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Aceptado</span>
+                                        @elseif($docSunat->estado_envio == 'rechazado')
+                                            <span class="badge bg-danger text-white" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Rechazado</span>
+                                        @elseif($docSunat->estado_envio == 'enviando')
+                                            <span class="badge bg-info text-white" style="font-size: 0.75rem;">Enviando...</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Error</span>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Acciones según estado -->

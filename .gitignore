@@ -17,3 +17,11 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# SUNAT / Greenter Integration
+/storage/app/certificates/*
+!/storage/app/certificates/.gitkeep
+/storage/app/invoices/*
+!/storage/app/invoices/.gitkeep
+/storage/app/cdrs/*
+!/storage/app/cdrs/.gitkeep

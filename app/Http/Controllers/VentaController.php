@@ -99,7 +99,7 @@ class VentaController extends Controller
 
     public function pdfComprobante($id)
     {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante'])
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'documentoSunat'])
             ->findOrFail($id);
 
         $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';

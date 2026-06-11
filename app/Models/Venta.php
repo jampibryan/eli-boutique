@@ -132,6 +132,11 @@ class Venta extends Model
         return $this->hasOne(Pago::class);
     }
 
+    public function documentoSunat()
+    {
+        return $this->hasOne(VentaDocumentoSunat::class);
+    }
+
     public function anular()
     {
         $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();

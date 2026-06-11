@@ -52,6 +52,12 @@ class PagoController extends Controller
         if ($type === 'venta') {
             session()->forget('carrito');
             session()->forget('venta_cliente');
+
+            // Dispatch Job de transmisión asíncrona a SUNAT
+            $venta = Venta::find($ventaId);
+            if ($venta) {
+                \App\Jobs\SendVentaToSunatJob::dispatch($venta);
+            }
         }
 
         $redirectRoute = $type === 'venta' ? 'ventas.index' : 'compras.index';

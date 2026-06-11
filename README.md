@@ -58,6 +58,8 @@ Sistema web desarrollado con Laravel 10 para la gestion operativa de una boutiqu
 - Extension PHP `xml`
 - Extension PHP `curl`
 - Extension PHP `zip`
+- Extension PHP `openssl` (requerida por Greenter para firmar digitalmente XMLs)
+- Extension PHP `soap` (requerida por Greenter para transmitir por SOAP a la SUNAT)
 
 ## Instalacion
 
@@ -97,12 +99,20 @@ Además de la base de datos, asegúrate de configurar las siguientes secciones e
 
 - **Conexión API (Sanctum y CORS):** Define `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` si planeas consumir la API desde clientes externos (como Flutter o Streamlit).
 - **Envío de Correos (SMTP):** Configura las variables `MAIL_*` con las credenciales de tu servidor de correo (se recomienda usar contraseñas de aplicación si utilizas Gmail).
+- **Facturación Electrónica (SUNAT / Greenter):**
+  - `SUNAT_MODE`: Indica el ambiente (`beta` para desarrollo/pruebas o `production` para producción).
+  - `SUNAT_RUC`: RUC real de la empresa (solo necesario en modo producción).
+  - `SUNAT_USUARIO`: Usuario SOL real (solo necesario en modo producción).
+  - `SUNAT_CLAVE`: Clave SOL real (solo necesario en modo producción).
+  - `SUNAT_CERTIFICATE_PATH`: Ruta relativa al certificado digital `.crt` en `storage/` (por defecto: `app/certificates/certificate.crt`).
+  - `SUNAT_PRIVATE_KEY_PATH`: Ruta relativa a la llave privada `.key` en `storage/` (por defecto: `app/certificates/private.key`).
 
 Notas:
 
 - `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` deben ajustarse si Flutter, Streamlit u otro cliente consume la API desde otra direccion.
 - El registro publico de usuarios esta deshabilitado. Los usuarios deben ser creados por un administrador.
 - Para envio de correos se recomienda usar password de aplicacion.
+- En el ambiente `beta` no es necesario especificar RUC, usuario ni clave en el `.env`, ya que por defecto utiliza las credenciales de prueba oficiales de la SUNAT (`20000000001` / `MODDATOS` / `moddatos`).
 
 ## Autenticacion y seguridad
 
@@ -204,6 +214,14 @@ Incluye:
 - Apertura y cierre de caja diaria con control de saldos y transacciones.
 - **Seguridad en Cierre de Caja:** El cálculo de saldos y el estado final se procesa de forma interna en el servidor para evitar que el usuario altere los totales de efectivo en el flujo frontend.
 - Reporte detallado de movimientos e informes generales en PDF.
+
+### Facturación Electrónica (SUNAT)
+
+- **Integración con Greenter SDK:** Generación del XML firmado digitalmente en formato UBL 2.1 para Facturas (tipo `01`) y Boletas (tipo `03`).
+- **Transmisión Asíncrona SOAP:** El envío se despacha de forma asíncrona mediante un Laravel Job (`SendVentaToSunatJob`) inmediatamente tras confirmar y pagar un comprobante.
+- **Trazabilidad y CDR:** Guarda los XMLs firmados localmente en `storage/app/invoices/` y las constancias de recepción de SUNAT (CDR zip) en `storage/app/cdrs/`.
+- **Representación Física:** Muestra en el PDF de venta la numeración oficial (ej: `B001-00000001`), el sello digital de aceptación y el código hash de la firma digital (DigestValue).
+- **Monitoreo desde Dashboard:** Estado de transmisión en tiempo real visible con badges en el listado de ventas (`Pendiente`, `Enviando`, `Aceptado`, `Rechazado`, `Error`).
 
 ## Roles y permisos
 
