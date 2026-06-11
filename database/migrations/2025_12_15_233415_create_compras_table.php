@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('codigoCompra')->unique();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->foreignId('comprobante_id')->nullable()->constrained('comprobantes')->onDelete('cascade');
+            $table->foreignId('colaborador_id')->nullable()->constrained('colaboradores')->onDelete('set null');
             $table->foreignId('estado_transaccion_id')->constrained('estado_transacciones')->onDelete('cascade');
             $table->date('fecha_envio')->nullable();
             $table->date('fecha_cotizacion')->nullable();

@@ -336,8 +336,8 @@
                                     <div class="brand-name">Eli Boutique</div>
                                     <p class="brand-copy">
                                         Boutique de ropa y accesorios<br>
-                                        RUC: 20276544711 | Celular: 922 070 116<br>
-                                        Calle Ayacucho 624, Pacanga
+                                         RUC: 20276544711 | Celular: 922 070 116<br>
+                                         Calle Ayacucho 624, Pacanga
                                     </p>
                                 </td>
                             </tr>
@@ -387,7 +387,7 @@
                                 </div>
                                 <div class="field">
                                     <span class="field-label">Generado por</span>
-                                    <span class="field-value">{{ $usuario->name ?? 'Sistema' }}</span>
+                                    <span class="field-value">{{ $venta->colaborador->nombreColab ?? ($usuario->name ?? 'Sistema') }}</span>
                                 </div>
                             </div>
                         </div>

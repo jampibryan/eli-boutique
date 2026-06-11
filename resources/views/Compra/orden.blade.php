@@ -333,6 +333,10 @@
                     ELI BOUTIQUE E.I.R.L
                 </div>
                 <div class="info-row">
+                    <span class="info-label">RUC:</span>
+                    20276544711
+                </div>
+                <div class="info-row">
                     <span class="info-label">Dirección:</span>
                     Calle Ayacucho 624, Pacanga
                 </div>
@@ -478,7 +482,7 @@
     <!-- Footer -->
     <div class="footer">
         <strong>ELI BOUTIQUE E.I.R.L</strong><br>
-        Calle Ayacucho 624, Pacanga | Cel: 922 070 116<br>
+        Calle Ayacucho 624, Pacanga | Celular: 922 070 116<br>
         Generado: {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}
     </div>
 </body>

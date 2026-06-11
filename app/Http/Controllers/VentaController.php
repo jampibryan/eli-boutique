@@ -71,9 +71,25 @@ class VentaController extends Controller
         return response()->json($resultados->all());
     }
 
-    public function pdfVentas()
+    public function pdfVentas(Request $request)
     {
-        $ventas = Venta::with(['cliente', 'pago.comprobante', 'estadoTransaccion'])->get();
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
+        $query = Venta::with(['cliente', 'pago.comprobante', 'estadoTransaccion']);
+
+        if ($request->filled('search')) {
+            $query->where('codigoVenta', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('fecha')) {
+            $query->whereDate('created_at', $request->fecha);
+        }
+
+        $orden = $request->get('orden', 'reciente');
+        $query->orderBy('id', $orden === 'reciente' ? 'desc' : 'asc');
+
+        $ventas = $query->get();
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Venta.reporte', compact('ventas')));

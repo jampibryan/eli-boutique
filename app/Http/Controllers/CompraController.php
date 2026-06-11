@@ -32,9 +32,27 @@ class CompraController extends Controller
         return view('Compra.index', compact('compras'));
     }
 
-    public function pdfCompras()
+    public function pdfCompras(Request $request)
     {
-        $compras = Compra::with(['proveedor', 'detalles.producto.categoriaProducto', 'comprobante', 'estadoTransaccion'])->get();
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+
+        $query = Compra::with(['proveedor', 'detalles.producto.categoriaProducto', 'comprobante', 'estadoTransaccion']);
+
+        if ($request->filled('search')) {
+            $query->where('codigoCompra', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('estado')) {
+            $query->whereHas('estadoTransaccion', function ($q) use ($request) {
+                $q->where('descripcionET', $request->estado);
+            });
+        }
+
+        $orden = $request->get('orden', 'reciente');
+        $query->orderBy('id', $orden === 'reciente' ? 'desc' : 'asc');
+
+        $compras = $query->get();
         $totalesPorCategoria = [];
 
         foreach ($compras as $compra) {
@@ -60,8 +78,8 @@ class CompraController extends Controller
 
     public function pdfOrdenCompra(Compra $compra)
     {
-        $compra->load(['proveedor', 'detalles.producto', 'detalles.talla', 'comprobante', 'estadoTransaccion']);
-        $colaborador = Colaborador::find(1);
+        $compra->load(['proveedor', 'detalles.producto', 'detalles.talla', 'comprobante', 'estadoTransaccion', 'colaborador']);
+        $colaborador = $compra->colaborador ?? Colaborador::find(1);
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML(view('Compra.orden', compact('compra', 'colaborador')));

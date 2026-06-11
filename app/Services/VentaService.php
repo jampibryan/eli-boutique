@@ -83,6 +83,15 @@ class VentaService
             $baseImponible = round($montoTotal / 1.18, 2);
             $igv = round($montoTotal - $baseImponible, 2);
 
+            $colaboradorId = $validated['colaborador_id'] ?? null;
+            if (!$colaboradorId && auth()->check()) {
+                $user = auth()->user();
+                $colaborador = \App\Models\Colaborador::where('correoColab', $user->email)->first();
+                if ($colaborador) {
+                    $colaboradorId = $colaborador->id;
+                }
+            }
+
             $venta = Venta::create([
                 'cliente_id' => $validated['cliente_id'],
                 'caja_id' => $cajaHoy->id,
@@ -90,6 +99,7 @@ class VentaService
                 'subTotal' => $baseImponible,
                 'IGV' => $igv,
                 'montoTotal' => $montoTotal,
+                'colaborador_id' => $colaboradorId,
             ]);
 
             foreach ($detallesVenta as $detalleVenta) {

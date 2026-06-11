@@ -31,8 +31,18 @@ class CompraService
                 ]);
             }
 
+            $colaboradorId = $validated['colaborador_id'] ?? null;
+            if (!$colaboradorId && auth()->check()) {
+                $user = auth()->user();
+                $colaborador = \App\Models\Colaborador::where('correoColab', $user->email)->first();
+                if ($colaborador) {
+                    $colaboradorId = $colaborador->id;
+                }
+            }
+
             $compra = Compra::create([
                 'proveedor_id' => $validated['proveedor_id'],
+                'colaborador_id' => $colaboradorId,
             ]);
 
             foreach ($validated['productos'] as $productoData) {
@@ -51,9 +61,23 @@ class CompraService
     public function update(Compra $compra, array $validated): Compra
     {
         return DB::transaction(function () use ($compra, $validated) {
-            $compra->update([
+            $colaboradorId = $validated['colaborador_id'] ?? null;
+            if (!$colaboradorId && auth()->check()) {
+                $user = auth()->user();
+                $colaborador = \App\Models\Colaborador::where('correoColab', $user->email)->first();
+                if ($colaborador) {
+                    $colaboradorId = $colaborador->id;
+                }
+            }
+
+            $updateData = [
                 'proveedor_id' => $validated['proveedor_id'],
-            ]);
+            ];
+            if ($colaboradorId) {
+                $updateData['colaborador_id'] = $colaboradorId;
+            }
+
+            $compra->update($updateData);
 
             $compra->detalles()->delete();
 

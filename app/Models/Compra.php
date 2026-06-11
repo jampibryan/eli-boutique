@@ -26,6 +26,7 @@ class Compra extends Model
         'condiciones_pago',
         'dias_credito',
         'pdf_cotizacion',
+        'colaborador_id',
     ];
 
     protected static function booted()
@@ -41,6 +42,11 @@ class Compra extends Model
             $nuevoCodigo = str_pad((int)$ultimoCodigo + 1, 7, '0', STR_PAD_LEFT);
             $compra->codigoCompra = $nuevoCodigo;
         });
+    }
+
+    public function colaborador()
+    {
+        return $this->belongsTo(Colaborador::class);
     }
 
     // Relación de una compra con múltiples detalles de compra

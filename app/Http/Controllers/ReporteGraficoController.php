@@ -21,7 +21,7 @@ class ReporteGraficoController extends Controller
 
     public function index()
     {
-        // return view('reporte.index');
+        return view('Reporte.index');
     }
 
     public function ventas(Request $request)

@@ -23,12 +23,12 @@
                 <a href="{{ route('compras.create') }}" class="btn btn-boutique-gold">
                     <i class="fas fa-plus"></i> Nueva Orden
                 </a>
-                <!--
-                <a href="{{ route('tiempoCompras.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                
+                <a href="{{ route('tiempoCompras.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-clock"></i> Tiempo de Orden de Compras
                 </a>
-                -->
-                <a href="{{ route('compras.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                
+                <a href="{{ route('compras.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
                 </a>
             </div>

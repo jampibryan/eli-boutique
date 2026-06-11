@@ -105,6 +105,9 @@ Route::middleware([
     // TIEMPO DE ORDEN DE COMPRAS
     Route::get('/tiempo-compras/reporte', [TiempoController::class, 'pdfTiempoOrdenCompras'])->name('tiempoCompras.pdf');
 
+    // TIEMPO DE REPORTE GRÁFICO
+    Route::get('/tiempo-reportes-graficos/reporte', [TiempoController::class, 'pdfTiempoReporteGrafico'])->name('tiempoReporteGrafico.pdf');
+
     Route::resource('compras', CompraController::class);
     Route::post('/compras/{id}/anular', [CompraController::class, 'anularCompra'])->name('compras.anular');
     Route::post('/compras/{compra}/recibir', [CompraController::class, 'recibirPedido'])->name('compras.recibir');
@@ -120,6 +123,7 @@ Route::middleware([
     Route::post('pagos/store/{id}/{type}', [PagoController::class, 'store'])->name('pagos.store');
 
     // Ruta para generar el PDF del gráfico de ventas
+    Route::get('/reportes/graficos', [ReporteGraficoController::class, 'index'])->name('reporte.grafico.index');
     Route::post('/reportes/graficos/ventas/pdf', [ReporteGraficoController::class, 'generarPdfVentasDia'])->name('reporte.grafico.ventas.pdf');
     Route::get('/reportes/graficos/ventas', [ReporteGraficoController::class, 'ventas'])->name('reporte.grafico.ventas');
     Route::get('/reportes/graficos/compras', [ReporteGraficoController::class, 'compras'])->name('reporte.grafico.compras');

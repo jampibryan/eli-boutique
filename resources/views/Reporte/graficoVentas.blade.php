@@ -23,13 +23,19 @@
                             <small class="text-muted">Analiza el rendimiento de ventas por mes o por día</small>
                         </div>
                     </div>
-                    <div class="text-end mt-2 mt-md-0">
-                        <span class="badge"
-                            style="background:#667eea;color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;">
-                            <i class="fas fa-user me-1"></i> {{ Auth::user()->name ?? 'Sistema' }}
-                        </span>
-                        <br>
-                        <small class="text-muted">{{ date('d/m/Y - h:i A') }}</small>
+                    <div class="d-flex align-items-center gap-3 mt-2 mt-md-0 flex-wrap justify-content-end">
+                        <a href="{{ route('tiempoReporteGrafico.pdf') }}" target="_blank" class="btn btn-sm text-white" 
+                            style="background: linear-gradient(135deg,#667eea,#764ba2); border-radius: 20px; padding: 6px 16px; font-weight: 600; box-shadow: 0 4px 10px rgba(102,126,234,0.25);">
+                            <i class="fas fa-clock me-1"></i> Tiempo de Reporte Gráfico
+                        </a>
+                        <div class="text-end">
+                            <span class="badge"
+                                style="background:#667eea;color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;">
+                                <i class="fas fa-user me-1"></i> {{ Auth::user()->name ?? 'Sistema' }}
+                            </span>
+                            <br>
+                            <small class="text-muted">{{ date('d/m/Y - h:i A') }}</small>
+                        </div>
                     </div>
                 </div>
             </div>

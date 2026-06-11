@@ -14,125 +14,24 @@ use App\Models\Proveedor;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use App\Models\Cliente;
+use App\Models\Colaborador;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class TransaccionSeeder extends Seeder
 {
     // =====================================================================
-    // NOVIEMBRE 2025 - ENERO 2026
-    // ~10 ventas/dia promedio | Compras: miercoles y sabados
-    // Pedidos controlados, margen de beneficio positivo
-    // Misma logica realista que TransaccionSeederOct
+    // OCTUBRE 2025 - MAYO 2026
+    // Ventas: Lunes a Sábado, 8am a 8pm.
+    // Octubre 2025: Exactamente 256 ventas, 50 compras.
+    // Noviembre 2025 - Mayo 2026: Ventas promedio 12/día (10-15), 2-3 prendas c/u.
+    // Compras: Reactivas, 2 a 3 veces por semana (miércoles y sábados).
+    // Ventas de Colaboradores (Laura, Sofia, Jacky).
+    // Compras de Gerente (Elyana).
     // =====================================================================
 
-    // [fecha, numVentas, numCompras]
-    // Noviembre 2025: Lu-Sa (25 dias operativos)
-    // Diciembre 2025: Lu-Sa (27 dias operativos) — temporada alta
-    // Enero 2026: Lu-Sa (27 dias operativos)
-    private $diasOperacion = [
-        // ==================== NOVIEMBRE 2025 ====================
-        // Semana 1 (Sa 1)
-        ['2025-11-01', 11, 4],    // Sabado
-        // Semana 2 (Lu 3 - Sa 8)
-        ['2025-11-03', 9, 0],     // Lunes
-        ['2025-11-04', 10, 0],    // Martes
-        ['2025-11-05', 11, 4],    // Miercoles
-        ['2025-11-06', 9, 0],     // Jueves
-        ['2025-11-07', 10, 0],    // Viernes
-        ['2025-11-08', 12, 4],    // Sabado
-        // Semana 3 (Lu 10 - Sa 15)
-        ['2025-11-10', 9, 0],     // Lunes
-        ['2025-11-11', 10, 0],    // Martes
-        ['2025-11-12', 10, 3],    // Miercoles
-        ['2025-11-13', 8, 0],     // Jueves
-        ['2025-11-14', 9, 0],     // Viernes
-        ['2025-11-15', 11, 4],    // Sabado
-        // Semana 4 (Lu 17 - Sa 22)
-        ['2025-11-17', 10, 0],    // Lunes
-        ['2025-11-18', 9, 0],     // Martes
-        ['2025-11-19', 11, 3],    // Miercoles
-        ['2025-11-20', 10, 0],    // Jueves
-        ['2025-11-21', 9, 0],     // Viernes
-        ['2025-11-22', 12, 4],    // Sabado
-        // Semana 5 (Lu 24 - Sa 29)
-        ['2025-11-24', 10, 0],    // Lunes
-        ['2025-11-25', 9, 0],     // Martes
-        ['2025-11-26', 10, 3],    // Miercoles
-        ['2025-11-27', 11, 0],    // Jueves
-        ['2025-11-28', 9, 0],     // Viernes
-        ['2025-11-29', 11, 4],    // Sabado
-
-        // ==================== DICIEMBRE 2025 ====================
-        // Semana 1 (Lu 1 - Sa 6)
-        ['2025-12-01', 11, 0],    // Lunes
-        ['2025-12-02', 10, 0],    // Martes
-        ['2025-12-03', 12, 4],    // Miercoles
-        ['2025-12-04', 10, 0],    // Jueves
-        ['2025-12-05', 11, 0],    // Viernes
-        ['2025-12-06', 13, 5],    // Sabado — temporada alta
-        // Semana 2 (Lu 8 - Sa 13)
-        ['2025-12-08', 10, 0],    // Lunes
-        ['2025-12-09', 11, 0],    // Martes
-        ['2025-12-10', 12, 4],    // Miercoles
-        ['2025-12-11', 10, 0],    // Jueves
-        ['2025-12-12', 11, 0],    // Viernes
-        ['2025-12-13', 14, 5],    // Sabado — pico navideño
-        // Semana 3 (Lu 15 - Sa 20)
-        ['2025-12-15', 12, 0],    // Lunes
-        ['2025-12-16', 11, 0],    // Martes
-        ['2025-12-17', 13, 4],    // Miercoles
-        ['2025-12-18', 12, 0],    // Jueves
-        ['2025-12-19', 13, 0],    // Viernes
-        ['2025-12-20', 15, 5],    // Sabado — semana pre-navidad
-        // Semana 4 (Lu 22 - Mi 24) — pre-Navidad
-        ['2025-12-22', 14, 0],    // Lunes
-        ['2025-12-23', 13, 0],    // Martes
-        ['2025-12-24', 11, 4],    // Miercoles — Nochebuena (medio dia)
-        // No hay jueves 25 (feriado Navidad), ni viernes/sabado
-        ['2025-12-26', 10, 0],    // Viernes
-        ['2025-12-27', 12, 5],    // Sabado
-        // Semana 5 (Lu 29 - Mi 31)
-        ['2025-12-29', 10, 0],    // Lunes
-        ['2025-12-30', 9, 0],     // Martes
-        ['2025-12-31', 8, 3],     // Miercoles — fin de año (medio dia)
-
-        // ==================== ENERO 2026 ====================
-        // No hay jueves 1 (feriado Año Nuevo)
-        // Semana 1 (Vi 2 - Sa 3)
-        ['2026-01-02', 8, 0],     // Viernes — regreso
-        ['2026-01-03', 10, 4],    // Sabado
-        // Semana 2 (Lu 5 - Sa 10)
-        ['2026-01-05', 9, 0],     // Lunes
-        ['2026-01-06', 10, 0],    // Martes
-        ['2026-01-07', 10, 3],    // Miercoles
-        ['2026-01-08', 9, 0],     // Jueves
-        ['2026-01-09', 10, 0],    // Viernes
-        ['2026-01-10', 11, 4],    // Sabado
-        // Semana 3 (Lu 12 - Sa 17)
-        ['2026-01-12', 9, 0],     // Lunes
-        ['2026-01-13', 10, 0],    // Martes
-        ['2026-01-14', 10, 3],    // Miercoles
-        ['2026-01-15', 9, 0],     // Jueves
-        ['2026-01-16', 8, 0],     // Viernes
-        ['2026-01-17', 11, 4],    // Sabado
-        // Semana 4 (Lu 19 - Sa 24)
-        ['2026-01-19', 9, 0],     // Lunes
-        ['2026-01-20', 10, 0],    // Martes
-        ['2026-01-21', 10, 3],    // Miercoles
-        ['2026-01-22', 9, 0],     // Jueves
-        ['2026-01-23', 8, 0],     // Viernes
-        ['2026-01-24', 11, 4],    // Sabado
-        // Semana 5 (Lu 26 - Sa 31)
-        ['2026-01-26', 9, 0],     // Lunes
-        ['2026-01-27', 8, 0],     // Martes
-        ['2026-01-28', 10, 3],    // Miercoles
-        ['2026-01-29', 9, 0],     // Jueves
-        ['2026-01-30', 10, 0],    // Viernes
-        ['2026-01-31', 11, 4],    // Sabado
-    ];
-
-    // Proveedor ID => Productos (1 proveedor = 1 categoria)
+    // Relación de Proveedor ID => Productos (1 proveedor = 1 categoria)
     private $proveedorProductos = [
         1 => [1, 2, 3, 4, 5],       // Moda Eclipse => Polos & Camisetas
         2 => [6, 7, 8, 9, 10],      // Estilo Urbano => Jeans & Pantalones
@@ -141,13 +40,21 @@ class TransaccionSeeder extends Seeder
         5 => [17, 18, 19],           // Textiles de Oro => Ropa Deportiva
     ];
 
+    private $productoProveedor = [
+        1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1,
+        6 => 2, 7 => 2, 8 => 2, 9 => 2, 10 => 2,
+        11 => 3, 12 => 3, 13 => 3,
+        14 => 4, 15 => 4, 16 => 4,
+        17 => 5, 18 => 5, 19 => 5,
+    ];
+
     // Popularidad de venta (mayor = se vende mas)
     private $productoPesos = [
-        1 => 7, 2 => 7, 3 => 6, 4 => 5, 5 => 5,    // Polos
+        1 => 7, 2 => 7, 3 => 6, 4 => 5, 5 => 5,      // Polos
         6 => 5, 7 => 4, 8 => 4, 9 => 3, 10 => 3,     // Jeans
-        11 => 3, 12 => 3, 13 => 2,                      // Shorts
-        14 => 3, 15 => 6, 16 => 4,                      // Abrigos
-        17 => 4, 18 => 5, 19 => 7,                      // Deportiva
+        11 => 3, 12 => 3, 13 => 2,                    // Shorts
+        14 => 3, 15 => 6, 16 => 4,                    // Abrigos
+        17 => 4, 18 => 5, 19 => 7,                    // Deportiva
     ];
 
     // Tallas por producto
@@ -159,165 +66,469 @@ class TransaccionSeeder extends Seeder
         17 => [1,2,3,4], 18 => [1,2,3,4], 19 => [1,2,3,4],
     ];
 
-    // Objetivo de stock POR TALLA para compras reactivas
-    // Valores altos = compras mas agresivas para mantener stock saludable
-    private $objetivoPorProducto = [
-        1 => 10, 2 => 10, 3 => 9, 4 => 9, 5 => 9,
-        6 => 9, 7 => 9, 8 => 9, 9 => 8, 10 => 8,
-        11 => 8, 12 => 8, 13 => 8,
-        14 => 8, 15 => 9, 16 => 8,
-        17 => 9, 18 => 9, 19 => 10,
-    ];
-
-    // 5-8 productos terminaran con stock bajo (8-15 unidades totales)
-    // El resto terminara con stock saludable (20-45)
+    // Objetivo de productos con stock mínimo en el Dashboard (5 a 7 productos)
+    // Definimos exactamente 6 productos con stock bajo al final del periodo
     private $stockBajo = [3, 9, 13, 14, 16, 18];
 
-    // =====================================================================
-    // METODO PRINCIPAL
-    // =====================================================================
     public function run()
     {
-        mt_srand(2026);
+        // Usar semilla aleatoria fija para consistencia en la generación
+        mt_srand(20251001);
 
-        // Contar totales del array
-        $totalVentasEsperadas = array_sum(array_column($this->diasOperacion, 1));
-        $totalComprasEsperadas = array_sum(array_column($this->diasOperacion, 2));
-        $totalDias = count($this->diasOperacion);
+        // 1. LIMPIAR BASE DE DATOS
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        VentaDetalle::truncate();
+        CompraDetalle::truncate();
+        Pago::truncate();
+        Venta::truncate();
+        Compra::truncate();
+        Caja::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        echo "\n" . str_repeat("=", 70) . "\n";
-        echo "  ELI BOUTIQUE - SEEDER NOVIEMBRE 2025 A ENERO 2026\n";
-        echo "  ~{$totalVentasEsperadas} Ventas + ~{$totalComprasEsperadas} Compras | {$totalDias} dias operativos\n";
-        echo str_repeat("=", 70) . "\n\n";
+        // 2. ACTUALIZAR CLIENTES A RUC (Persona Natural con Negocio)
+        // Convertimos ~25% de los clientes en clientes con RUC (11 dígitos, inicia con 10)
+        // para tener Facturas realistas asignadas a personas naturales
+        $clientes = Cliente::all();
+        if ($clientes->isEmpty()) {
+            echo "ERROR: Debe sembrar los clientes antes de ejecutar este seeder.\n";
+            return;
+        }
 
+        $rucClientesCount = 0;
+        foreach ($clientes as $index => $cliente) {
+            if ($index % 4 === 0) {
+                if (strlen($cliente->dniCliente) === 8) {
+                    $cliente->dniCliente = '10' . $cliente->dniCliente . mt_rand(0, 9);
+                    $cliente->save();
+                    $rucClientesCount++;
+                }
+            }
+        }
+        echo "  Clientes actualizados: {$rucClientesCount} personas naturales ahora tienen RUC (11 dígitos)\n";
+
+        // Obtener modelos base necesarios
         $estadoPendiente = EstadoTransaccion::where('descripcionET', 'Pendiente')->first();
         $estadoPagado = EstadoTransaccion::where('descripcionET', 'Pagado')->first();
         $estadoPagada = EstadoTransaccion::where('descripcionET', 'Pagada')->first();
         $comprobanteBoleta = Comprobante::where('descripcionCOM', 'Boleta')->first();
         $comprobanteFactura = Comprobante::where('descripcionCOM', 'Factura')->first();
-        $clientes = Cliente::all();
 
-        if ($clientes->isEmpty() || !$estadoPagado || !$estadoPendiente || !$comprobanteBoleta) {
-            echo "ERROR: Faltan datos base (clientes, estados o comprobantes)\n";
+        if (!$estadoPendiente || !$estadoPagado || !$estadoPagada || !$comprobanteBoleta || !$comprobanteFactura) {
+            echo "ERROR: Faltan estados de transacción o tipos de comprobantes base.\n";
             return;
         }
 
-        // Verificar que ya existen datos de octubre
-        $ventasOct = Venta::whereYear('created_at', 2025)->whereMonth('created_at', 10)->count();
-        if ($ventasOct === 0) {
-            echo "ERROR: No se encontraron ventas de octubre. Ejecute TransaccionSeederOct primero.\n";
-            return;
+        $vendedores = Colaborador::whereIn('nombreColab', ['Laura', 'Sofia', 'Jacky'])->get();
+        if ($vendedores->isEmpty()) {
+            $vendedores = Colaborador::where('cargo_id', 2)->get();
         }
-        echo "  Datos previos: {$ventasOct} ventas de octubre detectadas\n\n";
+        $gerente = Colaborador::where('nombreColab', 'Elyana')->first() 
+            ?? Colaborador::where('cargo_id', 1)->first();
 
+        // Generar lista de días laborables (Octubre 2025 a Mayo 2026, sin domingos)
+        $diasOperacion = [];
+        $startDate = Carbon::create(2025, 10, 1);
+        $endDate = Carbon::create(2026, 5, 31);
+        
+        $current = $startDate->copy();
+        while ($current->lte($endDate)) {
+            if ($current->dayOfWeek !== Carbon::SUNDAY) {
+                $isOctober = ($current->year === 2025 && $current->month === 10);
+                $diasOperacion[] = [
+                    'fecha' => $current->format('Y-m-d'),
+                    'isOctober' => $isOctober,
+                ];
+            }
+            $current->addDay();
+        }
+        
+        $totalDias = count($diasOperacion);
+
+        echo "\n" . str_repeat("=", 70) . "\n";
+        echo "  ELI BOUTIQUE - SEEDER UNIFICADO DE TRANSACCIONES OCT 2025 A MAY 2026\n";
+        echo "  Total de días laborables detectados: {$totalDias}\n";
+        echo str_repeat("=", 70) . "\n\n";
+
+        // Distribución de Ventas para Octubre 2025 (27 días laborables, total 256 ventas)
+        // 27 * 8 = 216. Faltan 40. Sumamos 1 venta a los primeros 40 índices módulo 27.
+        // Dando: 13 días con 10 ventas, 14 días con 9 ventas. Suma = 130 + 126 = 256.
+        $salesOctDistribution = array_fill(0, 27, 8);
+        for ($i = 0; $i < 40; $i++) {
+            $salesOctDistribution[$i % 27]++;
+        }
+
+        // Distribución de Compras para Octubre 2025 (total 50 compras)
+        // Se distribuyen en los 9 miércoles y sábados de octubre:
+        // [5, 5, 5, 5, 6, 6, 6, 6, 6] = 50 compras.
+        $purchasesOctCounts = [5, 5, 5, 5, 6, 6, 6, 6, 6];
+        $octoberPurchaseIdx = 0;
+        $compraOctTotalIndex = 0;
+
+        $octoberDaysCount = 0;
+        $vendedorIndex = 0;
         $ventasTotales = 0;
         $comprasTotales = 0;
-        $resumenDias = [];
-        $mesActual = '';
 
-        // ==================== PROCESAR DIA A DIA ====================
-        foreach ($this->diasOperacion as [$fecha, $numVentas, $numCompras]) {
+        // Procesar día a día
+        foreach ($diasOperacion as $diaInfo) {
+            $fecha = $diaInfo['fecha'];
+            $isOctober = $diaInfo['isOctober'];
             $carbonFecha = Carbon::parse($fecha);
             $diaSemana = ucfirst($carbonFecha->locale('es')->dayName);
-            $totalTransacciones = $numVentas + $numCompras;
+            $esMiercolesOSabado = in_array($carbonFecha->dayOfWeek, [Carbon::WEDNESDAY, Carbon::SATURDAY]);
 
-            // Separador por mes
-            $mes = $carbonFecha->format('F Y');
-            if ($mes !== $mesActual) {
-                $mesActual = $mes;
-                $mesNombre = $this->nombreMes($carbonFecha->month) . ' ' . $carbonFecha->year;
-                echo "\n  " . str_repeat("=", 50) . "\n";
-                echo "  {$mesNombre}\n";
-                echo "  " . str_repeat("=", 50) . "\n";
+            // Determinar números de ventas y compras para el día
+            if ($isOctober) {
+                $numVentas = $salesOctDistribution[$octoberDaysCount];
+                $numCompras = 0;
+                if ($esMiercolesOSabado && $octoberPurchaseIdx < count($purchasesOctCounts)) {
+                    $numCompras = $purchasesOctCounts[$octoberPurchaseIdx];
+                    $octoberPurchaseIdx++;
+                }
+                $octoberDaysCount++;
+            } else {
+                // Noviembre - Mayo: Ventas aleatorias 10-15 (Promedio ~12.5), Compras reactivas en miércoles/sábados
+                $numVentas = mt_rand(10, 15);
+                $numCompras = $esMiercolesOSabado ? 1 : 0; // 1 indica que es día de compras reactivas
             }
 
-            // 1. ABRIR CAJA
+            // 1. ABRIR CAJA DIARIA
             $caja = Caja::create([
                 'fecha' => $fecha,
                 'clientesHoy' => 0,
                 'productosVendidos' => 0,
                 'ingresoDiario' => 0.00,
                 'egresoDiario' => 0.00,
-                'created_at' => $carbonFecha->copy()->setTime(8, mt_rand(0, 4), mt_rand(10, 59)),
-                'updated_at' => $carbonFecha->copy()->setTime(8, mt_rand(0, 4), mt_rand(10, 59)),
+                'created_at' => $carbonFecha->copy()->setTime(8, mt_rand(0, 5), mt_rand(0, 59)),
+                'updated_at' => $carbonFecha->copy()->setTime(8, mt_rand(0, 5), mt_rand(0, 59)),
             ]);
 
-            echo "  " . str_repeat("-", 60) . "\n";
-            echo "  {$fecha} ({$diaSemana}) | Caja #{$caja->codigoCaja}\n";
+            echo "  Día {$fecha} ({$diaSemana}) | Caja #{$caja->codigoCaja}\n";
 
-            // 2. GENERAR HORAS SECUENCIALES
-            $horas = $this->generarHorasSecuenciales($carbonFecha, $totalTransacciones);
-
-            $horasCompras = array_slice($horas, 0, $numCompras);
-            $horasVentas = array_slice($horas, $numCompras);
-
-            // 3. COMPRAS PRIMERO (sin repetir proveedor en el mismo dia)
+            // 2. COMPRAS
             if ($numCompras > 0) {
-                $proveedoresUsadosHoy = [];
+                if ($isOctober) {
+                    // Para Octubre: Generar exactamente $numCompras registros de Compra (compras totales)
+                    $currentMin = mt_rand(10, 15);
+                    for ($c = 0; $c < $numCompras; $c++) {
+                        $proveedorId = (($compraOctTotalIndex) % 5) + 1;
+                        $compraOctTotalIndex++;
+                        
+                        $proveedor = Proveedor::find($proveedorId);
+                        $productosDelProveedor = $this->proveedorProductos[$proveedorId];
+                        
+                        $diasAntes = mt_rand(4, 6);
+                        $fechaEnvio = $carbonFecha->copy()->subDays($diasAntes)->format('Y-m-d');
+                        $fechaCotizacion = $carbonFecha->copy()->subDays($diasAntes - mt_rand(1, 2))->format('Y-m-d');
+                        $fechaAprobacion = $carbonFecha->copy()->subDays(mt_rand(1, 2))->format('Y-m-d');
+                        $horaCompra = $carbonFecha->copy()->setTime(8, $currentMin, mt_rand(0, 59));
+                        $currentMin += mt_rand(4, 9);
 
-                for ($c = 0; $c < $numCompras; $c++) {
-                    $this->crearCompra(
-                        $horasCompras[$c], $estadoPagada,
-                        $comprobanteFactura, $caja, $proveedoresUsadosHoy
-                    );
-                    $comprasTotales++;
+                        $compra = Compra::create([
+                            'proveedor_id' => $proveedorId,
+                            'comprobante_id' => $comprobanteFactura->id,
+                            'estado_transaccion_id' => $estadoPagada->id,
+                            'colaborador_id' => $gerente ? $gerente->id : null,
+                            'fecha_envio' => $fechaEnvio,
+                            'fecha_cotizacion' => $fechaCotizacion,
+                            'fecha_aprobacion' => $fechaAprobacion,
+                            'fecha_entrega_estimada' => $fecha,
+                            'condiciones_pago' => 'Pago contra entrega',
+                            'subtotal' => 0,
+                            'descuento' => 0,
+                            'igv' => 0,
+                            'total' => 0,
+                            'created_at' => $horaCompra,
+                            'updated_at' => $horaCompra,
+                        ]);
+
+                        $subtotalCompra = 0;
+                        foreach ($productosDelProveedor as $productoId) {
+                            $producto = Producto::find($productoId);
+                            $tallas = $this->tallasProducto[$productoId];
+                            $tallaId = $tallas[array_rand($tallas)]; // Escoger una talla
+
+                            $cantidad = mt_rand(5, 8);
+                            $precioCompra = round($producto->precioP * 0.55, 2);
+                            $subtotalLinea = round($cantidad * $precioCompra, 2);
+
+                            CompraDetalle::create([
+                                'compra_id' => $compra->id,
+                                'producto_id' => $productoId,
+                                'producto_talla_id' => $tallaId,
+                                'cantidad' => $cantidad,
+                                'precio_cotizado' => $precioCompra,
+                                'precio_final' => $precioCompra,
+                                'subtotal_linea' => $subtotalLinea,
+                                'created_at' => $horaCompra,
+                                'updated_at' => $horaCompra,
+                            ]);
+
+                            ProductoTallaStock::where('producto_id', $productoId)
+                                ->where('producto_talla_id', $tallaId)
+                                ->increment('stock', $cantidad);
+
+                            $subtotalCompra += $subtotalLinea;
+                        }
+
+                        $igvCompra = round($subtotalCompra * 0.18, 2);
+                        $totalCompra = round($subtotalCompra + $igvCompra, 2);
+
+                        $compra->timestamps = false;
+                        $compra->update([
+                            'subtotal' => round($subtotalCompra, 2),
+                            'igv' => $igvCompra,
+                            'total' => $totalCompra,
+                        ]);
+
+                        Pago::create([
+                            'compra_id' => $compra->id,
+                            'importe' => $totalCompra,
+                            'vuelto' => 0,
+                            'comprobante_id' => $comprobanteFactura->id,
+                            'created_at' => $horaCompra,
+                            'updated_at' => $horaCompra,
+                        ]);
+
+                        $caja->increment('egresoDiario', $totalCompra);
+                        $comprasTotales++;
+                    }
+                } else {
+                    // Para Noviembre - Mayo: Compras Reactivas basadas en stock bajo (<= 15)
+                    $tallasAReabastecer = [];
+                    $tallasStocks = ProductoTallaStock::all();
+                    
+                    foreach ($tallasStocks as $tallaStock) {
+                        $productoId = $tallaStock->producto_id;
+                        $tallaId = $tallaStock->producto_talla_id;
+                        $stockActual = $tallaStock->stock;
+
+                        if ($stockActual <= 15) {
+                            if (in_array($productoId, $this->stockBajo)) {
+                                if ($stockActual <= 1) {
+                                    $tallasAReabastecer[$productoId][] = [
+                                        'talla_id' => $tallaId,
+                                        'cantidad' => 3,
+                                    ];
+                                }
+                            } else {
+                                $cantidadCompra = 18 - $stockActual;
+                                if ($cantidadCompra > 0) {
+                                    $tallasAReabastecer[$productoId][] = [
+                                        'talla_id' => $tallaId,
+                                        'cantidad' => $cantidadCompra,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+
+                    $comprasPorProveedor = [];
+                    foreach ($tallasAReabastecer as $productoId => $detallesTalla) {
+                        $proveedorId = $this->productoProveedor[$productoId];
+                        foreach ($detallesTalla as $det) {
+                            $comprasPorProveedor[$proveedorId][] = [
+                                'producto_id' => $productoId,
+                                'talla_id' => $det['talla_id'],
+                                'cantidad' => $det['cantidad']
+                            ];
+                        }
+                    }
+
+                    $currentMin = mt_rand(10, 15);
+                    foreach ($comprasPorProveedor as $proveedorId => $items) {
+                        $diasAntes = mt_rand(4, 6);
+                        $fechaEnvio = $carbonFecha->copy()->subDays($diasAntes)->format('Y-m-d');
+                        $fechaCotizacion = $carbonFecha->copy()->subDays($diasAntes - mt_rand(1, 2))->format('Y-m-d');
+                        $fechaAprobacion = $carbonFecha->copy()->subDays(mt_rand(1, 2))->format('Y-m-d');
+                        $horaCompra = $carbonFecha->copy()->setTime(8, $currentMin, mt_rand(0, 59));
+                        $currentMin += mt_rand(4, 9);
+
+                        $compra = Compra::create([
+                            'proveedor_id' => $proveedorId,
+                            'comprobante_id' => $comprobanteFactura->id,
+                            'estado_transaccion_id' => $estadoPagada->id,
+                            'colaborador_id' => $gerente ? $gerente->id : null,
+                            'fecha_envio' => $fechaEnvio,
+                            'fecha_cotizacion' => $fechaCotizacion,
+                            'fecha_aprobacion' => $fechaAprobacion,
+                            'fecha_entrega_estimada' => $fecha,
+                            'condiciones_pago' => 'Pago contra entrega',
+                            'subtotal' => 0,
+                            'descuento' => 0,
+                            'igv' => 0,
+                            'total' => 0,
+                            'created_at' => $horaCompra,
+                            'updated_at' => $horaCompra,
+                        ]);
+
+                        $subtotalCompra = 0;
+                        foreach ($items as $item) {
+                            $producto = Producto::find($item['producto_id']);
+                            $precioCompra = round($producto->precioP * 0.55, 2);
+                            $subtotalLinea = round($item['cantidad'] * $precioCompra, 2);
+
+                            CompraDetalle::create([
+                                'compra_id' => $compra->id,
+                                'producto_id' => $item['producto_id'],
+                                'producto_talla_id' => $item['talla_id'],
+                                'cantidad' => $item['cantidad'],
+                                'precio_cotizado' => $precioCompra,
+                                'precio_final' => $precioCompra,
+                                'subtotal_linea' => $subtotalLinea,
+                                'created_at' => $horaCompra,
+                                'updated_at' => $horaCompra,
+                            ]);
+
+                            ProductoTallaStock::where('producto_id', $item['producto_id'])
+                                ->where('producto_talla_id', $item['talla_id'])
+                                ->increment('stock', $item['cantidad']);
+
+                            $subtotalCompra += $subtotalLinea;
+                        }
+
+                        $igvCompra = round($subtotalCompra * 0.18, 2);
+                        $totalCompra = round($subtotalCompra + $igvCompra, 2);
+
+                        $compra->timestamps = false;
+                        $compra->update([
+                            'subtotal' => round($subtotalCompra, 2),
+                            'igv' => $igvCompra,
+                            'total' => $totalCompra,
+                        ]);
+
+                        Pago::create([
+                            'compra_id' => $compra->id,
+                            'importe' => $totalCompra,
+                            'vuelto' => 0,
+                            'comprobante_id' => $comprobanteFactura->id,
+                            'created_at' => $horaCompra,
+                            'updated_at' => $horaCompra,
+                        ]);
+
+                        $caja->increment('egresoDiario', $totalCompra);
+                        $comprasTotales++;
+                    }
                 }
-                $caja->refresh();
-
-                $horaIni = $this->horaAmPm($horasCompras[0]);
-                $horaFin = $this->horaAmPm($horasCompras[$numCompras - 1]);
-                echo "    Compras: {$numCompras} ({$horaIni} - {$horaFin})";
-                echo " | Egreso: S/ " . number_format($caja->egresoDiario, 2) . "\n";
             }
 
-            // 4. VENTAS
+            // 3. HORAS SECUENCIALES PARA LAS VENTAS DEL DÍA
+            $horas = $this->generarHorasSecuenciales($carbonFecha, $numVentas);
+
+            // 4. GENERAR VENTAS DIARIAS
+            $clientesDia = Cliente::all(); // Recargar clientes
+
             for ($v = 0; $v < $numVentas; $v++) {
-                $resultado = $this->crearVenta(
-                    $horasVentas[$v], $caja,
-                    $estadoPendiente, $estadoPagado,
-                    $clientes, $comprobanteBoleta, $comprobanteFactura
-                );
-                if ($resultado > 0) {
-                    $ventasTotales++;
+                $horaVenta = $horas[$v];
+                $cliente = $clientesDia[mt_rand(0, $clientesDia->count() - 1)];
+
+                $esRuc = strlen($cliente->dniCliente) === 11;
+                $comprobante = $esRuc ? $comprobanteFactura : $comprobanteBoleta;
+
+                // Cada venta tiene exactamente 2 o 3 prendas
+                $totalPrendasVenta = mt_rand(2, 3);
+                $detallesData = [];
+                $productosUsados = [];
+
+                if ($totalPrendasVenta === 2) {
+                    $opcion = mt_rand(1, 100) <= 60 ? 'distintos' : 'unico';
+                    if ($opcion === 'distintos') {
+                        $detallesData = $this->seleccionarProductosConStock($productosUsados, [1, 1]);
+                    } else {
+                        $detallesData = $this->seleccionarProductosConStock($productosUsados, [2]);
+                    }
+                } else {
+                    $rand = mt_rand(1, 100);
+                    if ($rand <= 50) {
+                        $detallesData = $this->seleccionarProductosConStock($productosUsados, [2, 1]);
+                    } elseif ($rand <= 90) {
+                        $detallesData = $this->seleccionarProductosConStock($productosUsados, [1, 1, 1]);
+                    } else {
+                        $detallesData = $this->seleccionarProductosConStock($productosUsados, [3]);
+                    }
                 }
+
+                if (empty($detallesData)) {
+                    $detallesData = $this->seleccionarProductosConStock($productosUsados, [1, 1]);
+                    if (empty($detallesData)) {
+                        continue;
+                    }
+                }
+
+                $montoTotalVenta = 0;
+                foreach ($detallesData as $det) {
+                    $montoTotalVenta += $det['subtotal'];
+                }
+
+                $subTotalVenta = round($montoTotalVenta / 1.18, 2);
+                $igvVenta = round($montoTotalVenta - $subTotalVenta, 2);
+
+                $vendedor = $vendedores->isNotEmpty()
+                    ? $vendedores->values()->get($vendedorIndex % $vendedores->count())
+                    : null;
+                $vendedorIndex++;
+
+                $venta = Venta::create([
+                    'caja_id' => $caja->id,
+                    'cliente_id' => $cliente->id,
+                    'estado_transaccion_id' => $estadoPendiente->id,
+                    'colaborador_id' => $vendedor ? $vendedor->id : null,
+                    'subTotal' => $subTotalVenta,
+                    'IGV' => $igvVenta,
+                    'montoTotal' => round($montoTotalVenta, 2),
+                    'created_at' => $horaVenta,
+                    'updated_at' => $horaVenta,
+                ]);
+
+                foreach ($detallesData as $det) {
+                    VentaDetalle::create([
+                        'venta_id' => $venta->id,
+                        'producto_id' => $det['producto_id'],
+                        'producto_talla_id' => $det['talla_id'],
+                        'cantidad' => $det['cantidad'],
+                        'precio_unitario' => $det['precio_unitario'],
+                        'base_imponible' => $det['base_imponible'],
+                        'igv' => $det['igv'],
+                        'subtotal' => $det['subtotal'],
+                        'created_at' => $horaVenta,
+                        'updated_at' => $horaVenta,
+                    ]);
+
+                    ProductoTallaStock::where('producto_id', $det['producto_id'])
+                        ->where('producto_talla_id', $det['talla_id'])
+                        ->decrement('stock', $det['cantidad']);
+                }
+
+                Pago::create([
+                    'venta_id' => $venta->id,
+                    'importe' => round($montoTotalVenta, 2),
+                    'vuelto' => 0,
+                    'comprobante_id' => $comprobante->id,
+                    'created_at' => $horaVenta,
+                    'updated_at' => $horaVenta,
+                ]);
+
+                $venta->estado_transaccion_id = $estadoPagado->id;
+                $venta->timestamps = false;
+                $venta->save();
+
+                $ventasTotales++;
             }
 
             $caja->refresh();
-
-            $horaIniV = $this->horaAmPm($horasVentas[0]);
-            $horaFinV = $this->horaAmPm($horasVentas[$numVentas - 1]);
-            echo "    Ventas:  {$numVentas} ({$horaIniV} - {$horaFinV})";
-            echo " | {$caja->clientesHoy} clientes | {$caja->productosVendidos} prod.";
-            echo " | Ingreso: S/ " . number_format($caja->ingresoDiario, 2);
-            if ($caja->egresoDiario > 0) {
-                echo " | Balance: S/ " . number_format($caja->ingresoDiario - $caja->egresoDiario, 2);
-            }
-            echo "\n";
-
-            $resumenDias[$fecha] = [
-                'dia' => $diaSemana,
-                'ventas' => $numVentas,
-                'compras' => $numCompras,
-                'ingreso' => $caja->ingresoDiario,
-                'egreso' => $caja->egresoDiario,
-            ];
+            $balance = $caja->ingresoDiario - $caja->egresoDiario;
+            echo "    Ingreso: S/ " . number_format($caja->ingresoDiario, 2) . " | Egreso: S/ " . number_format($caja->egresoDiario, 2) . " | Balance: S/ " . number_format($balance, 2) . "\n";
         }
 
-        echo "\n";
-
-        // AJUSTE FINAL: garantizar stock saludable
-        // 5-8 productos con stock 8-15 (stock minimo)
-        // El resto con stock 20-45 (saludable)
-        // Ninguno en 0
+        // 5. CALIBRACIÓN/AJUSTE DE STOCK FINAL AL 31 DE MAYO DE 2026
+        // Garantizar que exactamente los 6 productos de stockBajo terminen con stock total <= 15.
+        // El resto debe terminar en un nivel de stock saludable (entre 20 y 45).
         $this->ajustarStockFinal();
 
-        $this->validarCoherencia($ventasTotales, $comprasTotales);
-        $this->mostrarEstadisticas($ventasTotales, $comprasTotales, $resumenDias);
+        // 6. VALIDACIONES Y ESTADÍSTICAS FINALES
+        $this->validarCoherencia();
     }
 
-    // =====================================================================
-    // GENERAR HORAS SECUENCIALES
-    // =====================================================================
     private function generarHorasSecuenciales(Carbon $fecha, int $total): array
     {
         $inicioSeg = 8 * 3600 + 6 * 60;    // 08:06:00
@@ -325,6 +536,8 @@ class TransaccionSeeder extends Seeder
         $rangoTotal = $finSeg - $inicioSeg;
 
         $horas = [];
+        if ($total <= 0) return $horas;
+        
         $slotSize = intdiv($rangoTotal, $total);
 
         for ($i = 0; $i < $total; $i++) {
@@ -343,551 +556,50 @@ class TransaccionSeeder extends Seeder
         return $horas;
     }
 
-    // =====================================================================
-    // CREAR UNA COMPRA
-    // Pedidos controlados: reponer solo lo necesario, margen de beneficio alto
-    // =====================================================================
-    private function crearCompra(Carbon $fechaHora, $estadoPagada, $comprobanteFactura, $caja, array &$proveedoresUsadosHoy)
+    private function seleccionarProductosConStock(array &$productosUsados, array $cantidades): array
     {
-        $proveedorId = $this->seleccionarProveedorPorNecesidad($proveedoresUsadosHoy);
-        $proveedoresUsadosHoy[] = $proveedorId;
-
-        $proveedor = Proveedor::find($proveedorId);
-        $productosDelProveedor = $this->proveedorProductos[$proveedorId];
-
-        $productosReabastecibles = array_values($productosDelProveedor);
-
-        // 2-4 items por compra (mas agresivo para mantener stock)
-        $maxItems = min(4, count($productosReabastecibles));
-        $numItems = mt_rand(2, max(2, $maxItems));
-
-        $productosOrdenados = $this->ordenarPorStockAscendente($productosReabastecibles);
-        $productosAComprar = array_slice($productosOrdenados, 0, $numItems);
-
-        // Fechas retroactivas
-        $diasAntes = mt_rand(4, 7);
-        $fechaEnvio = $fechaHora->copy()->subDays($diasAntes)->format('Y-m-d');
-        $fechaCotizacion = $fechaHora->copy()->subDays($diasAntes - mt_rand(1, 2))->format('Y-m-d');
-        $fechaAprobacion = $fechaHora->copy()->subDays(mt_rand(1, 2))->format('Y-m-d');
-
-        $compra = Compra::create([
-            'proveedor_id' => $proveedor->id,
-            'comprobante_id' => $comprobanteFactura->id,
-            'estado_transaccion_id' => $estadoPagada->id,
-            'fecha_envio' => $fechaEnvio,
-            'fecha_cotizacion' => $fechaCotizacion,
-            'fecha_aprobacion' => $fechaAprobacion,
-            'fecha_entrega_estimada' => $fechaHora->format('Y-m-d'),
-            'condiciones_pago' => 'Pago contra entrega',
-            'subtotal' => 0,
-            'descuento' => 0,
-            'igv' => 0,
-            'total' => 0,
-            'created_at' => $fechaHora,
-            'updated_at' => $fechaHora,
-        ]);
-
-        $subtotalCompra = 0;
-
-        foreach ($productosAComprar as $productoId) {
-            $producto = Producto::find($productoId);
-            $tallas = $this->tallasProducto[$productoId];
-
-            // Elegir la talla con menor stock
-            $mejorTalla = null;
-            $menorStock = PHP_INT_MAX;
-            foreach ($tallas as $tid) {
-                $st = ProductoTallaStock::where('producto_id', $productoId)
-                    ->where('producto_talla_id', $tid)->value('stock') ?? 0;
-                if ($st < $menorStock) {
-                    $menorStock = $st;
-                    $mejorTalla = $tid;
-                }
-            }
-
-            $tallaId = $mejorTalla ?? $tallas[0];
-
-            // Calcular cantidad segun stock actual vs objetivo
-            $stockActual = ProductoTallaStock::where('producto_id', $productoId)
-                ->where('producto_talla_id', $tallaId)->value('stock') ?? 0;
-
-            $objetivoTalla = $this->objetivoPorProducto[$productoId] ?? 8;
-            $deficit = max(0, $objetivoTalla - $stockActual);
-
-            // Compras agresivas: reponer deficit + 1-3 extras para buffer
-            $cantidad = max(2, min($deficit + mt_rand(1, 3), 10));
-
-            // Precio de compra = 55% del precio de venta (margen bruto ~45%)
-            $precioCompra = round($producto->precioP * 0.55, 2);
-            $subtotalLinea = round($cantidad * $precioCompra, 2);
-
-            CompraDetalle::create([
-                'compra_id' => $compra->id,
-                'producto_id' => $productoId,
-                'producto_talla_id' => $tallaId,
-                'cantidad' => $cantidad,
-                'precio_cotizado' => $precioCompra,
-                'precio_final' => $precioCompra,
-                'subtotal_linea' => $subtotalLinea,
-                'created_at' => $fechaHora,
-                'updated_at' => $fechaHora,
-            ]);
-
-            ProductoTallaStock::where('producto_id', $productoId)
-                ->where('producto_talla_id', $tallaId)
-                ->increment('stock', $cantidad);
-
-            $subtotalCompra += $subtotalLinea;
-        }
-
-        $igvCompra = round($subtotalCompra * 0.18, 2);
-        $totalCompra = round($subtotalCompra + $igvCompra, 2);
-
-        $compra->timestamps = false;
-        $compra->update([
-            'subtotal' => round($subtotalCompra, 2),
-            'igv' => $igvCompra,
-            'total' => $totalCompra,
-        ]);
-
-        Pago::create([
-            'compra_id' => $compra->id,
-            'importe' => $totalCompra,
-            'vuelto' => 0,
-            'comprobante_id' => $comprobanteFactura->id,
-            'created_at' => $fechaHora,
-            'updated_at' => $fechaHora,
-        ]);
-
-        $caja->increment('egresoDiario', $totalCompra);
-    }
-
-    // =====================================================================
-    // CREAR UNA VENTA
-    // =====================================================================
-    private function crearVenta(Carbon $fechaHora, $caja, $estadoPendiente, $estadoPagado, $clientes, $comprobanteBoleta, $comprobanteFactura)
-    {
-        $cliente = $clientes[mt_rand(0, $clientes->count() - 1)];
-        $comprobante = mt_rand(1, 100) <= 75 ? $comprobanteBoleta : $comprobanteFactura;
-
-        // Cantidad de productos: 1 (60%), 2 (32%), 3 (8%)
-        $numProductos = $this->randomPonderado([1 => 60, 2 => 32, 3 => 8]);
-
-        $detallesData = [];
-        $productosUsados = [];
-        $montoTotal = 0;
-
-        for ($p = 0; $p < $numProductos; $p++) {
+        $detalles = [];
+        foreach ($cantidades as $cantidad) {
             $intentos = 0;
-            $productoId = null;
-            $tallaId = null;
-            $stockDisponible = 0;
-
+            $productoEncontrado = false;
+            
             while ($intentos < 20) {
-                $candidato = $this->randomPonderado($this->productoPesos);
-
-                if (in_array($candidato, $productosUsados)) {
+                $productoId = $this->randomPonderado($this->productoPesos);
+                
+                if (in_array($productoId, $productosUsados)) {
                     $intentos++;
                     continue;
                 }
-
-                $tallaInfo = $this->obtenerTallaConStock($candidato, 3);
+                
+                $tallaInfo = $this->obtenerTallaConStock($productoId, $cantidad);
                 if ($tallaInfo) {
-                    $productoId = $candidato;
-                    $tallaId = $tallaInfo['talla_id'];
-                    $stockDisponible = $tallaInfo['stock'];
+                    $producto = Producto::find($productoId);
+                    $precioUnitario = $producto->precioP;
+                    $baseImponible = round($precioUnitario / 1.18, 2);
+                    $igv = round($precioUnitario - $baseImponible, 2);
+                    
+                    $detalles[] = [
+                        'producto_id' => $productoId,
+                        'talla_id' => $tallaInfo['talla_id'],
+                        'cantidad' => $cantidad,
+                        'precio_unitario' => $precioUnitario,
+                        'base_imponible' => $baseImponible,
+                        'igv' => $igv,
+                        'subtotal' => $cantidad * $precioUnitario,
+                    ];
+                    
+                    $productosUsados[] = $productoId;
+                    $productoEncontrado = true;
                     break;
                 }
                 $intentos++;
             }
-
-            if (!$productoId) continue;
-
-            $productosUsados[] = $productoId;
-            $producto = Producto::find($productoId);
-
-            $maxCant = min($stockDisponible, $this->productoPesos[$productoId] >= 7 ? 3 : 2);
-            $cantidad = $this->randomPonderado([1 => 50, 2 => 35, 3 => 15]);
-            $cantidad = max(1, min($cantidad, $maxCant));
-
-            $precioUnitario = $producto->precioP;
-            $baseImponible = round($precioUnitario / 1.18, 2);
-            $igvUnit = round($precioUnitario - $baseImponible, 2);
-            $subtotalLinea = round($cantidad * $precioUnitario, 2);
-
-            $detallesData[] = [
-                'producto_id' => $productoId,
-                'talla_id' => $tallaId,
-                'cantidad' => $cantidad,
-                'precio_unitario' => $precioUnitario,
-                'base_imponible' => $baseImponible,
-                'igv' => $igvUnit,
-                'subtotal' => $subtotalLinea,
-            ];
-
-            $montoTotal += $subtotalLinea;
-        }
-
-        if (empty($detallesData) || $montoTotal == 0) return 0;
-
-        $subTotal = round($montoTotal / 1.18, 2);
-        $igv = round($montoTotal - $subTotal, 2);
-
-        $venta = Venta::create([
-            'caja_id' => $caja->id,
-            'cliente_id' => $cliente->id,
-            'estado_transaccion_id' => $estadoPendiente->id,
-            'subTotal' => $subTotal,
-            'IGV' => $igv,
-            'montoTotal' => round($montoTotal, 2),
-            'created_at' => $fechaHora,
-            'updated_at' => $fechaHora,
-        ]);
-
-        $totalProductosVenta = 0;
-
-        foreach ($detallesData as $det) {
-            VentaDetalle::create([
-                'venta_id' => $venta->id,
-                'producto_id' => $det['producto_id'],
-                'producto_talla_id' => $det['talla_id'],
-                'cantidad' => $det['cantidad'],
-                'precio_unitario' => $det['precio_unitario'],
-                'base_imponible' => $det['base_imponible'],
-                'igv' => $det['igv'],
-                'subtotal' => $det['subtotal'],
-                'created_at' => $fechaHora,
-                'updated_at' => $fechaHora,
-            ]);
-
-            ProductoTallaStock::where('producto_id', $det['producto_id'])
-                ->where('producto_talla_id', $det['talla_id'])
-                ->decrement('stock', $det['cantidad']);
-
-            $totalProductosVenta += $det['cantidad'];
-        }
-
-        Pago::create([
-            'venta_id' => $venta->id,
-            'importe' => round($montoTotal, 2),
-            'vuelto' => 0,
-            'comprobante_id' => $comprobante->id,
-            'created_at' => $fechaHora,
-            'updated_at' => $fechaHora,
-        ]);
-
-        // Cambiar a PAGADO => evento updated sincroniza caja
-        $venta->estado_transaccion_id = $estadoPagado->id;
-        $venta->timestamps = false;
-        $venta->save();
-
-        return $totalProductosVenta;
-    }
-
-    // =====================================================================
-    // SELECCIONAR PROVEEDOR POR NECESIDAD
-    // =====================================================================
-    private function seleccionarProveedorPorNecesidad(array $proveedoresUsadosHoy): int
-    {
-        $stockPorProveedor = [];
-
-        foreach ($this->proveedorProductos as $provId => $productos) {
-            if (in_array($provId, $proveedoresUsadosHoy)) continue;
-
-            $stock = 0;
-            foreach ($productos as $prodId) {
-                $stock += ProductoTallaStock::where('producto_id', $prodId)->sum('stock');
-            }
-            $stockPorProveedor[$provId] = $stock / count($productos);
-        }
-
-        if (empty($stockPorProveedor)) {
-            $todosProveedores = array_keys($this->proveedorProductos);
-            $disponibles = array_diff($todosProveedores, $proveedoresUsadosHoy);
-            if (!empty($disponibles)) {
-                return $disponibles[array_rand($disponibles)];
-            }
-            return array_rand($this->proveedorProductos);
-        }
-
-        asort($stockPorProveedor);
-        $keys = array_keys($stockPorProveedor);
-
-        $rand = mt_rand(1, 100);
-        if ($rand <= 55) return $keys[0];
-        if ($rand <= 80 && count($keys) > 1) return $keys[1];
-        if (count($keys) > 2) return $keys[2];
-        return $keys[0];
-    }
-
-    // =====================================================================
-    // ORDENAR PRODUCTOS POR STOCK ASCENDENTE
-    // =====================================================================
-    private function ordenarPorStockAscendente(array $productoIds): array
-    {
-        $stocks = [];
-        foreach ($productoIds as $id) {
-            $stocks[$id] = ProductoTallaStock::where('producto_id', $id)->sum('stock');
-        }
-        asort($stocks);
-        return array_keys($stocks);
-    }
-
-    // =====================================================================
-    // AJUSTE FINAL DE STOCK
-    // Modifica cantidades de CompraDetalle existentes (solo Nov-Ene)
-    // para que el stock aterrice en los rangos objetivo.
-    // stockBajo (6 productos): 8-15 unidades totales
-    // Normal (13 productos): 20-45 unidades totales
-    // Ninguno en 0
-    // =====================================================================
-    private function ajustarStockFinal()
-    {
-        echo "  AJUSTE FINAL DE STOCK:\n";
-        $productos = Producto::orderBy('id')->get();
-
-        foreach ($productos as $producto) {
-            $stockActual = $producto->stockTotal;
-            $esStockBajo = in_array($producto->id, $this->stockBajo);
-            $minTarget = $esStockBajo ? 8 : 20;
-            $maxTarget = $esStockBajo ? 15 : 45;
-
-            if ($stockActual >= $minTarget && $stockActual <= $maxTarget) continue;
-
-            // Calcular stock objetivo
-            $objetivo = $esStockBajo ? mt_rand(9, 14) : mt_rand(25, 38);
-            $delta = $objetivo - $stockActual;
-
-            if ($delta == 0) continue;
-
-            if ($delta > 0) {
-                // NECESITA MAS STOCK: buscar CompraDetalle del periodo Nov-Ene y aumentar
-                $detalle = CompraDetalle::where('producto_id', $producto->id)
-                    ->whereHas('compra', function ($q) {
-                        $q->where('created_at', '>=', '2025-11-01');
-                    })
-                    ->orderBy('id', 'desc')->first();
-
-                if ($detalle) {
-                    $detalle->cantidad += $delta;
-                    $detalle->subtotal_linea = round($detalle->cantidad * $detalle->precio_final, 2);
-                    $detalle->save();
-
-                    ProductoTallaStock::where('producto_id', $producto->id)
-                        ->where('producto_talla_id', $detalle->producto_talla_id)
-                        ->increment('stock', $delta);
-
-                    $this->recalcularCompra($detalle->compra_id);
-                    echo "    #{$producto->id} {$producto->descripcionP}: {$stockActual} -> {$objetivo} (+{$delta} via compra)\n";
-                }
-            } else {
-                // STOCK DEMASIADO ALTO: reducir CompraDetalle del periodo Nov-Ene
-                $reducir = abs($delta);
-                $detalles = CompraDetalle::where('producto_id', $producto->id)
-                    ->whereHas('compra', function ($q) {
-                        $q->where('created_at', '>=', '2025-11-01');
-                    })
-                    ->orderBy('id', 'desc')->get();
-
-                foreach ($detalles as $detalle) {
-                    if ($reducir <= 0) break;
-                    $maxReduccion = $detalle->cantidad - 1;
-
-                    $stockTalla = ProductoTallaStock::where('producto_id', $producto->id)
-                        ->where('producto_talla_id', $detalle->producto_talla_id)->value('stock') ?? 0;
-                    $maxReduccion = min($maxReduccion, $stockTalla - 1); // mantener al menos 1 en stock
-                    $reduccionReal = min($reducir, max(0, $maxReduccion));
-
-                    if ($reduccionReal > 0) {
-                        $detalle->cantidad -= $reduccionReal;
-                        $detalle->subtotal_linea = round($detalle->cantidad * $detalle->precio_final, 2);
-                        $detalle->save();
-
-                        ProductoTallaStock::where('producto_id', $producto->id)
-                            ->where('producto_talla_id', $detalle->producto_talla_id)
-                            ->decrement('stock', $reduccionReal);
-
-                        $this->recalcularCompra($detalle->compra_id);
-                        $reducir -= $reduccionReal;
-                    }
-                }
-                $stockFinal = $objetivo + $reducir;
-                echo "    #{$producto->id} {$producto->descripcionP}: {$stockActual} -> {$stockFinal} (-" . (abs($delta) - $reducir) . " via compra)\n";
+            
+            if (!$productoEncontrado) {
+                return []; 
             }
         }
-        echo "\n";
-    }
-
-    // Recalcular subtotal, igv, total de una compra y su pago/caja
-    private function recalcularCompra(int $compraId)
-    {
-        $compra = Compra::find($compraId);
-        $subtotal = CompraDetalle::where('compra_id', $compraId)->sum('subtotal_linea');
-        $igv = round($subtotal * 0.18, 2);
-        $total = round($subtotal + $igv, 2);
-        $oldTotal = $compra->total;
-
-        $compra->timestamps = false;
-        $compra->update(['subtotal' => round($subtotal, 2), 'igv' => $igv, 'total' => $total]);
-
-        $pago = Pago::where('compra_id', $compraId)->first();
-        if ($pago) {
-            $pago->importe = $total;
-            $pago->save();
-        }
-
-        $fechaCompra = $compra->created_at instanceof Carbon
-            ? $compra->created_at->format('Y-m-d')
-            : Carbon::parse($compra->created_at)->format('Y-m-d');
-        $caja = Caja::where('fecha', $fechaCompra)->first();
-        if ($caja) {
-            $caja->egresoDiario += ($total - $oldTotal);
-            $caja->save();
-        }
-    }
-
-    // =====================================================================
-    // VALIDACIONES
-    // =====================================================================
-    private function validarCoherencia($ventasTotales, $comprasTotales)
-    {
-        echo str_repeat("=", 70) . "\n";
-        echo "  VALIDACIONES - NOV 2025 A ENE 2026\n";
-        echo str_repeat("=", 70) . "\n\n";
-
-        $errores = 0;
-
-        // Verificar que no hay stock negativo
-        $stockNeg = ProductoTallaStock::where('stock', '<', 0)->count();
-        $this->validar("Sin stock negativo ({$stockNeg} registros)", $stockNeg === 0, $errores);
-
-        // Verificar ventas dentro de horario
-        $fueraHorario = Venta::where(function($q) {
-            $q->where('created_at', '>=', '2025-11-01')
-              ->where('created_at', '<', '2026-02-01');
-        })->whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 19')->count();
-        $this->validar("Ventas Nov-Ene dentro de horario laboral", $fueraHorario === 0, $errores);
-
-        // Proveedor no repetido por dia
-        $diasConCompra = Compra::where('created_at', '>=', '2025-11-01')
-            ->selectRaw('DATE(created_at) as dia')->distinct()->pluck('dia');
-        $provRepetido = false;
-        foreach ($diasConCompra as $dia) {
-            $proveedoresDia = Compra::whereDate('created_at', $dia)->pluck('proveedor_id')->toArray();
-            if (count($proveedoresDia) !== count(array_unique($proveedoresDia))) {
-                $provRepetido = true;
-                break;
-            }
-        }
-        $this->validar("Sin proveedor repetido por dia", !$provRepetido, $errores);
-
-        // Ningun producto con stock 0
-        $stockCero = 0;
-        foreach (Producto::all() as $prod) {
-            if ($prod->stockTotal <= 0) $stockCero++;
-        }
-        $this->validar("Ningun producto con stock 0 ({$stockCero} encontrados)", $stockCero === 0, $errores);
-
-        // Margen beneficio: ingresos > egresos en periodos Nov-Ene
-        $ingresosNovEne = Caja::where('fecha', '>=', '2025-11-01')
-            ->where('fecha', '<', '2026-02-01')->sum('ingresoDiario');
-        $egresosNovEne = Caja::where('fecha', '>=', '2025-11-01')
-            ->where('fecha', '<', '2026-02-01')->sum('egresoDiario');
-        $this->validar(
-            "Margen positivo Nov-Ene: Ingresos S/ " . number_format($ingresosNovEne, 2) .
-            " > Egresos S/ " . number_format($egresosNovEne, 2),
-            $ingresosNovEne > $egresosNovEne,
-            $errores
-        );
-
-        $this->validar("Ventas creadas: {$ventasTotales}", $ventasTotales > 0, $errores);
-        $this->validar("Compras creadas: {$comprasTotales}", $comprasTotales > 0, $errores);
-
-        echo "\n  " . ($errores === 0
-            ? "TODAS LAS VALIDACIONES PASARON"
-            : "{$errores} VALIDACION(ES) FALLARON") . "\n\n";
-    }
-
-    private function validar(string $desc, bool $ok, int &$errores)
-    {
-        echo "    " . ($ok ? "[OK]" : "[!!]") . " {$desc}\n";
-        if (!$ok) $errores++;
-    }
-
-    // =====================================================================
-    // ESTADISTICAS
-    // =====================================================================
-    private function mostrarEstadisticas($ventasTotales, $comprasTotales, $resumenDias)
-    {
-        echo str_repeat("=", 70) . "\n";
-        echo "  ESTADISTICAS - NOVIEMBRE 2025 A ENERO 2026\n";
-        echo str_repeat("=", 70) . "\n\n";
-
-        $totalIngresos = array_sum(array_column($resumenDias, 'ingreso'));
-        $totalEgresos = array_sum(array_column($resumenDias, 'egreso'));
-
-        echo "  RESUMEN FINANCIERO:\n";
-        echo "    Ventas creadas:    {$ventasTotales}\n";
-        echo "    Compras creadas:   {$comprasTotales}\n";
-        echo "    Ingresos totales:  S/ " . number_format($totalIngresos, 2) . "\n";
-        echo "    Egresos totales:   S/ " . number_format($totalEgresos, 2) . "\n";
-        echo "    Balance neto:      S/ " . number_format($totalIngresos - $totalEgresos, 2) . "\n";
-        echo "    Margen:            " . round(($totalIngresos - $totalEgresos) / $totalIngresos * 100, 1) . "%\n\n";
-
-        // Resumen por mes
-        $meses = ['11' => 'Noviembre', '12' => 'Diciembre', '01' => 'Enero'];
-        foreach ($meses as $numMes => $nombreMes) {
-            $diasMes = array_filter($resumenDias, function ($k) use ($numMes) {
-                return substr($k, 5, 2) === $numMes;
-            }, ARRAY_FILTER_USE_KEY);
-
-            if (empty($diasMes)) continue;
-
-            $ventasMes = array_sum(array_column($diasMes, 'ventas'));
-            $comprasMes = array_sum(array_column($diasMes, 'compras'));
-            $ingresoMes = array_sum(array_column($diasMes, 'ingreso'));
-            $egresoMes = array_sum(array_column($diasMes, 'egreso'));
-
-            echo "  {$nombreMes}:\n";
-            echo "    Dias: " . count($diasMes) . " | Ventas: {$ventasMes} | Compras: {$comprasMes}\n";
-            echo "    Ingreso: S/ " . number_format($ingresoMes, 2);
-            echo " | Egreso: S/ " . number_format($egresoMes, 2);
-            echo " | Balance: S/ " . number_format($ingresoMes - $egresoMes, 2) . "\n\n";
-        }
-
-        // Top 5 dias mejor ingreso
-        uasort($resumenDias, fn($a, $b) => $b['ingreso'] <=> $a['ingreso']);
-        echo "  TOP 5 DIAS CON MAYOR INGRESO:\n";
-        $count = 0;
-        foreach ($resumenDias as $fecha => $stats) {
-            if ($count++ >= 5) break;
-            echo "    {$fecha} ({$stats['dia']}): S/ " . number_format($stats['ingreso'], 2);
-            echo " ({$stats['ventas']} ventas)\n";
-        }
-
-        echo "\n  STOCK FINAL:\n";
-        $productos = Producto::orderBy('id')->get();
-        foreach ($productos as $producto) {
-            $stock = $producto->stockTotal;
-            $alerta = '';
-            if ($stock <= 5) $alerta = ' -- CRITICO';
-            elseif ($stock <= 10) $alerta = ' -- Bajo';
-            elseif ($stock <= 15) $alerta = ' -- Moderado';
-
-            echo "    #{$producto->id} {$producto->descripcionP}: {$stock} u.{$alerta}\n";
-        }
-
-        echo "\n" . str_repeat("=", 70) . "\n";
-        echo "  SEEDER NOV-ENE COMPLETADO\n";
-        echo str_repeat("=", 70) . "\n\n";
-    }
-
-    // =====================================================================
-    // UTILIDADES
-    // =====================================================================
-    private function horaAmPm(Carbon $dt): string
-    {
-        return $dt->format('g:i:s A');
+        return $detalles;
     }
 
     private function obtenerTallaConStock($productoId, $minStock = 1)
@@ -923,13 +635,176 @@ class TransaccionSeeder extends Seeder
         return array_key_first($pesos);
     }
 
-    private function nombreMes(int $mes): string
+    private function ajustarStockFinal()
     {
-        $nombres = [
-            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
-        ];
-        return $nombres[$mes] ?? '';
+        echo "\n" . str_repeat("-", 70) . "\n";
+        echo "  CALIBRACIÓN FINAL DE STOCK AL 31 DE MAYO DE 2026:\n";
+        echo str_repeat("-", 70) . "\n";
+        
+        $productos = Producto::orderBy('id')->get();
+
+        foreach ($productos as $producto) {
+            $stockActual = $producto->stockTotal;
+            $esStockBajo = in_array($producto->id, $this->stockBajo);
+            $minTarget = $esStockBajo ? 8 : 20;
+            $maxTarget = $esStockBajo ? 15 : 45;
+
+            if ($stockActual >= $minTarget && $stockActual <= $maxTarget) continue;
+
+            $objetivo = $esStockBajo ? mt_rand(9, 14) : mt_rand(25, 38);
+            $delta = $objetivo - $stockActual;
+
+            if ($delta == 0) continue;
+
+            if ($delta > 0) {
+                $detalle = CompraDetalle::where('producto_id', $producto->id)
+                    ->orderBy('id', 'desc')->first();
+
+                if ($detalle) {
+                    $detalle->cantidad += $delta;
+                    $detalle->subtotal_linea = round($detalle->cantidad * $detalle->precio_final, 2);
+                    $detalle->save();
+
+                    ProductoTallaStock::where('producto_id', $producto->id)
+                        ->where('producto_talla_id', $detalle->producto_talla_id)
+                        ->increment('stock', $delta);
+
+                    $this->recalcularCompra($detalle->compra_id);
+                    echo "    #{$producto->id} {$producto->descripcionP}: {$stockActual} -> {$objetivo} (+{$delta} via compra ID {$detalle->compra_id})\n";
+                }
+            } else {
+                $reducir = abs($delta);
+                $detalles = CompraDetalle::where('producto_id', $producto->id)
+                    ->orderBy('id', 'desc')->get();
+
+                foreach ($detalles as $detalle) {
+                    if ($reducir <= 0) break;
+                    $maxReduccion = $detalle->cantidad - 1;
+
+                    $stockTalla = ProductoTallaStock::where('producto_id', $producto->id)
+                        ->where('producto_talla_id', $detalle->producto_talla_id)->value('stock') ?? 0;
+                    $maxReduccion = min($maxReduccion, $stockTalla - 1); // Mantener stock > 0
+                    $reduccionReal = min($reducir, max(0, $maxReduccion));
+
+                    if ($reduccionReal > 0) {
+                        $detalle->cantidad -= $reduccionReal;
+                        $detalle->subtotal_linea = round($detalle->cantidad * $detalle->precio_final, 2);
+                        $detalle->save();
+
+                        ProductoTallaStock::where('producto_id', $producto->id)
+                            ->where('producto_talla_id', $detalle->producto_talla_id)
+                            ->decrement('stock', $reduccionReal);
+
+                        $this->recalcularCompra($detalle->compra_id);
+                        $reducir -= $reduccionReal;
+                    }
+                }
+                $stockFinal = $objetivo + $reducir;
+                echo "    #{$producto->id} {$producto->descripcionP}: {$stockActual} -> {$stockFinal} (-" . (abs($delta) - $reducir) . " via compras)\n";
+            }
+        }
+        echo "\n";
+    }
+
+    private function recalcularCompra(int $compraId)
+    {
+        $compra = Compra::find($compraId);
+        $subtotal = CompraDetalle::where('compra_id', $compraId)->sum('subtotal_linea');
+        $igv = round($subtotal * 0.18, 2);
+        $total = round($subtotal + $igv, 2);
+        $oldTotal = $compra->total;
+
+        $compra->timestamps = false;
+        $compra->update(['subtotal' => round($subtotal, 2), 'igv' => $igv, 'total' => $total]);
+
+        $pago = Pago::where('compra_id', $compraId)->first();
+        if ($pago) {
+            $pago->importe = $total;
+            $pago->save();
+        }
+
+        $fechaCompra = Carbon::parse($compra->created_at)->format('Y-m-d');
+        $caja = Caja::where('fecha', $fechaCompra)->first();
+        if ($caja) {
+            $caja->egresoDiario += ($total - $oldTotal);
+            $caja->save();
+        }
+    }
+
+    private function validarCoherencia()
+    {
+        echo str_repeat("=", 70) . "\n";
+        echo "  VALIDACIONES DE COHERENCIA - OCTUBRE 2025 A MAYO 2026\n";
+        echo str_repeat("=", 70) . "\n\n";
+
+        $errores = 0;
+
+        $ventasDB = Venta::count();
+        $comprasDB = Compra::count();
+        
+        // Comprobar Octubre de forma exclusiva
+        $ventasOct = Venta::whereYear('created_at', 2025)->whereMonth('created_at', 10)->count();
+        $comprasOct = Compra::whereYear('created_at', 2025)->whereMonth('created_at', 10)->count();
+
+        $this->validar("Ventas en Octubre: {$ventasOct}/256", $ventasOct === 256, $errores);
+        $this->validar("Compras en Octubre: {$comprasOct}/50", $comprasOct === 50, $errores);
+
+        // Sin existencias negativas
+        $stockNeg = ProductoTallaStock::where('stock', '<', 0)->count();
+        $this->validar("Sin stock negativo en tienda (0 registros)", $stockNeg === 0, $errores);
+
+        // Sin stock en 0
+        $stockCero = 0;
+        foreach (Producto::all() as $prod) {
+            if ($prod->stockTotal <= 0) $stockCero++;
+        }
+        $this->validar("Ningún producto con stock 0 ({$stockCero} encontrados)", $stockCero === 0, $errores);
+
+        // Horario laboral
+        $fueraHorario = Venta::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 20')->count();
+        $this->validar("Ventas realizadas dentro de horario laboral (08:00 AM - 08:00 PM)", $fueraHorario === 0, $errores);
+
+        $fueraHorarioC = Compra::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 20')->count();
+        $this->validar("Compras realizadas dentro de horario laboral (08:00 AM - 08:00 PM)", $fueraHorarioC === 0, $errores);
+
+        // Domingos no se trabaja
+        $enDomingo = Venta::whereRaw('DAYOFWEEK(created_at) = 1')->count();
+        $this->validar("Transacciones en domingo: {$enDomingo} (deben ser 0)", $enDomingo === 0, $errores);
+
+        // Margen y balance positivo global
+        $totalIngresos = round(Caja::sum('ingresoDiario'), 2);
+        $totalEgresos = round(Caja::sum('egresoDiario'), 2);
+        $balanceNeto = $totalIngresos - $totalEgresos;
+        $this->validar("Balance general positivo (Ingresos: S/ " . number_format($totalIngresos, 2) . " > Egresos: S/ " . number_format($totalEgresos, 2) . ")", $balanceNeto > 0, $errores);
+
+        // Dashboard Alerta de Stock Mínimo (5 a 7 productos con stock <= 15)
+        $productosBajoStock = 0;
+        foreach (Producto::all() as $prod) {
+            if ($prod->stockTotal <= 15) {
+                $productosBajoStock++;
+            }
+        }
+        $this->validar("Dashboard Alerta Stock Mínimo: {$productosBajoStock} productos con stock <= 15 (objetivo: entre 5 y 7)", ($productosBajoStock >= 5 && $productosBajoStock <= 7), $errores);
+
+        // Asociaciones de colaboradores
+        $comprasSinColab = Compra::whereNull('colaborador_id')->count();
+        $ventasSinColab = Venta::whereNull('colaborador_id')->count();
+        $this->validar("Compras con gerente asignado ({$comprasSinColab} sin asignar)", $comprasSinColab === 0, $errores);
+        $this->validar("Ventas con vendedores asignados ({$ventasSinColab} sin asignar)", $ventasSinColab === 0, $errores);
+
+        echo "\n  " . ($errores === 0
+            ? "TODAS LAS VALIDACIONES PASARON EXITOSAMENTE"
+            : "{$errores} VALIDACION(ES) FALLARON") . "\n\n";
+
+        echo "  RESUMEN ESTADÍSTICO DE SIEMBRA:\n";
+        echo "    Total Ventas Sembradas: " . number_format($ventasDB) . "\n";
+        echo "    Total Compras Sembradas: " . number_format($comprasDB) . "\n";
+        echo "    Balance de Caja Neto: S/ " . number_format($balanceNeto, 2) . "\n\n";
+    }
+
+    private function validar(string $desc, bool $ok, int &$errores)
+    {
+        echo "    " . ($ok ? "[OK]" : "[!!]") . " {$desc}\n";
+        if (!$ok) $errores++;
     }
 }

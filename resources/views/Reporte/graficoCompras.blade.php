@@ -23,13 +23,19 @@
                             <small class="text-muted">Analiza las compras realizadas por mes o por día</small>
                         </div>
                     </div>
-                    <div class="text-end mt-2 mt-md-0">
-                        <span class="badge"
-                            style="background:#e67e22;color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;">
-                            <i class="fas fa-user me-1"></i> {{ Auth::user()->name ?? 'Sistema' }}
-                        </span>
-                        <br>
-                        <small class="text-muted">{{ date('d/m/Y - h:i A') }}</small>
+                    <div class="d-flex align-items-center gap-3 mt-2 mt-md-0 flex-wrap justify-content-end">
+                        <a href="{{ route('tiempoReporteGrafico.pdf') }}" target="_blank" class="btn btn-sm text-white" 
+                            style="background: linear-gradient(135deg,#e67e22,#e74c3c); border-radius: 20px; padding: 6px 16px; font-weight: 600; box-shadow: 0 4px 10px rgba(230,126,34,0.25);">
+                            <i class="fas fa-clock me-1"></i> Tiempo de Reporte Gráfico
+                        </a>
+                        <div class="text-end">
+                            <span class="badge"
+                                style="background:#e67e22;color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;">
+                                <i class="fas fa-user me-1"></i> {{ Auth::user()->name ?? 'Sistema' }}
+                            </span>
+                            <br>
+                            <small class="text-muted">{{ date('d/m/Y - h:i A') }}</small>
+                        </div>
                     </div>
                 </div>
             </div>

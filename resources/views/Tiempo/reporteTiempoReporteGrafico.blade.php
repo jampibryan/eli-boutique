@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Reporte de Proveedores - Eli Boutique</title>
+    <title>Reporte de Tiempo - Reportes Gráficos - Eli Boutique</title>
     <style>
         * {
             margin: 0;
@@ -21,7 +21,7 @@
 
         /* ===== HEADER ===== */
         .header {
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #5c76e4;
             padding-bottom: 12px;
             margin-bottom: 15px;
         }
@@ -41,7 +41,7 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            border: 2px solid #667eea;
+            border: 2px solid #5c76e4;
         }
 
         .company-info {
@@ -53,7 +53,7 @@
 
         .company-info h1 {
             font-size: 22px;
-            color: #667eea;
+            color: #5c76e4;
             margin-bottom: 3px;
         }
 
@@ -82,7 +82,7 @@
 
         /* ===== TÍTULO ===== */
         .report-title {
-            background-color: #667eea;
+            background-color: #5c76e4;
             color: white;
             padding: 8px 0;
             text-align: center;
@@ -126,13 +126,13 @@
         }
 
         table.data-table thead th {
-            background-color: #667eea;
+            background-color: #5c76e4;
             color: white;
             padding: 7px 5px;
             font-size: 9px;
             font-weight: bold;
             text-align: center;
-            border: 1px solid #5568d3;
+            border: 1px solid #4e73df;
             text-transform: uppercase;
         }
 
@@ -147,17 +147,30 @@
             background-color: #f8f9fa;
         }
 
-        .total-row td {
-            background-color: #667eea !important;
-            color: white !important;
+        /* ===== DURACIÓN BADGES ===== */
+        .duracion-rapida, .duracion-normal, .duracion-lenta {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 8.5px;
             font-weight: bold;
-            padding: 7px 5px !important;
-            border-color: #5568d3 !important;
-            font-size: 10px !important;
+            color: white;
+            text-align: center;
+        }
+
+        .duracion-rapida {
+            background-color: #28a745;
+        }
+
+        .duracion-normal {
+            background-color: #ff9800;
+        }
+
+        .duracion-lenta {
+            background-color: #dc3545;
         }
 
         /* ===== PAGINACIÓN ===== */
-        tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
         .finance-table { page-break-inside: avoid; }
 
@@ -174,7 +187,7 @@
         }
 
         .footer strong {
-            color: #667eea;
+            color: #5c76e4;
         }
 
         .page-number:before {
@@ -184,12 +197,6 @@
 </head>
 
 <body>
-    @php
-        $totalProveedores = $proveedores->count();
-        $empresas = $proveedores->pluck('nombreEmpresa')->unique()->count();
-        $conRuc = $proveedores->whereNotNull('RUC')->where('RUC', '!=', '')->count();
-    @endphp
-
     <!-- HEADER -->
     <div class="header">
         <div class="header-content">
@@ -199,75 +206,78 @@
             <div class="company-info">
                 <h1>Eli Boutique</h1>
                 <p>RUC: 20276544711 | Calle Ayacucho 624, Pacanga</p>
-                <p>Celular: 922 070 116 | proveedores@eliboutique.pe</p>
+                <p>Cel: 922 070 116 | ventas@eliboutique.pe</p>
             </div>
             <div class="report-info">
                 <p><strong>Reporte generado:</strong></p>
                 <p>{{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }}</p>
-                <p><strong>Total registros:</strong> {{ $totalProveedores }}</p>
+                <p><strong>Total registros:</strong> {{ $totalRegistros }}</p>
             </div>
         </div>
     </div>
 
     <!-- TÍTULO -->
     <div class="report-title">
-        REPORTE GENERAL DE PROVEEDORES
+        REPORTE DE TIEMPO DE REPORTES GRÁFICOS
     </div>
 
-    <!-- RESUMEN -->
+    <!-- RESUMEN ESTADÍSTICO -->
     <table class="finance-table">
         <tr>
             <td style="background-color: #f0f2ff;">
-                <div class="finance-label">Total Proveedores</div>
-                <div class="finance-value" style="color: #667eea;">{{ $totalProveedores }}</div>
+                <div class="finance-label">TOTAL REPORTES</div>
+                <div class="finance-value" style="color: #5c76e4;">{{ $totalRegistros }}</div>
             </td>
             <td style="background-color: #e8f5e9;">
-                <div class="finance-label">Empresas</div>
-                <div class="finance-value" style="color: #28a745;">{{ $empresas }}</div>
+                <div class="finance-label">TIEMPO PROMEDIO</div>
+                <div class="finance-value" style="color: #28a745;">{{ $promedioDuracion }} seg</div>
             </td>
             <td style="background-color: #fff3e0;">
-                <div class="finance-label">Con RUC</div>
-                <div class="finance-value" style="color: #ff9800;">{{ $conRuc }}</div>
+                <div class="finance-label">TIEMPO MÍNIMO</div>
+                <div class="finance-value" style="color: #ff9800;">{{ $minDuracion }} seg</div>
+            </td>
+            <td style="background-color: #fce4ec;">
+                <div class="finance-label">TIEMPO MÁXIMO</div>
+                <div class="finance-value" style="color: #dc3545;">{{ $maxDuracion }} seg</div>
             </td>
         </tr>
     </table>
 
-    <!-- TABLA DE PROVEEDORES -->
+    <!-- TABLA DE TIEMPOS -->
     <table class="data-table">
         <thead>
             <tr>
-                <th width="5%">N°</th>
-                <th width="14%">Empresa</th>
-                <th width="18%">Nombre Completo</th>
-                <th width="11%">RUC</th>
-                <th width="20%">Dirección</th>
-                <th width="20%">Email</th>
-                <th width="12%">Teléfono</th>
+                <th style="width: 15%;">TIEMPO N°</th>
+                <th style="width: 15%;">FECHA</th>
+                <th style="width: 20%;">TIEMPO INICIAL</th>
+                <th style="width: 20%;">TIEMPO FINAL</th>
+                <th style="width: 30%;">DURACIÓN (SEGUNDOS)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($proveedores as $index => $proveedor)
+            @foreach ($reportesConTiempo as $rep)
                 <tr>
-                    <td style="font-weight: bold; color: #667eea;">{{ $index + 1 }}</td>
-                    <td style="font-weight: bold; text-align: left; padding-left: 6px;">{{ $proveedor->nombreEmpresa }}</td>
-                    <td style="text-align: left; padding-left: 8px;">{{ $proveedor->nombreProveedor }} {{ $proveedor->apellidoProveedor }}</td>
-                    <td>{{ $proveedor->RUC ?? '-' }}</td>
-                    <td style="text-align: left; padding-left: 6px; font-size: 8.5px;">{{ $proveedor->direccionProveedor ?? '-' }}</td>
-                    <td style="text-align: left; padding-left: 6px; font-size: 8.5px;">{{ $proveedor->correoProveedor ?? '-' }}</td>
-                    <td>{{ $proveedor->telefonoProveedor ?? '-' }}</td>
+                    <td style="font-weight: bold; color: #5c76e4;">{{ $rep->tiempo_num }}</td>
+                    <td>{{ $rep->fecha }}</td>
+                    <td>{{ $rep->tiempoInicial }}</td>
+                    <td>{{ $rep->tiempoFinal }}</td>
+                    <td>
+                        @if($rep->duracionSegundos <= 45)
+                            <span class="duracion-rapida">{{ $rep->duracionSegundos }} segundos</span>
+                        @elseif($rep->duracionSegundos <= 55)
+                            <span class="duracion-normal">{{ $rep->duracionSegundos }} segundos</span>
+                        @else
+                            <span class="duracion-lenta">{{ $rep->duracionSegundos }} segundos</span>
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td colspan="7" style="text-align: center;">TOTAL: {{ $totalProveedores }} PROVEEDORES REGISTRADOS</td>
-            </tr>
-        </tfoot>
     </table>
 
     <!-- FOOTER -->
     <div class="footer">
-        <strong>Eli Boutique</strong> — Reporte de Proveedores generado el {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+        <strong>Eli Boutique</strong> — Reporte de Tiempo de Reportes Gráficos generado el {{ \Carbon\Carbon::now()->format('d/m/Y') }}
         | <span class="page-number"></span>
     </div>
 </body>

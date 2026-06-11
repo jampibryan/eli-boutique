@@ -179,7 +179,6 @@
         }
 
         /* ===== PAGINACIÓN ===== */
-        tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
         .finance-table { page-break-inside: avoid; }
 

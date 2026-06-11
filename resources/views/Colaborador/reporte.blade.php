@@ -232,7 +232,7 @@
             <div class="company-info">
                 <h1>Eli Boutique</h1>
                 <p>RUC: 20276544711 | Calle Ayacucho 624, Pacanga</p>
-                <p>Cel: 922 070 116 | ventas@eliboutique.pe</p>
+                <p>Celular: 922 070 116 | ventas@eliboutique.pe</p>
             </div>
             <div class="report-info">
                 <p><strong>Reporte generado:</strong></p>

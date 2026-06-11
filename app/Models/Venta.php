@@ -17,6 +17,7 @@ class Venta extends Model
         'subTotal',
         'IGV',
         'montoTotal',
+        'colaborador_id',
     ];
 
     protected static function booted()
@@ -99,6 +100,11 @@ class Venta extends Model
                 $venta->caja->decrement('productosVendidos', $totalProductosVenta);
             }
         });
+    }
+
+    public function colaborador()
+    {
+        return $this->belongsTo(Colaborador::class);
     }
 
     public function cliente()

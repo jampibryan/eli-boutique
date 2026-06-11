@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('venta_id')->constrained()->onDelete('cascade');
             $table->foreignId('producto_id')->constrained()->onDelete('cascade');
+            $table->foreignId('producto_talla_id')->nullable()->constrained('producto_tallas')->onDelete('set null');
             $table->integer('cantidad');
             $table->decimal('precio_unitario', 10, 2); // Precio final con IGV incluido
             $table->decimal('base_imponible', 10, 2); // Precio sin IGV (precio_unitario / 1.18)

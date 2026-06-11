@@ -8,9 +8,12 @@
 
 @section('content')
     <div class="card">
-        <div class="card-body">
-            <a href="{{ route('reportes.ventas') }}" class="btn btn-primary">Ventas</a>
-            <a href="{{ route('reportes.compras') }}" class="btn btn-secondary">Compras</a>
+        <div class="card-body d-flex gap-2">
+            <a href="{{ route('reporte.grafico.ventas') }}" class="btn btn-primary">Ventas</a>
+            <a href="{{ route('reporte.grafico.compras') }}" class="btn btn-secondary">Compras</a>
+            <a href="{{ route('tiempoReporteGrafico.pdf') }}" target="_blank" class="btn btn-dark">
+                <i class="fas fa-clock"></i> Tiempo de Reporte Gráfico
+            </a>
         </div>
     </div>
 @stop

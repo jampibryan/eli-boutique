@@ -21,7 +21,7 @@
 
         /* ===== HEADER ===== */
         .header {
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #5c76e4;
             padding-bottom: 12px;
             margin-bottom: 15px;
         }
@@ -41,7 +41,7 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            border: 2px solid #667eea;
+            border: 2px solid #5c76e4;
         }
 
         .company-info {
@@ -53,7 +53,7 @@
 
         .company-info h1 {
             font-size: 22px;
-            color: #667eea;
+            color: #5c76e4;
             margin-bottom: 3px;
         }
 
@@ -82,7 +82,7 @@
 
         /* ===== TÍTULO ===== */
         .report-title {
-            background-color: #667eea;
+            background-color: #5c76e4;
             color: white;
             padding: 8px 0;
             text-align: center;
@@ -126,13 +126,13 @@
         }
 
         table.data-table thead th {
-            background-color: #667eea;
+            background-color: #5c76e4;
             color: white;
             padding: 7px 5px;
             font-size: 9px;
             font-weight: bold;
             text-align: center;
-            border: 1px solid #5568d3;
+            border: 1px solid #4e73df;
             text-transform: uppercase;
         }
 
@@ -147,45 +147,30 @@
             background-color: #f8f9fa;
         }
 
-        .total-row td {
-            background-color: #667eea !important;
-            color: white !important;
-            font-weight: bold;
-            padding: 7px 5px !important;
-            border-color: #5568d3 !important;
-            font-size: 10px !important;
-        }
-
         /* ===== DURACIÓN BADGES ===== */
-        .duracion-rapida {
-            background-color: #28a745;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
+        .duracion-rapida, .duracion-normal, .duracion-lenta {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
             font-size: 8.5px;
             font-weight: bold;
+            color: white;
+            text-align: center;
+        }
+
+        .duracion-rapida {
+            background-color: #28a745;
         }
 
         .duracion-normal {
-            background-color: #ffc107;
-            color: #333;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 8.5px;
-            font-weight: bold;
+            background-color: #ff9800; /* Orange with white text */
         }
 
         .duracion-lenta {
             background-color: #dc3545;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 8.5px;
-            font-weight: bold;
         }
 
         /* ===== PAGINACIÓN ===== */
-        tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
         .finance-table { page-break-inside: avoid; }
 
@@ -202,7 +187,7 @@
         }
 
         .footer strong {
-            color: #667eea;
+            color: #5c76e4;
         }
 
         .page-number:before {
@@ -240,20 +225,20 @@
     <table class="finance-table">
         <tr>
             <td style="background-color: #f0f2ff;">
-                <div class="finance-label">Total Ventas</div>
-                <div class="finance-value" style="color: #667eea;">{{ $totalVentas }}</div>
+                <div class="finance-label">TOTAL VENTAS</div>
+                <div class="finance-value" style="color: #5c76e4;">{{ $totalVentas }}</div>
             </td>
             <td style="background-color: #e8f5e9;">
-                <div class="finance-label">Tiempo Promedio</div>
+                <div class="finance-label">TIEMPO PROMEDIO</div>
                 <div class="finance-value" style="color: #28a745;">{{ $promedioDuracion }} seg</div>
             </td>
             <td style="background-color: #fff3e0;">
-                <div class="finance-label">Tiempo Mínimo</div>
+                <div class="finance-label">TIEMPO MÍNIMO</div>
                 <div class="finance-value" style="color: #ff9800;">{{ $minDuracion }} seg</div>
             </td>
             <td style="background-color: #fce4ec;">
-                <div class="finance-label">Tiempo Máximo</div>
-                <div class="finance-value" style="color: #e74c3c;">{{ $maxDuracion }} seg</div>
+                <div class="finance-label">TIEMPO MÁXIMO</div>
+                <div class="finance-value" style="color: #dc3545;">{{ $maxDuracion }} seg</div>
             </td>
         </tr>
     </table>
@@ -262,17 +247,17 @@
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 14%;">Código de Venta</th>
-                <th style="width: 16%;">Fecha de Venta</th>
-                <th style="width: 20%;">Tiempo Inicial</th>
-                <th style="width: 20%;">Tiempo Final</th>
-                <th style="width: 20%;">Duración (segundos)</th>
+                <th style="width: 15%;">CÓDIGO DE VENTA</th>
+                <th style="width: 15%;">FECHA DE VENTA</th>
+                <th style="width: 20%;">TIEMPO INICIAL</th>
+                <th style="width: 20%;">TIEMPO FINAL</th>
+                <th style="width: 30%;">DURACIÓN (SEGUNDOS)</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($ventasConTiempo as $venta)
                 <tr>
-                    <td style="font-weight: bold; color: #667eea;">{{ $venta->codigoVenta }}</td>
+                    <td style="font-weight: bold; color: #5c76e4;">{{ $venta->codigoVenta }}</td>
                     <td>{{ $venta->fechaVenta }}</td>
                     <td>{{ $venta->tiempoInicial }}</td>
                     <td>{{ $venta->tiempoFinal }}</td>
@@ -288,12 +273,6 @@
                 </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td colspan="4" style="text-align: right; padding-right: 10px !important;">PROMEDIO DE DURACIÓN</td>
-                <td>{{ $promedioDuracion }} segundos</td>
-            </tr>
-        </tfoot>
     </table>
 
     <!-- FOOTER -->

@@ -29,12 +29,12 @@
                 <a href="{{ route('carrito.ver') }}" class="btn btn-boutique-gold">
                     <i class="fas fa-cart-plus"></i> Ver Carrito
                 </a>
-                <!--
-                <a href="{{ route('tiempoVentas.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                
+                <a href="{{ route('tiempoVentas.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-clock"></i> Tiempo de Ventas
                 </a>
-                -->
-                <a href="{{ route('ventas.pdf') }}" target="_blank" class="btn btn-boutique-dark">
+                
+                <a href="{{ route('ventas.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
                 </a>
             </div>
