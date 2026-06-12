@@ -121,7 +121,7 @@ Notas:
 - El acceso al backoffice requiere inicio de sesion.
 - La aplicacion usa Jetstream con stack Livewire.
 - Las sesiones autenticadas pasan por `auth` y `AuthenticateSession`.
-- **Validación de Identidad:** El registro y edición de clientes valida de forma estricta que el identificador sea un DNI (8 dígitos) o un RUC (11 dígitos).
+- **Validación de Identidad:** El registro y edición de clientes en la base de datos valida de forma estricta que el documento sea un DNI de exactamente 8 dígitos. Los datos correspondientes a RUC (11 dígitos) y Razón Social se administran de manera desacoplada directamente a nivel de cada transacción de venta (Factura).
 
 ### API
 
@@ -181,9 +181,8 @@ Formato de respuesta usual:
 
 - Carrito con selección de talla y cantidad.
 - Validación de stock por talla antes de confirmar.
-- Registro transaccional de venta y detalles.
 - Anulación con reposición de stock por talla.
-- **Comprobantes Inteligentes:** Generación de PDF adaptado al tipo de cliente: botón "Generar Boleta" para clientes con DNI (8 dígitos) y "Generar Factura" para clientes con RUC (11 dígitos).
+- **Comprobantes Inteligentes:** Selección dinámica del tipo de comprobante ("Boleta" o "Factura") durante la pantalla de cobro. Si se selecciona "Factura", el sistema solicita obligatoriamente el RUC (11 dígitos) y la Razón Social específicos de la transacción, almacenándolos a nivel de venta sin alterar los datos del cliente original.
 - **Diseño Premium:** Formato moderno en PDF con colores institucionales (Carbón y Dorado), incluyendo cálculos automáticos de subtotal, IGV y total multiplicados por cantidad.
 - **Soporte de Ventas Históricas:** Resuelve de forma segura el reporte de tallas en ventas antiguas que carecen del identificador mediante un fallback automático al primer stock registrado del producto.
 - Exportación de ventas a CSV.
@@ -222,6 +221,7 @@ Incluye:
 - **Trazabilidad y CDR:** Guarda los XMLs firmados localmente en `storage/app/invoices/` y las constancias de recepción de SUNAT (CDR zip) en `storage/app/cdrs/`.
 - **Representación Física:** Muestra en el PDF de venta la numeración oficial (ej: `B001-00000001`), el sello digital de aceptación y el código hash de la firma digital (DigestValue).
 - **Monitoreo desde Dashboard:** Estado de transmisión en tiempo real visible con badges en el listado de ventas (`Pendiente`, `Enviando`, `Aceptado`, `Rechazado`, `Error`).
+- **Desacoplamiento de RUC a nivel de Transacción:** Permite que un cliente con DNI compre solicitando Factura. En la pantalla de cobro se solicita el RUC (11 dígitos) y la Razón Social de la empresa de forma obligatoria, guardando estos datos directamente en la tabla `ventas`. Esto permite a un mismo cliente realizar compras asociadas a diferentes empresas.
 
 ## Roles y permisos
 

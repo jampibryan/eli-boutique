@@ -85,26 +85,12 @@ class TransaccionSeeder extends Seeder
         Caja::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 2. ACTUALIZAR CLIENTES A RUC (Persona Natural con Negocio)
-        // Convertimos ~25% de los clientes en clientes con RUC (11 dígitos, inicia con 10)
-        // para tener Facturas realistas asignadas a personas naturales
+        // 2. ACTUALIZAR CLIENTES (Todos permanecen con su DNI de 8 dígitos)
         $clientes = Cliente::all();
         if ($clientes->isEmpty()) {
             echo "ERROR: Debe sembrar los clientes antes de ejecutar este seeder.\n";
             return;
         }
-
-        $rucClientesCount = 0;
-        foreach ($clientes as $index => $cliente) {
-            if ($index % 4 === 0) {
-                if (strlen($cliente->dniCliente) === 8) {
-                    $cliente->dniCliente = '10' . $cliente->dniCliente . mt_rand(0, 9);
-                    $cliente->save();
-                    $rucClientesCount++;
-                }
-            }
-        }
-        echo "  Clientes actualizados: {$rucClientesCount} personas naturales ahora tienen RUC (11 dígitos)\n";
 
         // Obtener modelos base necesarios
         $estadoPendiente = EstadoTransaccion::where('descripcionET', 'Pendiente')->first();
@@ -422,8 +408,28 @@ class TransaccionSeeder extends Seeder
                 $horaVenta = $horas[$v];
                 $cliente = $clientesDia[mt_rand(0, $clientesDia->count() - 1)];
 
-                $esRuc = strlen($cliente->dniCliente) === 11;
-                $comprobante = $esRuc ? $comprobanteFactura : $comprobanteBoleta;
+                // Al azar, ~25% de las ventas generadas en el seeder serán Facturas
+                $esFactura = (mt_rand(1, 100) <= 25);
+                $comprobante = $esFactura ? $comprobanteFactura : $comprobanteBoleta;
+
+                $rucFactura = null;
+                $razonSocialFactura = null;
+
+                if ($esFactura) {
+                    $rucFactura = '20' . mt_rand(10000000, 99999999) . mt_rand(0, 9);
+                    $empresasNombres = [
+                        'Inversiones Textiles del Norte',
+                        'Comercializadora Pacanga',
+                        'Boutique Elegance',
+                        'Distribuidora Trujillo',
+                        'Servicios Generales Chepén',
+                        'Textil San Andrés',
+                        'Creaciones e Importaciones Chiclayo',
+                        'Corporación de la Moda del Perú'
+                    ];
+                    $societarios = ['S.A.C.', 'E.I.R.L.', 'S.R.L.'];
+                    $razonSocialFactura = $empresasNombres[array_rand($empresasNombres)] . ' ' . $societarios[array_rand($societarios)];
+                }
 
                 // Cada venta tiene exactamente 2 o 3 prendas
                 $totalPrendasVenta = mt_rand(2, 3);
@@ -476,6 +482,8 @@ class TransaccionSeeder extends Seeder
                     'subTotal' => $subTotalVenta,
                     'IGV' => $igvVenta,
                     'montoTotal' => round($montoTotalVenta, 2),
+                    'ruc_factura' => $rucFactura,
+                    'razon_social_factura' => $razonSocialFactura,
                     'created_at' => $horaVenta,
                     'updated_at' => $horaVenta,
                 ]);

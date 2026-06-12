@@ -82,15 +82,14 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-
-                    <!-- DNI / RUC -->
+                    <!-- DNI -->
                     <div class="col-md-6">
                         <label for="dniCliente" class="form-label fw-semibold">
-                            <i class="fas fa-id-card text-muted"></i> DNI / RUC <span class="text-danger">*</span>
+                            <i class="fas fa-id-card text-muted"></i> DNI <span class="text-danger">*</span>
                         </label>
-                        <input id="dniCliente" name="dniCliente" type="text" maxlength="11"
+                        <input id="dniCliente" name="dniCliente" type="text" maxlength="8"
                                class="form-control @error('dniCliente') is-invalid @enderror" 
-                               value="{{ old('dniCliente') }}" placeholder="DNI (8 dígitos) o RUC (11 dígitos)">
+                               value="{{ old('dniCliente') }}" placeholder="DNI (8 dígitos)">
                         @error('dniCliente')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

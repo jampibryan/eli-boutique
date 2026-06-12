@@ -359,13 +359,31 @@
                             <div class="panel-title">Datos del cliente</div>
                             <div class="panel-body">
                                 <div class="field">
-                                    <span class="field-label">{{ $isFactura ? 'Razon social / cliente' : 'Cliente' }}</span>
-                                    <span class="field-value">{{ $clienteNombre !== '' ? $clienteNombre : 'Cliente no disponible' }}</span>
+                                    <span class="field-label">{{ $isFactura ? 'Razón Social' : 'Cliente' }}</span>
+                                    <span class="field-value">
+                                        @if ($isFactura && !empty($venta->ruc_factura))
+                                            {{ $venta->razon_social_factura }}
+                                        @else
+                                            {{ $clienteNombre !== '' ? $clienteNombre : 'Cliente no disponible' }}
+                                        @endif
+                                    </span>
                                 </div>
                                 <div class="field">
-                                    <span class="field-label">Documento</span>
-                                    <span class="field-value">{{ $venta->cliente->dniCliente ?? 'No registrado' }}</span>
+                                    <span class="field-label">{{ $isFactura ? 'RUC' : 'Documento' }}</span>
+                                    <span class="field-value">
+                                        @if ($isFactura && !empty($venta->ruc_factura))
+                                            {{ $venta->ruc_factura }}
+                                        @else
+                                            {{ $venta->cliente->dniCliente ?? 'No registrado' }}
+                                        @endif
+                                    </span>
                                 </div>
+                                @if ($isFactura && !empty($venta->ruc_factura))
+                                    <div class="field">
+                                        <span class="field-label">Contacto Adquiriente</span>
+                                        <span class="field-value">{{ $clienteNombre }} (DNI: {{ $venta->cliente->dniCliente ?? '-' }})</span>
+                                    </div>
+                                @endif
                                 <div class="field">
                                     <span class="field-label">Estado</span>
                                     <span class="field-value">{{ $venta->estadoTransaccion->descripcionET ?? 'No definido' }}</span>

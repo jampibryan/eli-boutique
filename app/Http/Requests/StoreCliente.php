@@ -25,7 +25,7 @@ class StoreCliente extends FormRequest
             'nombreCliente' => 'required',
             'apellidoCliente' => 'required',
             'tipo_genero_id' => 'required',
-            'dniCliente' => 'required|regex:/^\d{8}$|^\d{11}$/',
+            'dniCliente' => 'required|regex:/^\d{8}$/',
             'correoCliente' => 'nullable|email',
             'telefonoCliente' => 'nullable|numeric|digits:9',
         ];
@@ -35,7 +35,7 @@ class StoreCliente extends FormRequest
     {
         return [
             'dniCliente.required' => 'El número de documento es obligatorio.',
-            'dniCliente.regex' => 'El documento debe ser un DNI de 8 dígitos o un RUC de 11 dígitos.',
+            'dniCliente.regex' => 'El documento debe ser un DNI de 8 dígitos.',
         ];
     }
 }

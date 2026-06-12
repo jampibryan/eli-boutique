@@ -49,24 +49,31 @@ class BillMapper
 
         // 3. Configurar cliente
         $client = new Client();
-        $docCliente = trim($venta->cliente->dniCliente ?? '');
-        $tipoDocCliente = '0'; // Documento sin clasificar por defecto
-
-        if (strlen($docCliente) === 11) {
+        
+        if ($esFactura && !empty($venta->ruc_factura)) {
             $tipoDocCliente = '6'; // RUC
-        } elseif (strlen($docCliente) === 8) {
-            $tipoDocCliente = '1'; // DNI
-        }
+            $docCliente = trim($venta->ruc_factura);
+            $nombreCliente = trim($venta->razon_social_factura);
+        } else {
+            $docCliente = trim($venta->cliente->dniCliente ?? '');
+            $tipoDocCliente = '0'; // Documento sin clasificar por defecto
 
-        // Si no hay documento o es vacío, se usa guion (Venta Anónima/Sin RUC)
-        if (empty($docCliente)) {
-            $docCliente = '00000000';
-            $tipoDocCliente = '1'; // Caer a DNI por defecto en boletas sin DNI
-        }
+            if (strlen($docCliente) === 11) {
+                $tipoDocCliente = '6'; // RUC
+            } elseif (strlen($docCliente) === 8) {
+                $tipoDocCliente = '1'; // DNI
+            }
 
-        $nombreCliente = trim(($venta->cliente->nombreCliente ?? '') . ' ' . ($venta->cliente->apellidoCliente ?? ''));
-        if (empty($nombreCliente)) {
-            $nombreCliente = 'CLIENTE VARIOS';
+            // Si no hay documento o es vacío, se usa guion (Venta Anónima/Sin RUC)
+            if (empty($docCliente)) {
+                $docCliente = '00000000';
+                $tipoDocCliente = '1'; // Caer a DNI por defecto en boletas sin DNI
+            }
+
+            $nombreCliente = trim(($venta->cliente->nombreCliente ?? '') . ' ' . ($venta->cliente->apellidoCliente ?? ''));
+            if (empty($nombreCliente)) {
+                $nombreCliente = 'CLIENTE VARIOS';
+            }
         }
 
         $client->setTipoDoc($tipoDocCliente)

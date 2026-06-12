@@ -257,12 +257,29 @@
                 <select name="comprobante_id" id="comprobante_id" class="form-control comprobante-select" required>
                     <option value="">Seleccionar Comprobante</option>
                     @foreach($comprobantes as $comprobante)
-                        <option value="{{ $comprobante->id }}">
+                        <option value="{{ $comprobante->id }}" {{ old('comprobante_id') == $comprobante->id ? 'selected' : '' }}>
                             {{ $comprobante->descripcionCOM }}
                         </option>
                     @endforeach
                 </select>
             </div>
+
+            @if($type === 'venta')
+                <!-- Campos para Factura (RUC y Razón Social) -->
+                <div id="facturaFields" style="display: none; background: #fdfcf7; border: 1px dashed #D4AF37; padding: 18px; border-radius: 9px; margin-bottom: 15px; margin-top: 10px;">
+                    <h5 style="color: #2C2C2C; font-size: 14px; font-weight: bold; margin-bottom: 12px;">
+                        <i class="fas fa-building" style="color: #D4AF37;"></i> Datos de Facturación
+                    </h5>
+                    <div class="form-group">
+                        <label for="ruc_factura">RUC de la Empresa (11 dígitos)</label>
+                        <input type="text" class="form-control" name="ruc_factura" id="ruc_factura" placeholder="20123456789" maxlength="11" value="{{ old('ruc_factura') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="razon_social_factura">Razón Social</label>
+                        <input type="text" class="form-control" name="razon_social_factura" id="razon_social_factura" placeholder="Empresa S.A.C." value="{{ old('razon_social_factura') }}">
+                    </div>
+                </div>
+            @endif
 
             @if($type === 'venta')
                 <!-- Monto Total de la Venta -->
@@ -378,6 +395,35 @@
                 }
             });
 
+            // Toggle Factura fields based on selected Comprobante
+            const comprobanteSelect = document.getElementById('comprobante_id');
+            const facturaFields = document.getElementById('facturaFields');
+            const rucInput = document.getElementById('ruc_factura');
+            const razonSocialInput = document.getElementById('razon_social_factura');
+
+            function toggleFacturaFields() {
+                if (!comprobanteSelect || !facturaFields) return;
+                const selectedText = comprobanteSelect.options[comprobanteSelect.selectedIndex].text.trim().toLowerCase();
+                if (selectedText === 'factura') {
+                    facturaFields.style.display = 'block';
+                    if (rucInput) rucInput.required = true;
+                    if (razonSocialInput) razonSocialInput.required = true;
+                } else {
+                    facturaFields.style.display = 'none';
+                    if (rucInput) {
+                        rucInput.required = false;
+                    }
+                    if (razonSocialInput) {
+                        razonSocialInput.required = false;
+                    }
+                }
+            }
+
+            if (comprobanteSelect) {
+                comprobanteSelect.addEventListener('change', toggleFacturaFields);
+                toggleFacturaFields(); // Run once on load
+            }
+
             // Validar antes de enviar
             document.getElementById('pagoForm').addEventListener('submit', function(e) {
                 const importe = parseFloat(importeInput.value) || 0;
@@ -385,6 +431,28 @@
                     e.preventDefault();
                     alert('El importe recibido no puede ser menor al total de la venta.');
                     importeInput.focus();
+                    return;
+                }
+
+                if (comprobanteSelect) {
+                    const selectedText = comprobanteSelect.options[comprobanteSelect.selectedIndex].text.trim().toLowerCase();
+                    if (selectedText === 'factura') {
+                        const rucVal = rucInput.value.trim();
+                        const rzVal = razonSocialInput.value.trim();
+
+                        if (!/^\d{11}$/.test(rucVal)) {
+                            e.preventDefault();
+                            alert('El RUC debe tener exactamente 11 dígitos numéricos.');
+                            rucInput.focus();
+                            return;
+                        }
+                        if (rzVal === '') {
+                            e.preventDefault();
+                            alert('La Razón Social es requerida para emitir Factura.');
+                            razonSocialInput.focus();
+                            return;
+                        }
+                    }
                 }
             });
         </script>

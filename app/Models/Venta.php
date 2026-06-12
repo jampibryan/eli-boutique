@@ -18,6 +18,8 @@ class Venta extends Model
         'IGV',
         'montoTotal',
         'colaborador_id',
+        'ruc_factura',
+        'razon_social_factura',
     ];
 
     protected static function booted()
