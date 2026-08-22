@@ -769,14 +769,14 @@ class TransaccionSeeder extends Seeder
         $this->validar("Ningún producto con stock 0 ({$stockCero} encontrados)", $stockCero === 0, $errores);
 
         // Horario laboral
-        $fueraHorario = Venta::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 20')->count();
+        $fueraHorario = Venta::whereRaw('DATEPART(hour, created_at) < 8 OR DATEPART(hour, created_at) >= 20')->count();
         $this->validar("Ventas realizadas dentro de horario laboral (08:00 AM - 08:00 PM)", $fueraHorario === 0, $errores);
 
-        $fueraHorarioC = Compra::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 20')->count();
+        $fueraHorarioC = Compra::whereRaw('DATEPART(hour, created_at) < 8 OR DATEPART(hour, created_at) >= 20')->count();
         $this->validar("Compras realizadas dentro de horario laboral (08:00 AM - 08:00 PM)", $fueraHorarioC === 0, $errores);
 
         // Domingos no se trabaja
-        $enDomingo = Venta::whereRaw('DAYOFWEEK(created_at) = 1')->count();
+        $enDomingo = Venta::whereRaw('DATEPART(dw, created_at) = 1')->count();
         $this->validar("Transacciones en domingo: {$enDomingo} (deben ser 0)", $enDomingo === 0, $errores);
 
         // Margen y balance positivo global

@@ -720,14 +720,14 @@ class VentaSeeder extends Seeder
         $comprasFueraOct = Compra::whereMonth('created_at', '!=', 10)->count();
         $this->validar("Todas las compras en octubre", $comprasFueraOct === 0, $errores);
 
-        $fueraHorario = Venta::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 19')->count();
+        $fueraHorario = Venta::whereRaw('DATEPART(hour, created_at) < 8 OR DATEPART(hour, created_at) >= 19')->count();
         $this->validar("Ventas dentro de horario laboral", $fueraHorario === 0, $errores);
 
-        $fueraHorarioC = Compra::whereRaw('HOUR(created_at) < 8 OR HOUR(created_at) >= 19')->count();
+        $fueraHorarioC = Compra::whereRaw('DATEPART(hour, created_at) < 8 OR DATEPART(hour, created_at) >= 19')->count();
         $this->validar("Compras dentro de horario laboral", $fueraHorarioC === 0, $errores);
 
         // Proveedor no repetido por dia
-        $diasConCompra = Compra::selectRaw('DATE(created_at) as dia')->distinct()->pluck('dia');
+        $diasConCompra = Compra::selectRaw('CAST(created_at AS DATE) as dia')->distinct()->pluck('dia');
         $provRepetido = false;
         foreach ($diasConCompra as $dia) {
             $proveedoresDia = Compra::whereDate('created_at', $dia)->pluck('proveedor_id')->toArray();
