@@ -358,3 +358,5 @@ Ademas:
 ## Licencia
 
 Proyecto privado de uso interno para Eli Boutique.
+
+<!-- Estado previo a la migración: Configuración funcional en MySQL local (XAMPP) -->
