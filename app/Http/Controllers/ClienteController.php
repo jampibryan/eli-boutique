@@ -79,6 +79,14 @@ class ClienteController extends Controller
         // Guardar el cliente en sesión para preseleccionarlo
         session(['venta_cliente' => $cliente->id]);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cliente registrado exitosamente.',
+                'cliente' => $cliente->load('tipoGenero'),
+            ]);
+        }
+
         if ($request->has('redirect') && $request->redirect === 'ventas.create') {
             return redirect()->route('ventas.create')->with('success', 'Cliente registrado exitosamente. Ahora puedes proceder con la venta.');
         }

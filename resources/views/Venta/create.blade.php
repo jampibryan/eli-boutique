@@ -353,19 +353,21 @@
                 <label for="cliente_id">
                     <i class="fas fa-address-card"></i> Seleccionar Cliente
                 </label>
-                <select class="form-control select2" name="cliente_id" required>
-                    <option value="">-- Buscar cliente por nombre o DNI --</option>
-                    @foreach ($clientes as $cliente)
-                        <option value="{{ $cliente->id }}"
-                            {{ (request('cliente_id') ?: $clienteSeleccionado) == $cliente->id ? 'selected' : '' }}>
-                            {{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }} - DNI:
-                            {{ $cliente->dniCliente }}
-                        </option>
-                    @endforeach
-                </select>
-                <a href="{{ route('clientes.create', ['redirect' => 'ventas.create']) }}" class="btn btn-add-client">
-                    <i class="fas fa-user-plus"></i> Registrar Cliente Nuevo
-                </a>
+                <div class="d-flex gap-2 align-items-center">
+                    <select class="form-control select2" id="cliente_id_select" name="cliente_id" required style="flex: 1;">
+                        <option value="">-- Buscar cliente por nombre o DNI --</option>
+                        @foreach ($clientes as $cliente)
+                            <option value="{{ $cliente->id }}"
+                                {{ (request('cliente_id') ?: $clienteSeleccionado) == $cliente->id ? 'selected' : '' }}>
+                                {{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }} - DNI:
+                                {{ $cliente->dniCliente }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <button type="button" class="btn btn-add-client mt-0 text-nowrap" data-bs-toggle="modal" data-bs-target="#modalQuickCliente">
+                        <i class="fas fa-user-plus"></i> + Alta Rápida
+                    </button>
+                </div>
             </div>
 
             <!-- Total -->
@@ -390,14 +392,125 @@
             </div>
         </div>
     </form>
+
+    <!-- Modal Alta Rápida de Cliente -->
+    <div class="modal fade" id="modalQuickCliente" tabindex="-1" aria-labelledby="modalQuickClienteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="modalQuickClienteLabel">
+                        <i class="fas fa-user-plus text-warning me-2"></i> Alta Rápida de Cliente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formQuickCliente">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div id="quickClienteAlert" class="alert alert-danger d-none mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Nombre *</label>
+                                <input type="text" name="nombreCliente" class="form-control" placeholder="Ej: María" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Apellido *</label>
+                                <input type="text" name="apellidoCliente" class="form-control" placeholder="Ej: Perez" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">DNI *</label>
+                                <input type="text" name="dniCliente" class="form-control" placeholder="8 dígitos" maxlength="8" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">Teléfono</label>
+                                <input type="text" name="telefonoCliente" class="form-control" placeholder="999888777">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-muted">Género *</label>
+                                <select name="tipo_genero_id" class="form-select" required>
+                                    <option value="">-- Seleccionar --</option>
+                                    @if(isset($generos))
+                                        @foreach($generos as $gen)
+                                            <option value="{{ $gen->id }}">{{ $gen->descripcionTG }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-boutique-gold fw-bold" id="btnSaveQuickCliente">
+                            <i class="fas fa-save me-1"></i> Guardar y Seleccionar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $('.select2').select2({
-            placeholder: 'Buscar cliente por nombre o DNI...',
-            allowClear: true,
-            width: '100%'
+        $(document).ready(function() {
+            $('#cliente_id_select').select2({
+                placeholder: 'Buscar cliente por nombre o DNI...',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Form Submit AJAX para Quick Cliente
+            $('#formQuickCliente').on('submit', function(e) {
+                e.preventDefault();
+                const $btn = $('#btnSaveQuickCliente');
+                const $alert = $('#quickClienteAlert');
+                $alert.addClass('d-none').text('');
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
+
+                $.ajax({
+                    url: "{{ route('clientes.store') }}",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar y Seleccionar');
+                        if (response.success && response.cliente) {
+                            const c = response.cliente;
+                            const optionText = `${c.nombreCliente} ${c.apellidoCliente} - DNI: ${c.dniCliente || ''}`;
+                            const newOption = new Option(optionText, c.id, true, true);
+                            
+                            $('#cliente_id_select').append(newOption).trigger('change');
+
+                            // Cerrar Modal y resetear form
+                            const modalEl = document.getElementById('modalQuickCliente');
+                            const modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                            $('#formQuickCliente')[0].reset();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Cliente Creado',
+                                text: 'El cliente se registró y seleccionó automáticamente.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar y Seleccionar');
+                        let msg = 'Error al registrar cliente.';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        $alert.html(msg).removeClass('d-none');
+                    }
+                });
+            });
         });
     </script>
 @stop

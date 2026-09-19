@@ -161,8 +161,9 @@ class VentaController extends Controller
         }
 
         $clienteSeleccionado = null;
+        $generos = \App\Models\TipoGenero::all();
 
-        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado'));
+        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado', 'generos'));
     }
 
     public function store(Request $request, VentaService $ventaService)

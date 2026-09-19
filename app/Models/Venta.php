@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Venta extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, Filterable;
+
+    protected $searchableFields = ['codigoVenta', 'ruc_factura', 'razon_social_factura'];
 
     protected $fillable = [
         'caja_id',
