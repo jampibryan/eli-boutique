@@ -40,7 +40,7 @@ class PagoController extends Controller
         return view('Pago.create', compact('transaction', 'comprobantes', 'type'));
     }
 
-    public function store(Request $request, $ventaId, $type = 'venta', PagoService $pagoService)
+    public function store(Request $request, PagoService $pagoService, $ventaId, $type = 'venta')
     {
         $validated = $request->validate([
             'comprobante_id' => 'required|exists:comprobantes,id',
@@ -79,9 +79,6 @@ class PagoController extends Controller
                         'razon_social_factura' => $request->razon_social_factura,
                     ]);
                 }
-
-                // Dispatch Job de transmisión asíncrona a SUNAT
-                \App\Jobs\SendVentaToSunatJob::dispatch($venta);
             }
         }
 

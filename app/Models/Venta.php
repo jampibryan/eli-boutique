@@ -81,9 +81,12 @@ class Venta extends Model
                 $venta->caja->increment('productosVendidos', $totalProductosVenta);
             }
 
+            $previousEstadoId = $venta->getOriginal('estado_transaccion_id');
+
             if (
                 $venta->wasChanged('estado_transaccion_id') &&
                 $venta->estado_transaccion_id == $estadoAnulado->id &&
+                $previousEstadoId == $estadoPagado->id &&
                 $venta->caja
             ) {
                 $clienteTieneOtrasVentas = Venta::where('caja_id', $venta->caja_id)
@@ -102,6 +105,22 @@ class Venta extends Model
                 $venta->caja->decrement('productosVendidos', $totalProductosVenta);
             }
         });
+
+        static::deleting(function ($venta) {
+            if ($venta->estadoTransaccion && $venta->estadoTransaccion->descripcionET === 'Pendiente') {
+                foreach ($venta->detalles as $detalle) {
+                    if ($detalle->producto_talla_id) {
+                        $tallaStock = ProductoTallaStock::where('producto_id', $detalle->producto_id)
+                            ->where('producto_talla_id', $detalle->producto_talla_id)
+                            ->first();
+
+                        if ($tallaStock) {
+                            $tallaStock->increment('stock', $detalle->cantidad);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public function colaborador()
@@ -111,7 +130,7 @@ class Venta extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class);
+        return $this->belongsTo(Cliente::class)->withTrashed();
     }
 
     public function estadoTransaccion()
@@ -134,33 +153,8 @@ class Venta extends Model
         return $this->hasOne(Pago::class);
     }
 
-    public function documentoSunat()
-    {
-        return $this->hasOne(VentaDocumentoSunat::class);
-    }
-
     public function anular()
     {
-        $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
-
-        if ($estadoAnulado) {
-            $this->estado_transaccion_id = $estadoAnulado->id;
-            $this->save();
-        }
-
-        foreach ($this->detalles as $detalle) {
-            if (!$detalle->producto_talla_id) {
-                continue;
-            }
-
-            $productoTallaStock = ProductoTallaStock::where('producto_id', $detalle->producto_id)
-                ->where('producto_talla_id', $detalle->producto_talla_id)
-                ->first();
-
-            if ($productoTallaStock) {
-                $productoTallaStock->stock += $detalle->cantidad;
-                $productoTallaStock->save();
-            }
-        }
+        return app(\App\Services\VentaService::class)->anular($this);
     }
 }

@@ -134,4 +134,143 @@ class CompraService
             return $compra;
         });
     }
+
+    public function send(int|Compra $compra): Compra
+    {
+        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+
+        if ($compraModel->estadoTransaccion->descripcionET !== 'Borrador') {
+            throw ValidationException::withMessages([
+                'compra' => 'Solo se pueden enviar ordenes en estado Borrador.',
+            ]);
+        }
+
+        $estadoEnviada = EstadoTransaccion::where('descripcionET', 'Enviada')->first();
+
+        if (!$estadoEnviada) {
+            throw ValidationException::withMessages([
+                'estado' => 'No se encontro el estado Enviada.',
+            ]);
+        }
+
+        $compraModel->update([
+            'estado_transaccion_id' => $estadoEnviada->id,
+            'fecha_envio' => now(),
+        ]);
+
+        return $compraModel;
+    }
+
+    public function saveQuote(int|Compra $compra, array $validated, ?string $pdfPath = null): Compra
+    {
+        return DB::transaction(function () use ($compra, $validated, $pdfPath) {
+            $compraModel = ($compra instanceof Compra) ? $compra : Compra::with(['detalles', 'estadoTransaccion'])->findOrFail($compra);
+
+            if ($compraModel->estadoTransaccion->descripcionET !== 'Enviada') {
+                throw ValidationException::withMessages([
+                    'compra' => 'Solo se pueden cotizar ordenes en estado Enviada.',
+                ]);
+            }
+
+            $subtotal = 0;
+
+            foreach ($compraModel->detalles as $detalle) {
+                $precioCotizado = $validated['precio_cotizado'][$detalle->id] ?? 0;
+                $subtotalLinea = $precioCotizado * $detalle->cantidad;
+
+                $detalle->update([
+                    'precio_cotizado' => $precioCotizado,
+                    'precio_final' => $precioCotizado,
+                    'subtotal_linea' => $subtotalLinea,
+                ]);
+
+                $subtotal += $subtotalLinea;
+            }
+
+            $descuento = $validated['descuento'] ?? 0;
+            $subtotalConDescuento = max(0, $subtotal - $descuento);
+            $igv = round($subtotalConDescuento * 0.18, 2);
+            $total = round($subtotalConDescuento + $igv, 2);
+            $estadoCotizada = EstadoTransaccion::where('descripcionET', 'Cotizada')->first();
+
+            if (!$estadoCotizada) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Cotizada.',
+                ]);
+            }
+
+            $compraModel->update([
+                'estado_transaccion_id' => $estadoCotizada->id,
+                'fecha_cotizacion' => now(),
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'igv' => $igv,
+                'total' => $total,
+                'condiciones_pago' => 'Pago contra entrega',
+                'notas_proveedor' => $validated['notas_proveedor'] ?? null,
+                'pdf_cotizacion' => $pdfPath ?? $compraModel->pdf_cotizacion,
+            ]);
+
+            return $compraModel;
+        });
+    }
+
+    public function approve(int|Compra $compra): Compra
+    {
+        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+
+        if ($compraModel->estadoTransaccion->descripcionET !== 'Cotizada') {
+            throw ValidationException::withMessages([
+                'compra' => 'Solo se pueden aprobar ordenes en estado Cotizada.',
+            ]);
+        }
+
+        $estadoAprobada = EstadoTransaccion::where('descripcionET', 'Aprobada')->first();
+
+        if (!$estadoAprobada) {
+            throw ValidationException::withMessages([
+                'estado' => 'No se encontro el estado Aprobada.',
+            ]);
+        }
+
+        $compraModel->update([
+            'estado_transaccion_id' => $estadoAprobada->id,
+            'fecha_aprobacion' => now(),
+        ]);
+
+        return $compraModel;
+    }
+
+    public function anular(int|Compra $compra): Compra
+    {
+        return DB::transaction(function () use ($compra) {
+            $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+
+            if ($compraModel->estadoTransaccion && $compraModel->estadoTransaccion->descripcionET === 'Anulado') {
+                throw ValidationException::withMessages([
+                    'compra' => 'La compra ya esta anulada.',
+                ]);
+            }
+
+            if ($compraModel->estadoTransaccion && in_array($compraModel->estadoTransaccion->descripcionET, ['Recibida', 'Recibido', 'Pagada', 'Pagado'])) {
+                throw ValidationException::withMessages([
+                    'compra' => 'No se puede anular una orden de compra que ya fue recibida o pagada. El stock e importes ya fueron procesados.',
+                ]);
+            }
+
+            $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
+
+            if (!$estadoAnulado) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Anulado.',
+                ]);
+            }
+
+            $compraModel->update([
+                'estado_transaccion_id' => $estadoAnulado->id,
+            ]);
+
+            return $compraModel;
+        });
+    }
 }

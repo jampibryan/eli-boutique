@@ -165,6 +165,12 @@ class CompraController extends Controller
 
     public function destroy(Compra $compra)
     {
+        $compra->loadMissing('estadoTransaccion');
+
+        if ($compra->estadoTransaccion && in_array($compra->estadoTransaccion->descripcionET, ['Recibida', 'Pagada'])) {
+            return redirect()->route('compras.index')->with('error', 'No se puede eliminar una orden de compra que ya fue recibida o pagada. El stock e importes ya fueron procesados.');
+        }
+
         $compra->delete();
 
         return redirect()->route('compras.index')->with('success', 'Compra eliminada con exito.');
@@ -177,45 +183,18 @@ class CompraController extends Controller
         return redirect()->route('compras.index')->with('success', 'Mercaderia recibida y stock actualizado. Ahora puede proceder a pagar al proveedor.');
     }
 
-    public function anularCompra($compraId)
+    public function anularCompra($compraId, CompraService $compraService)
     {
-        $compra = Compra::findOrFail($compraId);
+        $compraService->anular($compraId);
 
-        if ($compra->estadoTransaccion->descripcionET !== 'Anulado') {
-            $compra->anular();
-
-            return redirect()->route('compras.index')->with('success', 'Compra anulada correctamente.');
-        }
-
-        return redirect()->route('compras.index')->with('error', 'La compra ya esta anulada.');
+        return redirect()->route('compras.index')->with('success', 'Compra anulada correctamente.');
     }
 
-    public function enviarCompra($compraId)
+    public function enviarCompra($compraId, CompraService $compraService)
     {
-        $compra = Compra::with(['detalles.producto', 'detalles.talla', 'proveedor', 'comprobante', 'estadoTransaccion'])->findOrFail($compraId);
-
-        if ($compra->estadoTransaccion->descripcionET !== 'Borrador') {
-            return redirect()->route('compras.index')->with('error', 'Solo se pueden enviar ordenes en estado Borrador.');
-        }
-
-        $estadoEnviada = EstadoTransaccion::where('descripcionET', 'Enviada')->first();
-
-        $compra->update([
-            'estado_transaccion_id' => $estadoEnviada->id,
-            'fecha_envio' => now(),
-        ]);
+        $compraService->send($compraId);
 
         return redirect()->route('compras.index')->with('success', 'Orden marcada como enviada. Ya puede proceder a cotizar.');
-
-        /* TEMPORALMENTE DESHABILITADO - Email functionality
-        try {
-            Mail::to($compra->proveedor->emailProv)->send(new OrdenCompraEnviada($compra));
-            return redirect()->route('compras.index')->with('success', 'Orden enviada al proveedor por correo: ' . $compra->proveedor->emailProv);
-        } catch (\Exception $e) {
-            Log::error('Error al enviar email de orden de compra: ' . $e->getMessage());
-            return redirect()->route('compras.index')->with('error', 'Error al enviar el correo: ' . $e->getMessage());
-        }
-        */
     }
 
     public function mostrarCotizar($compraId)
@@ -229,11 +208,9 @@ class CompraController extends Controller
         return view('Compra.cotizar', compact('compra'));
     }
 
-    public function guardarCotizacion(Request $request, $compraId)
+    public function guardarCotizacion(Request $request, $compraId, CompraService $compraService)
     {
-        $compra = Compra::with('detalles.producto')->findOrFail($compraId);
-
-        $request->validate([
+        $validated = $request->validate([
             'precio_cotizado' => 'required|array',
             'precio_cotizado.*' => 'required|numeric|min:0',
             'notas_proveedor' => 'nullable|string',
@@ -241,51 +218,15 @@ class CompraController extends Controller
             'descuento' => 'nullable|numeric|min:0',
         ]);
 
-        $pdfPath = $compra->pdf_cotizacion;
         $uploadedPdfPath = null;
-
         if ($request->hasFile('pdf_cotizacion')) {
             $file = $request->file('pdf_cotizacion');
-            $filename = 'cotizacion_' . $compra->codigoCompra . '_' . time() . '.pdf';
+            $filename = 'cotizacion_' . $compraId . '_' . time() . '.pdf';
             $uploadedPdfPath = $file->storeAs('cotizaciones', $filename, 'public');
-            $pdfPath = $uploadedPdfPath;
         }
 
         try {
-            DB::transaction(function () use ($request, $compra, $pdfPath) {
-                $subtotal = 0;
-
-                foreach ($compra->detalles as $detalle) {
-                    $precioCotizado = $request->precio_cotizado[$detalle->id];
-                    $subtotalLinea = $precioCotizado * $detalle->cantidad;
-
-                    $detalle->update([
-                        'precio_cotizado' => $precioCotizado,
-                        'precio_final' => $precioCotizado,
-                        'subtotal_linea' => $subtotalLinea,
-                    ]);
-
-                    $subtotal += $subtotalLinea;
-                }
-
-                $descuento = $request->descuento ?? 0;
-                $subtotalConDescuento = $subtotal - $descuento;
-                $igv = $subtotalConDescuento * 0.18;
-                $total = $subtotalConDescuento + $igv;
-                $estadoCotizada = EstadoTransaccion::where('descripcionET', 'Cotizada')->first();
-
-                $compra->update([
-                    'estado_transaccion_id' => $estadoCotizada->id,
-                    'fecha_cotizacion' => now(),
-                    'subtotal' => $subtotal,
-                    'descuento' => $descuento,
-                    'igv' => $igv,
-                    'total' => $total,
-                    'condiciones_pago' => 'Pago contra entrega',
-                    'notas_proveedor' => $request->notas_proveedor,
-                    'pdf_cotizacion' => $pdfPath,
-                ]);
-            });
+            $compraService->saveQuote($compraId, $validated, $uploadedPdfPath);
         } catch (\Throwable $exception) {
             if ($uploadedPdfPath) {
                 Storage::disk('public')->delete($uploadedPdfPath);
@@ -297,20 +238,9 @@ class CompraController extends Controller
         return redirect()->route('compras.index')->with('success', 'Cotizacion guardada correctamente. Pago: Contra entrega');
     }
 
-    public function aprobarCompra($compraId)
+    public function aprobarCompra($compraId, CompraService $compraService)
     {
-        $compra = Compra::findOrFail($compraId);
-
-        if ($compra->estadoTransaccion->descripcionET !== 'Cotizada') {
-            return redirect()->route('compras.index')->with('error', 'Solo se pueden aprobar ordenes en estado Cotizada.');
-        }
-
-        $estadoAprobada = EstadoTransaccion::where('descripcionET', 'Aprobada')->first();
-
-        $compra->update([
-            'estado_transaccion_id' => $estadoAprobada->id,
-            'fecha_aprobacion' => now(),
-        ]);
+        $compraService->approve($compraId);
 
         return redirect()->route('compras.index')->with('success', 'Cotizacion aprobada correctamente.');
     }

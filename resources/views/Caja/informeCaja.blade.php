@@ -208,7 +208,7 @@
 <body>
     @php
         $hayGastos = $caja->egresoDiario > 0;
-        $fechaFormateada = \Carbon\Carbon::parse($caja->fecha);
+        $fechaFormateada = $caja->fecha_carbon;
         $diaSemana = $fechaFormateada->locale('es')->isoFormat('dddd');
         $fechaLarga = $fechaFormateada->format('d/m/Y');
     @endphp

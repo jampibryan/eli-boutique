@@ -33,8 +33,9 @@
 
         .logo-section {
             display: table-cell;
-            width: 15%;
+            width: 25%;
             vertical-align: middle;
+            text-align: left;
         }
 
         .logo-section img {
@@ -46,7 +47,7 @@
 
         .company-info {
             display: table-cell;
-            width: 55%;
+            width: 50%;
             text-align: center;
             vertical-align: middle;
         }
@@ -65,7 +66,7 @@
 
         .report-info {
             display: table-cell;
-            width: 30%;
+            width: 25%;
             text-align: right;
             vertical-align: middle;
             font-size: 9px;
@@ -314,7 +315,7 @@
             </div>
             <div class="report-info">
                 <p><strong>Reporte generado:</strong></p>
-                <p>{{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }}</p>
+                <p>{{ \Carbon\Carbon::now('America/Lima')->format('d/m/Y h:i A') }}</p>
                 <p><strong>Total productos:</strong> {{ $totalProductos }}</p>
             </div>
         </div>
@@ -375,11 +376,11 @@
                     @endphp
                     <tr>
                         <td style="font-weight: bold; color: #667eea;">{{ $producto->codigoP }}</td>
-                        <td style="text-align: left; padding-left: 8px;">{{ $producto->descripcionP }}</td>
+                        <td style="text-align: center;">{{ $producto->descripcionP }}</td>
                         <td>{{ $producto->productoGenero->descripcionPG ?? '-' }}</td>
                         <td>S/ {{ number_format($producto->precioP, 2) }}</td>
                         <td class="{{ $stockClass }}">{{ $stockProducto }}</td>
-                        <td style="text-align: left; padding-left: 6px;">
+                        <td style="text-align: center;">
                             @if ($producto->tallaStocks->count())
                                 @foreach ($producto->tallaStocks as $ts)
                                     <span class="talla-tag">{{ $ts->talla->descripcion ?? '-' }}: {{ $ts->stock }}</span>

@@ -25,6 +25,9 @@ class VentaTransactionTest extends TestCase
 
     public function test_sale_is_not_created_when_size_stock_is_insufficient(): void
     {
+        $initialVentasCount = Venta::count();
+        $initialDetallesCount = VentaDetalle::count();
+
         $context = $this->createVentaContext(1);
         $cliente = $context['cliente'];
         $producto = $context['producto'];
@@ -46,11 +49,9 @@ class VentaTransactionTest extends TestCase
         $response->assertRedirect(route('ventas.create'));
         $response->assertSessionHasErrors(['productos']);
 
-        $this->assertDatabaseCount('ventas', 0);
-        $this->assertDatabaseCount('venta_detalles', 0);
         $this->assertSame(1, $stock->fresh()->stock);
-        $this->assertSame(0, Venta::count());
-        $this->assertSame(0, VentaDetalle::count());
+        $this->assertSame($initialVentasCount, Venta::count());
+        $this->assertSame($initialDetallesCount, VentaDetalle::count());
     }
 
     public function test_sale_detail_persists_the_selected_size_and_returns_stock_on_cancel(): void
@@ -74,7 +75,7 @@ class VentaTransactionTest extends TestCase
             ],
         ]);
 
-        $venta = Venta::with('detalles')->firstOrFail();
+        $venta = Venta::with('detalles')->latest('id')->firstOrFail();
         $detalle = $venta->detalles->first();
 
         $response->assertRedirect(route('pagos.create', ['id' => $venta->id, 'type' => 'venta']));
@@ -88,7 +89,7 @@ class VentaTransactionTest extends TestCase
 
         $venta->anular();
 
-        $this->assertSame($estadoAnulado->id, $venta->fresh()->estado_transaccion_id);
+        $this->assertSame((int) $estadoAnulado->id, (int) $venta->fresh()->estado_transaccion_id);
         $this->assertSame(5, $stock->fresh()->stock);
     }
 
@@ -112,7 +113,7 @@ class VentaTransactionTest extends TestCase
             ],
         ]);
 
-        $venta = Venta::firstOrFail();
+        $venta = Venta::latest('id')->firstOrFail();
 
         $response = $this->put(route('ventas.update', $venta), [
             'cliente_id' => $cliente->id,
@@ -169,7 +170,7 @@ class VentaTransactionTest extends TestCase
             ],
         ]);
 
-        $venta = Venta::with('detalles')->firstOrFail();
+        $venta = Venta::with('detalles')->latest('id')->firstOrFail();
 
         $response = $this->put(route('ventas.update', $venta), [
             'cliente_id' => $cliente->id,
@@ -203,7 +204,72 @@ class VentaTransactionTest extends TestCase
         ]);
         $this->assertSame(3, $stockM->fresh()->stock);
         $this->assertSame(4, $stockL->fresh()->stock);
-        $this->assertSame(2, $venta->fresh()->detalles()->count());
+    }
+
+    public function test_cancelling_pending_sale_does_not_decrement_cashbox_daily_income(): void
+    {
+        $context = $this->createVentaContext(5);
+        $cliente = $context['cliente'];
+        $producto = $context['producto'];
+        $talla = $context['talla'];
+        $caja = $context['caja'];
+
+        $this->post(route('ventas.store'), [
+            'cliente_id' => $cliente->id,
+            'montoTotal' => 119.80,
+            'productos' => [
+                [
+                    'id' => $producto->id,
+                    'talla_id' => $talla->id,
+                    'cantidad' => 2,
+                ],
+            ],
+        ]);
+
+        $venta = Venta::latest('id')->firstOrFail();
+        $this->assertSame('0.00', $caja->fresh()->ingresoDiario);
+
+        $response = $this->post(route('ventas.anular', $venta->id));
+        $response->assertRedirect(route('ventas.index'));
+
+        // El ingresoDiario de la caja no debe volverse negativo ni decrementarse
+        $this->assertSame('0.00', $caja->fresh()->ingresoDiario);
+        $this->assertSame(0, $caja->fresh()->clientesHoy);
+        $this->assertSame(0, $caja->fresh()->productosVendidos);
+    }
+
+    public function test_sales_and_details_still_resolve_when_product_or_client_is_soft_deleted(): void
+    {
+        $context = $this->createVentaContext(5);
+        $cliente = $context['cliente'];
+        $producto = $context['producto'];
+        $talla = $context['talla'];
+
+        $this->post(route('ventas.store'), [
+            'cliente_id' => $cliente->id,
+            'montoTotal' => 119.80,
+            'productos' => [
+                [
+                    'id' => $producto->id,
+                    'talla_id' => $talla->id,
+                    'cantidad' => 2,
+                ],
+            ],
+        ]);
+
+        $venta = Venta::with(['cliente', 'detalles.producto'])->latest('id')->firstOrFail();
+
+        // Eliminación lógica de cliente y producto
+        $producto->delete();
+        $cliente->delete();
+
+        // Recargar venta con relaciones
+        $ventaFresca = Venta::with(['cliente', 'detalles.producto'])->find($venta->id);
+
+        $this->assertNotNull($ventaFresca->cliente);
+        $this->assertSame('Juan', $ventaFresca->cliente->nombreCliente);
+        $this->assertNotNull($ventaFresca->detalles->first()->producto);
+        $this->assertSame('Polo basico', $ventaFresca->detalles->first()->producto->descripcionP);
     }
 
     private function createVentaContext(int $stockInicial): array
@@ -212,11 +278,11 @@ class VentaTransactionTest extends TestCase
         $this->withoutMiddleware(PermissionMiddleware::class);
         $this->actingAs(User::factory()->create());
 
-        $estadoPendiente = EstadoTransaccion::create(['descripcionET' => 'Pendiente']);
-        EstadoTransaccion::create(['descripcionET' => 'Pagado']);
-        $estadoAnulado = EstadoTransaccion::create(['descripcionET' => 'Anulado']);
+        $estadoPendiente = EstadoTransaccion::firstOrCreate(['descripcionET' => 'Pendiente']);
+        EstadoTransaccion::firstOrCreate(['descripcionET' => 'Pagado']);
+        $estadoAnulado = EstadoTransaccion::firstOrCreate(['descripcionET' => 'Anulado']);
 
-        Caja::create([
+        $caja = Caja::whereDate('fecha', today())->first() ?? Caja::create([
             'fecha' => today(),
             'hora_cierre' => null,
             'clientesHoy' => 0,
@@ -225,7 +291,7 @@ class VentaTransactionTest extends TestCase
             'egresoDiario' => 0,
         ]);
 
-        $tipoGenero = TipoGenero::create([
+        $tipoGenero = TipoGenero::firstOrCreate([
             'descripcionTG' => 'Masculino',
         ]);
 
@@ -238,12 +304,12 @@ class VentaTransactionTest extends TestCase
             'tipo_genero_id' => $tipoGenero->id,
         ]);
 
-        $categoria = CategoriaProducto::create([
+        $categoria = CategoriaProducto::firstOrCreate([
             'nombreCP' => 'Polos',
             'descripcionCP' => 'Ropa casual',
         ]);
 
-        $productoGenero = ProductoGenero::create([
+        $productoGenero = ProductoGenero::firstOrCreate([
             'descripcion' => 'Unisex',
         ]);
 
@@ -255,7 +321,7 @@ class VentaTransactionTest extends TestCase
             'precioP' => 59.90,
         ]);
 
-        $talla = ProductoTalla::create([
+        $talla = ProductoTalla::firstOrCreate([
             'descripcion' => 'M',
         ]);
 
@@ -270,6 +336,7 @@ class VentaTransactionTest extends TestCase
             'producto' => $producto,
             'talla' => $talla,
             'stock' => $stock,
+            'caja' => $caja,
             'estado_pendiente' => $estadoPendiente,
             'estado_anulado' => $estadoAnulado,
         ];

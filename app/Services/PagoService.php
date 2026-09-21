@@ -56,7 +56,28 @@ class PagoService
             ]);
         }
 
+        $cajaHoy = Caja::whereDate('fecha', now()->toDateString())
+            ->lockForUpdate()
+            ->first();
+
+        if (!$cajaHoy) {
+            throw ValidationException::withMessages([
+                'caja' => 'No se puede registrar el pago. Debes abrir la caja primero.',
+            ]);
+        }
+
+        if ($cajaHoy->hora_cierre) {
+            throw ValidationException::withMessages([
+                'caja' => 'No se puede registrar el pago. La caja del dia ya esta cerrada.',
+            ]);
+        }
+
+        if ($venta->caja_id !== $cajaHoy->id) {
+            $venta->caja_id = $cajaHoy->id;
+        }
+
         $venta->update([
+            'caja_id' => $venta->caja_id,
             'estado_transaccion_id' => $estadoPagado->id,
         ]);
 
@@ -93,6 +114,22 @@ class PagoService
             ]);
         }
 
+        $cajaHoy = Caja::whereDate('fecha', now()->toDateString())
+            ->lockForUpdate()
+            ->first();
+
+        if (!$cajaHoy) {
+            throw ValidationException::withMessages([
+                'caja' => 'No se puede registrar el pago de la compra. Debes abrir la caja primero.',
+            ]);
+        }
+
+        if ($cajaHoy->hora_cierre) {
+            throw ValidationException::withMessages([
+                'caja' => 'No se puede registrar el pago de la compra. La caja del dia ya esta cerrada.',
+            ]);
+        }
+
         $pago = Pago::create([
             'venta_id' => null,
             'compra_id' => $compra->id,
@@ -106,12 +143,6 @@ class PagoService
             'estado_transaccion_id' => $estadoPagada->id,
         ]);
 
-        $cajaHoy = Caja::whereDate('fecha', now()->toDateString())
-            ->lockForUpdate()
-            ->first();
-
-        if ($cajaHoy) {
-            $cajaHoy->increment('egresoDiario', $pago->importe);
-        }
+        $cajaHoy->increment('egresoDiario', $pago->importe);
     }
 }

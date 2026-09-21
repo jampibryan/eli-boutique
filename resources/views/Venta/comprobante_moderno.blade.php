@@ -483,25 +483,6 @@
                 </tr>
             </table>
 
-            @if ($venta->documentoSunat && $venta->documentoSunat->signature_hash)
-                <div style="margin-top: 15px; border: 1px dashed #d9dee8; padding: 10px; border-radius: 8px; font-size: 10px; color: #5b6472;">
-                    <table style="width: 100%; border-collapse: collapse; border: none;">
-                        <tr style="border: none;">
-                            <td style="vertical-align: middle; width: 80%; border: none; padding: 0;">
-                                <strong>Código Hash:</strong> {{ $venta->documentoSunat->signature_hash }}<br>
-                                <span style="font-size: 9px; line-height: 1.3;">Representación impresa de la {{ $isFactura ? 'Factura Electrónica' : 'Boleta de Venta Electrónica' }}.<br>
-                                Autorizado mediante resolución de SUNAT. Consulte su validez en el portal oficial.</span>
-                            </td>
-                            <td style="vertical-align: middle; text-align: right; width: 20%; border: none; padding: 0;">
-                                <div style="font-weight: bold; border: 1px solid #D4AF37; color: #D4AF37; display: inline-block; padding: 5px 8px; border-radius: 4px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    SUNAT ACEPTADO
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            @endif
-
             <div class="footer">
                 Gracias por su preferencia.<br>
                 Eli Boutique - comprobante emitido desde el sistema interno.

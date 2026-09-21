@@ -99,7 +99,7 @@ class VentaController extends Controller
 
     public function pdfComprobante($id)
     {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'documentoSunat'])
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante'])
             ->findOrFail($id);
 
         $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
@@ -119,7 +119,7 @@ class VentaController extends Controller
 
     public function index(Request $request)
     {
-        $query = Venta::with(['cliente', 'estadoTransaccion', 'detalles.talla', 'pago']);
+        $query = Venta::with(['cliente', 'estadoTransaccion', 'detalles.talla', 'pago.comprobante']);
 
         if ($request->filled('search')) {
             $query->where('codigoVenta', 'like', "%{$request->search}%");
@@ -244,6 +244,12 @@ class VentaController extends Controller
 
     public function destroy(Venta $venta)
     {
+        $venta->loadMissing('estadoTransaccion');
+
+        if ($venta->estadoTransaccion && $venta->estadoTransaccion->descripcionET === 'Pagado') {
+            return redirect()->route('ventas.index')->with('error', 'No se puede eliminar una venta que ya fue pagada. Debe anularse mediante el flujo oficial.');
+        }
+
         $venta->delete();
 
         return redirect()->route('ventas.index')->with('success', 'Venta eliminada con exito.');
@@ -269,16 +275,10 @@ class VentaController extends Controller
         ]);
     }
 
-    public function anularVenta($id)
+    public function anularVenta($id, VentaService $ventaService)
     {
-        $venta = Venta::findOrFail($id);
+        $ventaService->anular($id);
 
-        if ($venta->estadoTransaccion->descripcionET !== 'Anulado') {
-            $venta->anular();
-
-            return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
-        }
-
-        return redirect()->route('ventas.index')->with('error', 'La venta ya esta anulada.');
+        return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
     }
 }

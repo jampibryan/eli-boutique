@@ -50,7 +50,11 @@ class Producto extends Model
     // Helper para obtener stock total del producto (suma de todas las tallas)
     public function getStockTotalAttribute()
     {
-        return $this->tallaStocks()->sum('stock');
+        if ($this->relationLoaded('tallaStocks')) {
+            return (int) $this->tallaStocks->sum('stock');
+        }
+
+        return (int) $this->tallaStocks()->sum('stock');
     }
 
 }

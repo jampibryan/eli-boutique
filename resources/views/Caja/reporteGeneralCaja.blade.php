@@ -367,7 +367,7 @@
                     @endphp
                     <tr>
                         <td style="font-weight:bold; color:#667eea;">{{ $caja->codigoCaja }}</td>
-                        <td>{{ \Carbon\Carbon::parse($caja->fecha)->format('d/m/Y') }}</td>
+                        <td>{{ $caja->fecha_formateada }}</td>
                         <td>{{ $caja->clientesHoy }}</td>
                         <td>{{ $caja->productosVendidos }}</td>
                         <td style="color:#28a745; font-weight:bold;">S/ {{ number_format($caja->ingresoDiario, 2) }}

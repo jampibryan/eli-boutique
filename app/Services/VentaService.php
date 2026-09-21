@@ -245,6 +245,59 @@ class VentaService
         });
     }
 
+    public function anular(int|Venta $venta): Venta
+    {
+        return DB::transaction(function () use ($venta) {
+            $ventaModel = ($venta instanceof Venta) ? $venta : Venta::findOrFail($venta);
+            $ventaModel->loadMissing(['estadoTransaccion', 'detalles', 'caja']);
+
+            if ($ventaModel->estadoTransaccion && $ventaModel->estadoTransaccion->descripcionET === 'Anulado') {
+                throw ValidationException::withMessages([
+                    'venta' => 'La venta ya esta anulada.',
+                ]);
+            }
+
+            $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
+
+            if (!$estadoAnulado) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Anulado.',
+                ]);
+            }
+
+            // Bloquear los registros de ProductoTallaStock de los detalles
+            $detallesConTalla = $ventaModel->detalles->filter(fn ($d) => !empty($d->producto_talla_id));
+            $productoIds = $detallesConTalla->pluck('producto_id')->unique()->values();
+            $tallaIds = $detallesConTalla->pluck('producto_talla_id')->unique()->values();
+
+            $stocksPorTalla = ProductoTallaStock::whereIn('producto_id', $productoIds)
+                ->whereIn('producto_talla_id', $tallaIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn ($stock) => $stock->producto_id . ':' . $stock->producto_talla_id);
+
+            // Si la venta estaba pagada, bloquear la caja correspondiente
+            if ($ventaModel->caja_id && $ventaModel->estadoTransaccion && $ventaModel->estadoTransaccion->descripcionET === 'Pagado') {
+                Caja::where('id', $ventaModel->caja_id)->lockForUpdate()->first();
+            }
+
+            // Cambiar el estado a Anulado (el evento booted updated del modelo Venta ajustará la caja de forma segura dentro de la transacción)
+            $ventaModel->update([
+                'estado_transaccion_id' => $estadoAnulado->id,
+            ]);
+
+            // Restituir el stock de cada talla
+            foreach ($detallesConTalla as $detalle) {
+                $key = $detalle->producto_id . ':' . $detalle->producto_talla_id;
+                if (isset($stocksPorTalla[$key])) {
+                    $stocksPorTalla[$key]->increment('stock', $detalle->cantidad);
+                }
+            }
+
+            return $ventaModel;
+        });
+    }
+
     private function normalizarLineas(array $lineas): array
     {
         $lineasNormalizadas = [];

@@ -15,13 +15,30 @@
                     <i class="fas fa-store" style="color: #D4AF37;"></i> Catálogo de Productos
                 </h4>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
                 <a href="{{ route('carrito.ver') }}" class="btn btn-boutique-gold">
                     <i class="fas fa-shopping-cart"></i> Carrito ({{ count(session('carrito', [])) }})
                 </a>
-                <a href="{{ route('productos.pdf') }}" target="_blank" class="btn btn-boutique-dark">
-                    <i class="fas fa-file-pdf"></i> Generar Reporte
-                </a>
+                <div class="dropdown">
+                    <button class="btn btn-boutique-dark dropdown-toggle" type="button" id="dropdownReporte" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-invoice"></i> Generar Reporte
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownReporte">
+                        <li>
+                            <a class="dropdown-item py-2 px-3 d-flex align-items-center" href="{{ route('productos.pdf') }}" target="_blank">
+                                <i class="fas fa-file-pdf text-danger me-2 mr-2" style="font-size: 1.15rem; width: 22px;"></i>
+                                <span class="fw-semibold">Descargar en PDF</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item py-2 px-3 d-flex align-items-center" href="{{ route('productos.excel') }}">
+                                <i class="fas fa-file-excel text-success me-2 mr-2" style="font-size: 1.15rem; width: 22px;"></i>
+                                <span class="fw-semibold">Descargar en Excel</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -359,11 +376,37 @@
             transition: all 0.3s ease;
         }
 
-        .btn-boutique-dark:hover {
+        .btn-boutique-dark:hover,
+        .btn-boutique-dark:focus,
+        .btn-boutique-dark:active,
+        .show > .btn-boutique-dark.dropdown-toggle {
             background: #3d3d3d;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(44, 44, 44, 0.3);
             color: #F4D03F;
+            border-color: #D4AF37;
+        }
+
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+            border: 1px solid rgba(212, 175, 55, 0.25) !important;
+            padding: 6px;
+            min-width: 215px;
+            z-index: 1050;
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            font-weight: 500;
+            color: #2C2C2C;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f6f0;
+            color: #1a1a1a;
+            transform: translateX(3px);
         }
 
         /* === Card de Producto Premium === */

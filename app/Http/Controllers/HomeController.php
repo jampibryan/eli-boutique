@@ -32,7 +32,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Verificar el estado de la caja hoy
+        // Verificar el estado de la caja hoy (en tiempo real)
         $cajaHoy = Caja::whereDate('fecha', now()->toDateString())->first();
         
         // Determinar estados
@@ -40,79 +40,89 @@ class HomeController extends Controller
         $cajaAbierta = $cajaHoy && empty($cajaHoy->hora_cierre);
         $cajaCerrada = $cajaHoy && !empty($cajaHoy->hora_cierre);
 
-        // Contar la cantidad de clientes únicos que realizaron compras hoy
-        $clientesCount = Venta::whereDate('created_at', now()->toDateString())
-            ->whereHas('estadoTransaccion', function ($query) {
-                $query->where('descripcionET', 'Pagado');
-            })
-            ->distinct('cliente_id')
-            ->count('cliente_id');
+        // Métricas financieras y productos (cacheadas por 45s para navegación ultra rápida sin saturar WAN)
+        $dashboardStats = \Illuminate\Support\Facades\Cache::remember('dashboard_stats_' . now()->toDateString(), 45, function () {
+            // Contar clientes únicos con compras hoy
+            $clientesCount = Venta::whereDate('created_at', now()->toDateString())
+                ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                ->distinct('cliente_id')
+                ->count('cliente_id');
 
-        // Contar la cantidad total de productos vendidos hoy
-        $productosCount = VentaDetalle::whereHas('venta', function ($query) {
-                $query->whereDate('created_at', now()->toDateString())
-                    ->whereHas('estadoTransaccion', function ($subQuery) {
-                        $subQuery->where('descripcionET', 'Pagado');
-                    });
-            })
-            ->sum('cantidad'); // Suma la cantidad de productos vendidos hoy
+            // Total productos vendidos hoy
+            $productosCount = (int) VentaDetalle::whereHas('venta', function ($query) {
+                    $query->whereDate('created_at', now()->toDateString())
+                        ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'));
+                })
+                ->sum('cantidad');
 
-        // Obtener el ingreso total de las ventas realizadas hoy con estado pagado
-        $ingresoDiario = Venta::whereDate('created_at', now()->toDateString())
-            ->whereHas('estadoTransaccion', function ($query) {
-                $query->where('descripcionET', 'Pagado');
-            })                    
-            ->sum('montoTotal');
+            // Ingreso total de ventas pagadas hoy
+            $ingresoDiario = (float) Venta::whereDate('created_at', now()->toDateString())
+                ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                ->sum('montoTotal');
 
-        // Obtener los IDs de estados "Recibida" y "Pagada" para compras
-        $estadosGastos = EstadoTransaccion::whereIn('descripcionET', ['Recibida', 'Pagada'])->pluck('id');
+            // Estados de gastos para compras
+            $estadosGastos = EstadoTransaccion::whereIn('descripcionET', ['Recibida', 'Pagada'])->pluck('id');
 
-        // Contar compras recibidas/pagadas hoy
-        $comprasRecibidasCount = Compra::whereDate('updated_at', now()->toDateString())
-            ->whereIn('estado_transaccion_id', $estadosGastos)
-            ->count();
+            // Compras recibidas/pagadas hoy
+            $comprasRecibidasCount = Compra::whereDate('updated_at', now()->toDateString())
+                ->whereIn('estado_transaccion_id', $estadosGastos)
+                ->count();
 
-        // Calcular gastos del día (compras en estado Recibida o Pagada)
-        $gastosDiario = Compra::whereDate('updated_at', now()->toDateString())
-            ->whereIn('estado_transaccion_id', $estadosGastos)
-            ->sum('total');
+            // Gastos del día
+            $gastosDiario = (float) Compra::whereDate('updated_at', now()->toDateString())
+                ->whereIn('estado_transaccion_id', $estadosGastos)
+                ->sum('total');
 
-        // Calcular balance del día (Ingresos - Gastos)
-        $balanceDiario = $ingresoDiario - $gastosDiario;
+            // Balance del día
+            $balanceDiario = $ingresoDiario - $gastosDiario;
 
-        // Obtener productos con stock total mínimo (15 o menos sumando todas las tallas)
-        $productosStockMinimo = Producto::with('tallaStocks')
-            ->get()
-            ->map(function($producto) {
-                $producto->stockP = $producto->tallaStocks->sum('stock');
-                return $producto;
-            })
-            ->filter(function($producto) {
-                return $producto->stockP <= 15;
-            })
-            ->values();
+            // Top 5 productos más vendidos
+            $productosMasVendidos = VentaDetalle::with('producto')
+                ->selectRaw('producto_id, SUM(cantidad) as total_vendido')
+                ->whereHas('venta.estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
+                ->groupBy('producto_id')
+                ->orderBy('total_vendido', 'desc')
+                ->take(5)
+                ->get();
 
-        // Obtener los 5 productos más vendidos
-        $productosMasVendidos = VentaDetalle::with('producto')
-            ->selectRaw('producto_id, SUM(cantidad) as total_vendido')
-            ->whereHas('venta.estadoTransaccion', function ($query) {
-                $query->where('descripcionET', 'Pagado');
-            })
-            ->groupBy('producto_id')
-            ->orderBy('total_vendido', 'desc')
-            ->take(5)
-            ->get();
+            // Cargar productos y stock una sola vez en lugar de dos veces
+            $productosConStock = Producto::withoutTrashed()
+                ->with('tallaStocks')
+                ->get()
+                ->map(function ($producto) {
+                    $producto->stockP = (int) $producto->tallaStocks->sum('stock');
+                    return $producto;
+                });
 
-        // Obtener la lista de productos con su stock actual (suma de todas las tallas)
-        $productosStockActual = Producto::with('tallaStocks')
-            ->get()
-            ->map(function($producto) {
-                return [
+            // Productos con stock total mínimo (15 o menos)
+            $productosStockMinimo = $productosConStock
+                ->filter(fn($producto) => $producto->stockP <= 15)
+                ->values();
+
+            // Stock actual de productos
+            $productosStockActual = $productosConStock
+                ->map(fn($producto) => [
                     'descripcionP' => $producto->descripcionP,
-                    'stockP' => $producto->tallaStocks->sum('stock')
-                ];
-            });
+                    'stockP' => $producto->stockP,
+                ])
+                ->values();
 
-        return view('home', compact('cajaAbierta', 'cajaCerrada', 'cajaSinIniciar', 'clientesCount', 'productosCount', 'ingresoDiario', 'comprasRecibidasCount', 'gastosDiario', 'balanceDiario', 'productosStockMinimo', 'productosMasVendidos', 'productosStockActual'));
+            return compact(
+                'clientesCount',
+                'productosCount',
+                'ingresoDiario',
+                'comprasRecibidasCount',
+                'gastosDiario',
+                'balanceDiario',
+                'productosStockMinimo',
+                'productosMasVendidos',
+                'productosStockActual'
+            );
+        });
+
+        return view('home', array_merge(
+            compact('cajaAbierta', 'cajaCerrada', 'cajaSinIniciar'),
+            $dashboardStats
+        ));
     }
 }

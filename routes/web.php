@@ -45,7 +45,7 @@ Route::middleware([
 });
 
 
-Auth::routes(['register' => false]);
+Auth::routes(['register' => false, 'reset' => false, 'confirm' => false]);
 
 Route::middleware([
     'auth',
@@ -79,6 +79,7 @@ Route::middleware([
 
     // PRODUCTOS
     Route::get('productos/reporte', [ProductoController::class, 'pdfProductos'])->name('productos.pdf');
+    Route::get('productos/excel', [ProductoController::class, 'excelProductos'])->name('productos.excel');
     Route::resource('productos', ProductoController::class);
 
     // CARRITO

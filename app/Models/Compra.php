@@ -64,7 +64,7 @@ class Compra extends Model
     // Relación de una compra con un proveedor
     public function proveedor()
     {
-        return $this->belongsTo(Proveedor::class);
+        return $this->belongsTo(Proveedor::class)->withTrashed();
     }
 
     // Relación con comprobante
@@ -82,11 +82,6 @@ class Compra extends Model
 
     public function anular()
     {
-        // Cambiar el estado de la compra a "Anulado"
-        $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
-        if ($estadoAnulado) {
-            $this->estado_transaccion_id = $estadoAnulado->id;
-            $this->save();
-        }
+        return app(\App\Services\CompraService::class)->anular($this);
     }
 }
