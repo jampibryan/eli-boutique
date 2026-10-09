@@ -9,6 +9,7 @@ use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 class CajaController extends Controller
 {
@@ -128,6 +129,14 @@ class CajaController extends Controller
             'egresoDiario' => 0.00,
         ]);
 
+        Log::info('Caja diaria abierta exitosamente', [
+            'caja_id' => $caja->id,
+            'codigo_caja' => $caja->codigoCaja,
+            'fecha' => $fechaHoy,
+            'usuario_id' => auth()->id(),
+            'timestamp_pet' => now()->toDateTimeString(),
+        ]);
+
         return redirect()->back()->with('success', 'Caja abierta con éxito. Código de caja: ' . $caja->codigoCaja);
     }
 
@@ -146,6 +155,18 @@ class CajaController extends Controller
         // Actualizar datos de cierre
         $caja->update([
             'hora_cierre' => now()->format('H:i:s'),
+        ]);
+
+        Log::info('Caja diaria cerrada exitosamente', [
+            'caja_id' => $caja->id,
+            'codigo_caja' => $caja->codigoCaja,
+            'hora_cierre' => $caja->hora_cierre,
+            'ingreso_diario' => $caja->ingresoDiario,
+            'egreso_diario' => $caja->egresoDiario,
+            'clientes_hoy' => $caja->clientesHoy,
+            'productos_vendidos' => $caja->productosVendidos,
+            'usuario_id' => auth()->id(),
+            'timestamp_pet' => now()->toDateTimeString(),
         ]);
 
         return redirect()->route('home')->with('success', 'Caja cerrada correctamente.');

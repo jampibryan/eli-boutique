@@ -41,40 +41,38 @@ class HomeController extends Controller
         $cajaCerrada = $cajaHoy && !empty($cajaHoy->hora_cierre);
 
         // Métricas financieras y productos (cacheadas por 45s para navegación ultra rápida sin saturar WAN)
-        $dashboardStats = \Illuminate\Support\Facades\Cache::remember('dashboard_stats_' . now()->toDateString(), 45, function () {
-            // Contar clientes únicos con compras hoy
-            $clientesCount = Venta::whereDate('created_at', now()->toDateString())
+        $dashboardStats = \Illuminate\Support\Facades\Cache::remember('dashboard_stats_' . now()->toDateString(), 45, function () use ($cajaHoy) {
+            // Contar clientes únicos con compras hoy (SSOT: cajaHoy->clientesHoy)
+            $clientesCount = $cajaHoy ? (int) $cajaHoy->clientesHoy : (int) Venta::whereDate('created_at', now()->toDateString())
                 ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
                 ->distinct('cliente_id')
                 ->count('cliente_id');
 
-            // Total productos vendidos hoy
-            $productosCount = (int) VentaDetalle::whereHas('venta', function ($query) {
+            // Total productos vendidos hoy (SSOT: cajaHoy->productosVendidos)
+            $productosCount = $cajaHoy ? (int) $cajaHoy->productosVendidos : (int) VentaDetalle::whereHas('venta', function ($query) {
                     $query->whereDate('created_at', now()->toDateString())
                         ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'));
                 })
                 ->sum('cantidad');
 
-            // Ingreso total de ventas pagadas hoy
-            $ingresoDiario = (float) Venta::whereDate('created_at', now()->toDateString())
+            // Ingreso total de ventas pagadas hoy (SSOT: cajas.ingresoDiario)
+            $ingresoDiario = $cajaHoy ? (float) $cajaHoy->ingresoDiario : (float) Venta::whereDate('created_at', now()->toDateString())
                 ->whereHas('estadoTransaccion', fn($q) => $q->where('descripcionET', 'Pagado'))
                 ->sum('montoTotal');
 
-            // Estados de gastos para compras
+            // Gastos reales de caja del día por compras pagadas (SSOT: cajas.egresoDiario)
+            $gastosDiario = $cajaHoy ? (float) $cajaHoy->egresoDiario : 0.0;
+
+            // Balance neto del día en caja
+            $balanceDiario = $ingresoDiario - $gastosDiario;
+
+            // Estados de recepción para compras
             $estadosGastos = EstadoTransaccion::whereIn('descripcionET', ['Recibida', 'Pagada'])->pluck('id');
 
             // Compras recibidas/pagadas hoy
             $comprasRecibidasCount = Compra::whereDate('updated_at', now()->toDateString())
                 ->whereIn('estado_transaccion_id', $estadosGastos)
                 ->count();
-
-            // Gastos del día
-            $gastosDiario = (float) Compra::whereDate('updated_at', now()->toDateString())
-                ->whereIn('estado_transaccion_id', $estadosGastos)
-                ->sum('total');
-
-            // Balance del día
-            $balanceDiario = $ingresoDiario - $gastosDiario;
 
             // Top 5 productos más vendidos
             $productosMasVendidos = VentaDetalle::with('producto')

@@ -9,6 +9,13 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+    <!-- Favicon Eli Boutique -->
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicons/favicon-32x32.png') }}" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicons/favicon-16x16.png') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-icon-180x180.png') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('img/logo_eli_boutique.png') }}" />
+
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">

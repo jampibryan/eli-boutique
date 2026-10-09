@@ -8,6 +8,7 @@ use App\Models\CompraDetalle;
 use App\Models\EstadoTransaccion;
 use App\Models\ProductoTallaStock;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class CompraService
@@ -130,6 +131,15 @@ class CompraService
                     'stock' => $detalle->cantidad,
                 ]);
             }
+
+            Log::info('Mercadería de orden de compra recibida e ingresada al stock por tallas', [
+                'compra_id' => $compra->id,
+                'codigo_compra' => $compra->codigoCompra,
+                'proveedor_id' => $compra->proveedor_id,
+                'total_prendas' => $compra->detalles->sum('cantidad'),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
 
             return $compra;
         });
@@ -268,6 +278,14 @@ class CompraService
 
             $compraModel->update([
                 'estado_transaccion_id' => $estadoAnulado->id,
+            ]);
+
+            Log::warning('Orden de compra anulada oficialmente (Trazabilidad SSOT)', [
+                'compra_id' => $compraModel->id,
+                'codigo_compra' => $compraModel->codigoCompra,
+                'proveedor_id' => $compraModel->proveedor_id,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
             ]);
 
             return $compraModel;

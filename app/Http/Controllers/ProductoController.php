@@ -156,9 +156,9 @@ class ProductoController extends Controller
             $producto->imagenP = '/img/productos/' . $filename;
         }
 
-        $producto->update($request->only(['codigoP', 'categoria_producto_id', 'producto_genero_id', 'producto_talla_id', 'descripcionP', 'precioP', 'stockP']));
+        $producto->update($request->only(['codigoP', 'categoria_producto_id', 'producto_genero_id', 'descripcionP', 'precioP']));
 
-        return redirect()->route('productos.index');
+        return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente.');
     }
 
 

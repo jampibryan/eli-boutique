@@ -171,7 +171,21 @@ class CompraController extends Controller
             return redirect()->route('compras.index')->with('error', 'No se puede eliminar una orden de compra que ya fue recibida o pagada. El stock e importes ya fueron procesados.');
         }
 
-        $compra->delete();
+        if ($compra->estadoTransaccion && $compra->estadoTransaccion->descripcionET === 'Anulado') {
+            return redirect()->route('compras.index')->with('error', 'Una orden de compra anulada no puede eliminarse físicamente; debe preservarse en el historial para auditoría contable.');
+        }
+
+        DB::transaction(function () use ($compra) {
+            $codigo = $compra->codigoCompra;
+            $compra->delete();
+
+            Log::info('Orden de compra en borrador descartada', [
+                'compra_id' => $compra->id,
+                'codigo_compra' => $codigo,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+        });
 
         return redirect()->route('compras.index')->with('success', 'Compra eliminada con exito.');
     }

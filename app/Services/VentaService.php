@@ -10,6 +10,7 @@ use App\Models\ProductoTallaStock;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class VentaService
@@ -120,6 +121,17 @@ class VentaService
 
                 $detalleVenta['talla_stock']->decrement('stock', $detalleVenta['cantidad']);
             }
+
+            Log::info('Venta creada en estado Pendiente (Reserva de stock por tallas)', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $venta->codigoVenta,
+                'cliente_id' => $venta->cliente_id,
+                'caja_id' => $venta->caja_id,
+                'monto_total' => $venta->montoTotal,
+                'total_lineas' => count($detallesVenta),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
 
             return $venta;
         });
@@ -293,6 +305,16 @@ class VentaService
                     $stocksPorTalla[$key]->increment('stock', $detalle->cantidad);
                 }
             }
+
+            Log::warning('Venta anulada oficialmente (Reversión SSOT ejecutada)', [
+                'venta_id' => $ventaModel->id,
+                'codigo_venta' => $ventaModel->codigoVenta,
+                'monto_total' => $ventaModel->montoTotal,
+                'caja_id' => $ventaModel->caja_id,
+                'prendas_restituidas' => $detallesConTalla->sum('cantidad'),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
 
             return $ventaModel;
         });

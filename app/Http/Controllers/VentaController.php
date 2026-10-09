@@ -12,6 +12,8 @@ use App\Models\Venta;
 use App\Services\VentaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
 {
@@ -250,7 +252,21 @@ class VentaController extends Controller
             return redirect()->route('ventas.index')->with('error', 'No se puede eliminar una venta que ya fue pagada. Debe anularse mediante el flujo oficial.');
         }
 
-        $venta->delete();
+        if ($venta->estadoTransaccion && $venta->estadoTransaccion->descripcionET === 'Anulado') {
+            return redirect()->route('ventas.index')->with('error', 'Una venta anulada no puede eliminarse físicamente; debe preservarse en el historial para auditoría contable.');
+        }
+
+        DB::transaction(function () use ($venta) {
+            $codigo = $venta->codigoVenta;
+            $venta->delete();
+
+            Log::info('Venta en estado Pendiente descartada y stock restituido', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $codigo,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+        });
 
         return redirect()->route('ventas.index')->with('success', 'Venta eliminada con exito.');
     }

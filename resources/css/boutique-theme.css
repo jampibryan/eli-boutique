@@ -45,8 +45,12 @@
 }
 
 /* ========================================
-   BASE GLOBAL
+   BASE GLOBAL (UI Scaling / Factor de Escala 90%)
    ======================================== */
+
+html {
+    zoom: 0.9;
+}
 
 html, body {
     font-family: var(--font-secondary);
@@ -222,14 +226,20 @@ body:not(.sidebar-collapse) .main-footer {
     border: 2px solid var(--color-gold);
 }
 
+.main-header .user-menu {
+    margin-right: 1.25rem;
+}
+
 .user-menu-toggle {
     display: flex !important;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.65rem;
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
-    min-width: 148px;
-    justify-content: flex-end;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    min-width: auto;
+    justify-content: flex-start;
 }
 
 .user-mini-avatar {
@@ -245,15 +255,16 @@ body:not(.sidebar-collapse) .main-footer {
     font-weight: 700;
     letter-spacing: 0.08em;
     box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
 }
 
 .user-identity-compact {
     display: inline-flex;
     flex-direction: column;
-    line-height: 1.05;
-    width: 90px;
-    min-width: 90px;
-    max-width: 90px;
+    line-height: 1.15;
+    min-width: 125px;
+    max-width: 180px;
+    width: auto;
     overflow: hidden;
 }
 
@@ -268,9 +279,9 @@ body:not(.sidebar-collapse) .main-footer {
 
 .user-role {
     color: var(--color-gold-dark);
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -1050,6 +1061,10 @@ canvas {
     .dashboard-user-panel {
         width: 100%;
         min-width: 0;
+    }
+
+    .main-header .user-menu {
+        margin-right: 0.5rem;
     }
 
     .user-role {

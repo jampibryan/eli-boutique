@@ -8,6 +8,7 @@ use App\Models\EstadoTransaccion;
 use App\Models\Pago;
 use App\Models\Venta;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class PagoService
@@ -76,17 +77,40 @@ class PagoService
             $venta->caja_id = $cajaHoy->id;
         }
 
-        $venta->update([
+        $updateData = [
             'caja_id' => $venta->caja_id,
             'estado_transaccion_id' => $estadoPagado->id,
-        ]);
+        ];
 
-        Pago::create([
+        if (!empty($validated['ruc_factura'])) {
+            $updateData['ruc_factura'] = $validated['ruc_factura'];
+        }
+
+        if (!empty($validated['razon_social_factura'])) {
+            $updateData['razon_social_factura'] = $validated['razon_social_factura'];
+        }
+
+        $venta->update($updateData);
+
+        $pago = Pago::create([
             'venta_id' => $venta->id,
             'compra_id' => null,
             'comprobante_id' => $validated['comprobante_id'],
             'importe' => $validated['importe'],
             'vuelto' => $vuelto,
+        ]);
+
+        Log::info('Pago de venta registrado exitosamente (SSOT Pagado)', [
+            'venta_id' => $venta->id,
+            'codigo_venta' => $venta->codigoVenta,
+            'caja_id' => $cajaHoy->id,
+            'importe' => $validated['importe'],
+            'vuelto' => $vuelto,
+            'monto_total' => $venta->montoTotal,
+            'es_factura' => !empty($validated['ruc_factura']),
+            'ruc' => $validated['ruc_factura'] ?? null,
+            'usuario_id' => auth()->id(),
+            'timestamp_pet' => now()->toDateTimeString(),
         ]);
     }
 
@@ -144,5 +168,14 @@ class PagoService
         ]);
 
         $cajaHoy->increment('egresoDiario', $pago->importe);
+
+        Log::info('Pago de orden de compra registrado exitosamente (SSOT Pagada)', [
+            'compra_id' => $compra->id,
+            'codigo_compra' => $compra->codigoCompra,
+            'caja_id' => $cajaHoy->id,
+            'importe' => $pago->importe,
+            'usuario_id' => auth()->id(),
+            'timestamp_pet' => now()->toDateTimeString(),
+        ]);
     }
 }

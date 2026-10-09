@@ -53,7 +53,7 @@ class PagoController extends Controller
             $esFactura = ($comprobante && strcasecmp($comprobante->descripcionCOM, 'Factura') === 0);
 
             if ($esFactura) {
-                $request->validate([
+                $facturaData = $request->validate([
                     'ruc_factura' => 'required|regex:/^\d{11}$/',
                     'razon_social_factura' => 'required|string|max:255',
                 ], [
@@ -61,6 +61,9 @@ class PagoController extends Controller
                     'ruc_factura.regex' => 'El RUC debe tener exactamente 11 dígitos.',
                     'razon_social_factura.required' => 'La Razón Social es obligatoria para emitir una Factura.',
                 ]);
+
+                $validated['ruc_factura'] = $facturaData['ruc_factura'];
+                $validated['razon_social_factura'] = $facturaData['razon_social_factura'];
             }
         }
 
@@ -69,17 +72,6 @@ class PagoController extends Controller
         if ($type === 'venta') {
             session()->forget('carrito');
             session()->forget('venta_cliente');
-
-            // Guardar RUC y Razón Social en la venta si es Factura
-            $venta = Venta::find($ventaId);
-            if ($venta) {
-                if ($esFactura) {
-                    $venta->update([
-                        'ruc_factura' => $request->ruc_factura,
-                        'razon_social_factura' => $request->razon_social_factura,
-                    ]);
-                }
-            }
         }
 
         $redirectRoute = $type === 'venta' ? 'ventas.index' : 'compras.index';

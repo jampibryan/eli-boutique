@@ -83,12 +83,19 @@ c:\Disco D\PROYECTOS\eli-boutique\
 * [03-architecture.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/03-architecture.md): Arquitectura en capas en Laravel (Services, Thin Controllers).
 * [04-database.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/04-database.md): Base de datos MySQL, snapshots, soft-deletes y zona horaria.
 * [05-decision-matrix.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/05-decision-matrix.md): Jerarquía de toma de decisiones técnicas.
+* [06-ssot-state-machine.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/06-ssot-state-machine.md): Fuente Única de Verdad (SSOT) y máquina de estados transaccionales determinista.
+* [07-financial-reconciliation.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/07-financial-reconciliation.md): Conciliación financiera, cuadratura de caja diaria y reglas de reversión de ventas/compras.
+* [08-error-resilience-audit.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/08-error-resilience-audit.md): Cero silenciamiento de errores, rollback transaccional atómico y logging de auditoría.
+* [09-git-commit-generator.md](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/rules/09-git-commit-generator.md): Generador de commits Conventional (~30 palabras, sin pleonasmos, disparador "commit").
 
 ---
 
 ## 🧠 HABILIDADES ESPECIALIZADAS
 
-* [cross-module-traceability](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/cross-module-traceability/SKILL.md): Protocolo de verificación de los 5 ejes de negocio.
-* [db-design-audit](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/db-design-audit/SKILL.md): Auditoría de relaciones, normalización e integridad referencial.
+* [cross-module-traceability](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/cross-module-traceability/SKILL.md): Protocolo de verificación y auditoría de la trazabilidad transversal de los 4 ejes de negocio.
+* [db-design-audit](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/db-design-audit/SKILL.md): Auditoría de relaciones, normalización e integridad referencial en base de datos.
 * [project-readme](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/project-readme/SKILL.md): Mantenimiento de documentación viva sin secretos.
 * [responsive-ui](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/responsive-ui/SKILL.md): Guía de diseño responsivo para punto de venta y administración.
+* [pos-cash-reconciliation](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/pos-cash-reconciliation/SKILL.md): Protocolo operativo para cuadratura de caja diaria, arqueo y reversiones seguras.
+* [receipt-pdf-generation](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/receipt-pdf-generation/SKILL.md): Renderizado y descarga de boletas, facturas y reportes ejecutivos en PDF.
+* [inventory-size-matrix](file:///c:/Disco%20D/PROYECTOS/eli-boutique/.agents/skills/inventory-size-matrix/SKILL.md): Administración de matriz de tallas, variantes, stock físico e importaciones Excel.
