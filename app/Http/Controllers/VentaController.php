@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Caja;
 use App\Models\Cliente;
+use App\Models\Comprobante;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
 use App\Models\ProductoTallaStock;
 use App\Models\Venta;
+use App\Services\PagoService;
 use App\Services\VentaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -163,27 +165,88 @@ class VentaController extends Controller
         }
 
         $clienteSeleccionado = null;
+        $comprobantes = Comprobante::all();
 
-        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado'));
+        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado', 'comprobantes'));
     }
 
-    public function store(Request $request, VentaService $ventaService)
+    public function store(Request $request, VentaService $ventaService, PagoService $pagoService)
     {
-        $validated = $request->validate([
+        $accion = $request->input('accion', 'cobrar');
+
+        $rules = [
             'cliente_id' => 'required|exists:clientes,id',
             'productos' => 'required|array',
             'productos.*.id' => 'required|exists:productos,id',
             'productos.*.talla_id' => 'required|exists:producto_tallas,id',
             'productos.*.cantidad' => 'required|integer|min:1',
             'montoTotal' => 'required|numeric',
+        ];
+
+        if ($accion === 'cobrar') {
+            $rules['comprobante_id'] = 'required|exists:comprobantes,id';
+            $rules['importe'] = 'required|numeric|min:' . (float) $request->input('montoTotal', 0);
+
+            $comprobante = Comprobante::find($request->input('comprobante_id'));
+            if ($comprobante && strcasecmp($comprobante->descripcionCOM, 'Factura') === 0) {
+                $rules['ruc_factura'] = ['required', 'regex:/^\d{11}$/'];
+                $rules['razon_social_factura'] = ['required', 'string', 'max:255'];
+            }
+        }
+
+        $validated = $request->validate($rules, [
+            'importe.min' => 'El importe ingresado debe ser mayor o igual al total a pagar (S/ :min).',
+            'ruc_factura.required' => 'El RUC es obligatorio para emitir Factura.',
+            'ruc_factura.regex' => 'El RUC debe tener exactamente 11 dígitos numéricos.',
+            'razon_social_factura.required' => 'La Razón Social es obligatoria para emitir Factura.',
         ]);
 
+        if ($accion === 'cobrar') {
+            $ventaData = [
+                'cliente_id' => $validated['cliente_id'],
+                'productos' => $validated['productos'],
+                'montoTotal' => $validated['montoTotal'],
+            ];
+
+            $pagoData = [
+                'comprobante_id' => $validated['comprobante_id'],
+                'importe' => (float) $validated['importe'],
+            ];
+
+            if (!empty($validated['ruc_factura'])) {
+                $pagoData['ruc_factura'] = $validated['ruc_factura'];
+            }
+            if (!empty($validated['razon_social_factura'])) {
+                $pagoData['razon_social_factura'] = $validated['razon_social_factura'];
+            }
+
+            $resultado = $ventaService->createAndPay($ventaData, $pagoData, $pagoService);
+            $venta = $resultado['venta'];
+            $vuelto = $resultado['vuelto'];
+
+            session()->forget('carrito');
+
+            return redirect()->route('ventas.index')->with([
+                'success' => "¡Venta {$venta->codigoVenta} cobrada exitosamente!",
+                'venta_rapida_exito' => [
+                    'id' => $venta->id,
+                    'codigo' => $venta->codigoVenta,
+                    'total' => number_format((float) $venta->montoTotal, 2),
+                    'importe' => number_format((float) $validated['importe'], 2),
+                    'vuelto' => number_format((float) $vuelto, 2),
+                    'tipo_comprobante' => $venta->pago->comprobante->descripcionCOM ?? 'Comprobante',
+                    'url_pdf' => route('ventas.comprobante', $venta->id),
+                ],
+            ]);
+        }
+
+        // Flujo tradicional: Guardar como Pendiente (Apartado)
         $venta = $ventaService->create($validated);
 
         session()->forget('carrito');
 
         return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])
-            ->with('success', 'Venta creada exitosamente. Proceda al pago.');
+            ->with('success', 'Venta registrada como Pendiente. Proceda al pago cuando lo desee.');
     }
 
     public function show(Venta $venta)

@@ -193,6 +193,47 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            @if (session('venta_rapida_exito'))
+                @php
+                    $infoVenta = session('venta_rapida_exito');
+                @endphp
+                Swal.fire({
+                    title: '¡Venta Cobrada con Éxito!',
+                    html: `
+                        <div class="text-center py-2">
+                            <div class="badge bg-success fs-6 mb-3 px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> {{ $infoVenta['codigo'] }} &bull; {{ $infoVenta['tipo_comprobante'] }}
+                            </div>
+                            <div class="row g-2 text-start p-3 bg-light rounded-3 mb-3 border" style="font-size: 0.95rem;">
+                                <div class="col-6 text-muted">Total Venta:</div>
+                                <div class="col-6 text-end fw-bold">S/ {{ $infoVenta['total'] }}</div>
+                                <div class="col-6 text-muted">Importe Recibido:</div>
+                                <div class="col-6 text-end fw-bold">S/ {{ $infoVenta['importe'] }}</div>
+                                <div class="col-12"><hr class="my-1"></div>
+                                <div class="col-6 fs-5 fw-bold text-success">VUELTO:</div>
+                                <div class="col-6 fs-5 text-end fw-bold text-success">S/ {{ $infoVenta['vuelto'] }}</div>
+                            </div>
+                            <p class="text-muted small mb-0"><i class="fas fa-cash-register me-1"></i> Registrado en Caja Diaria con éxito.</p>
+                        </div>
+                    `,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#D4AF37',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-print me-1"></i> Imprimir {{ $infoVenta['tipo_comprobante'] }} (PDF)',
+                    cancelButtonText: '<i class="fas fa-check me-1"></i> Listo / Cerrar',
+                    customClass: {
+                        confirmButton: 'btn btn-boutique-gold px-4 py-2 me-2',
+                        cancelButton: 'btn btn-secondary px-4 py-2'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open("{{ $infoVenta['url_pdf'] }}", '_blank');
+                    }
+                });
+            @endif
+
             // Búsqueda con debounce
             let searchTimeout;
             document.getElementById('buscarVenta').addEventListener('input', function() {

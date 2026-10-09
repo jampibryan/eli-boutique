@@ -9,6 +9,7 @@ use App\Models\ProductoTalla;
 use App\Models\ProductoTallaStock;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
+use App\Services\PagoService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -134,6 +135,36 @@ class VentaService
             ]);
 
             return $venta;
+        });
+    }
+
+    public function createAndPay(array $validatedVenta, array $validatedPago, PagoService $pagoService): array
+    {
+        return DB::transaction(function () use ($validatedVenta, $validatedPago, $pagoService) {
+            // 1. Crear venta (reserva stock de tallas con lockForUpdate, valida caja abierta, crea detalles)
+            $venta = $this->create($validatedVenta);
+
+            // 2. Registrar pago en caja (valida importe, calcula vuelto, actualiza a Pagado y genera registro en pagos)
+            $pagoService->register($venta->id, 'venta', $validatedPago);
+
+            $venta->refresh();
+            $venta->load(['pago.comprobante', 'cliente', 'detalles.producto', 'detalles.talla']);
+
+            Log::info('Venta POS Express creada y pagada atómicamente', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $venta->codigoVenta,
+                'monto_total' => $venta->montoTotal,
+                'importe' => $validatedPago['importe'] ?? null,
+                'vuelto' => $venta->pago ? $venta->pago->vuelto : 0,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
+            return [
+                'venta' => $venta,
+                'pago' => $venta->pago,
+                'vuelto' => $venta->pago ? (float) $venta->pago->vuelto : 0.0,
+            ];
         });
     }
 

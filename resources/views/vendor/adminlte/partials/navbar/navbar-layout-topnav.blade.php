@@ -39,6 +39,9 @@
             {{-- Configured right links --}}
             @each('adminlte::partials.navbar.menu-item', $adminlte->menu('navbar-right'), 'item')
 
+            {{-- Asistente IA Eli (Botón Copilot estilo Chavín Prime) --}}
+            @include('components.ai-navbar-button')
+
             {{-- User menu link --}}
             @if(Auth::user())
                 @if(config('adminlte.usermenu_enabled'))

@@ -147,7 +147,7 @@ class CompraService
 
     public function send(int|Compra $compra): Compra
     {
-        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with(['estadoTransaccion', 'proveedor'])->findOrFail($compra);
 
         if ($compraModel->estadoTransaccion->descripcionET !== 'Borrador') {
             throw ValidationException::withMessages([
@@ -167,6 +167,19 @@ class CompraService
             'estado_transaccion_id' => $estadoEnviada->id,
             'fecha_envio' => now(),
         ]);
+
+        // Notificación por correo asíncrona mediante Queue Worker
+        if (!empty($compraModel->proveedor?->correoProveedor)) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($compraModel->proveedor->correoProveedor)
+                    ->queue(new \App\Mail\OrdenCompraEnviada($compraModel));
+            } catch (\Throwable $e) {
+                Log::warning('No se pudo encolar correo de orden de compra al proveedor', [
+                    'compra_id' => $compraModel->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return $compraModel;
     }
