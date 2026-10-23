@@ -158,10 +158,16 @@
                                         </button>
                                     </form>
                                 @elseif($estadoDescripcion == 'Pagado')
-                                    <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank"
-                                        class="btn btn-boutique-gold w-100">
-                                        <i class="fas fa-print"></i> Generar {{ $comprobanteDescripcion }}
-                                    </a>
+                                    <div class="d-flex gap-1 w-100">
+                                        <a href="{{ route('ventas.ticket', $venta) }}" target="_blank"
+                                            class="btn btn-boutique-gold flex-grow-1" title="Imprimir en formato Ticketera">
+                                            <i class="fas fa-print"></i> Ticket ({{ $comprobanteDescripcion }})
+                                        </a>
+                                        <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank"
+                                            class="btn btn-outline-secondary px-3" title="Descargar PDF 80mm">
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                        </a>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -220,7 +226,7 @@
                     showCancelButton: true,
                     confirmButtonColor: '#D4AF37',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="fas fa-print me-1"></i> Imprimir {{ $infoVenta['tipo_comprobante'] }} (PDF)',
+                    confirmButtonText: '<i class="fas fa-print me-1"></i> Imprimir Ticket (Ticketera)',
                     cancelButtonText: '<i class="fas fa-check me-1"></i> Listo / Cerrar',
                     customClass: {
                         confirmButton: 'btn btn-boutique-gold px-4 py-2 me-2',
@@ -229,7 +235,7 @@
                     buttonsStyling: false
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.open("{{ $infoVenta['url_pdf'] }}", '_blank');
+                        window.open("{{ $infoVenta['url_ticket'] ?? $infoVenta['url_pdf'] }}", '_blank');
                     }
                 });
             @endif

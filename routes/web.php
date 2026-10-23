@@ -92,6 +92,7 @@ Route::middleware([
     Route::post('/carrito/duplicar/{index}', [ProductoController::class, 'duplicarItemCarrito'])->name('carrito.duplicar');
 
     // VENTAS (API movida a routes/api.php → GET /api/ventas, /api/ventas/{id})
+    Route::get('/ventas/{venta}/ticket', [VentaController::class, 'verTicket'])->name('ventas.ticket');
     Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
     Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
     Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');

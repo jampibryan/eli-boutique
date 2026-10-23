@@ -11,6 +11,8 @@ class Compra extends Model
 
     protected $fillable = [
         'codigoCompra',
+        'numero_documento_proveedor',
+        'tipo_documento_proveedor',
         'proveedor_id',
         'comprobante_id',
         'estado_transaccion_id',

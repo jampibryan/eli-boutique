@@ -6,9 +6,12 @@ use App\Models\Caja;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\EstadoTransaccion;
+use App\Models\MovimientoInventario;
+use App\Models\Producto;
 use App\Models\ProductoTallaStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class CompraService
@@ -114,22 +117,55 @@ class CompraService
                 ]);
             }
 
+            $kardexHabilitado = Schema::hasTable('movimientos_inventario');
+            $costoHabilitado = Schema::hasTable('productos') && Schema::hasColumn('productos', 'costo_compra');
+
             foreach ($compra->detalles as $detalle) {
                 $tallaStock = ProductoTallaStock::where('producto_id', $detalle->producto_id)
                     ->where('producto_talla_id', $detalle->producto_talla_id)
                     ->lockForUpdate()
                     ->first();
 
+                $stockAnterior = $tallaStock ? $tallaStock->stock : 0;
+
                 if ($tallaStock) {
                     $tallaStock->increment('stock', $detalle->cantidad);
-                    continue;
+                    $stockNuevo = $tallaStock->stock;
+                } else {
+                    $tallaStock = ProductoTallaStock::create([
+                        'producto_id' => $detalle->producto_id,
+                        'producto_talla_id' => $detalle->producto_talla_id,
+                        'stock' => $detalle->cantidad,
+                    ]);
+                    $stockNuevo = $detalle->cantidad;
                 }
 
-                ProductoTallaStock::create([
-                    'producto_id' => $detalle->producto_id,
-                    'producto_talla_id' => $detalle->producto_talla_id,
-                    'stock' => $detalle->cantidad,
-                ]);
+                $costoUnitario = (float) ($detalle->precio_final ?? $detalle->precio_cotizado ?? 0);
+
+                if ($kardexHabilitado) {
+                    MovimientoInventario::create([
+                        'producto_id' => $detalle->producto_id,
+                        'producto_talla_id' => $detalle->producto_talla_id,
+                        'tipo_movimiento' => MovimientoInventario::TIPO_INGRESO_COMPRA,
+                        'cantidad' => $detalle->cantidad,
+                        'costo_unitario' => $costoUnitario,
+                        'precio_unitario' => null,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stockNuevo,
+                        'origen_tipo' => Compra::class,
+                        'origen_id' => $compra->id,
+                        'referencia_documento' => 'Compra ' . $compra->codigoCompra,
+                        'user_id' => auth()->id(),
+                        'motivo' => 'Recepción de mercadería de orden de compra ' . $compra->codigoCompra,
+                    ]);
+                }
+
+                if ($costoHabilitado && $costoUnitario > 0) {
+                    $producto = Producto::find($detalle->producto_id);
+                    if ($producto) {
+                        $producto->update(['costo_compra' => $costoUnitario]);
+                    }
+                }
             }
 
             Log::info('Mercadería de orden de compra recibida e ingresada al stock por tallas', [

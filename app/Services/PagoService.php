@@ -92,13 +92,23 @@ class PagoService
 
         $venta->update($updateData);
 
-        $pago = Pago::create([
+        $pagoData = [
             'venta_id' => $venta->id,
             'compra_id' => null,
             'comprobante_id' => $validated['comprobante_id'],
             'importe' => $validated['importe'],
             'vuelto' => $vuelto,
-        ]);
+        ];
+
+        if (!empty($validated['metodo_pago'])) {
+            $pagoData['metodo_pago'] = $validated['metodo_pago'];
+        }
+
+        if (!empty($validated['referencia_pago'])) {
+            $pagoData['referencia_pago'] = $validated['referencia_pago'];
+        }
+
+        $pago = Pago::create($pagoData);
 
         Log::info('Pago de venta registrado exitosamente (SSOT Pagado)', [
             'venta_id' => $venta->id,
@@ -154,13 +164,23 @@ class PagoService
             ]);
         }
 
-        $pago = Pago::create([
+        $pagoData = [
             'venta_id' => null,
             'compra_id' => $compra->id,
             'comprobante_id' => $validated['comprobante_id'],
             'importe' => $validated['importe'],
             'vuelto' => null,
-        ]);
+        ];
+
+        if (!empty($validated['metodo_pago'])) {
+            $pagoData['metodo_pago'] = $validated['metodo_pago'];
+        }
+
+        if (!empty($validated['referencia_pago'])) {
+            $pagoData['referencia_pago'] = $validated['referencia_pago'];
+        }
+
+        $pago = Pago::create($pagoData);
 
         $compra->update([
             'comprobante_id' => $validated['comprobante_id'],

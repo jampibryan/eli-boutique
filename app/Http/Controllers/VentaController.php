@@ -101,14 +101,34 @@ class VentaController extends Controller
         return $pdf->stream('Reporte de Ventas.pdf');
     }
 
-    public function pdfComprobante($id)
+    public function verTicket($id)
     {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante'])
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'colaborador'])
             ->findOrFail($id);
 
-        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
+        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? 'Boleta';
+
+        return view('Venta.ticket', [
+            'venta' => $venta,
+            'tipoComprobante' => $tipoComprobante,
+        ]);
+    }
+
+    public function pdfComprobante($id)
+    {
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'colaborador'])
+            ->findOrFail($id);
+
+        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? 'Boleta';
+
+        // Dimensiones estándar para papel térmico continuo de 80mm
+        // 80mm = ~226.77 pt. Alto dinámico proporcional a los productos
+        $itemsCount = $venta->detalles->count();
+        $altoPuntos = max(520, 420 + ($itemsCount * 32));
 
         $pdf = App::make('dompdf.wrapper');
+        $pdf->setPaper([0, 0, 226.77, $altoPuntos], 'portrait');
+
         $view = view('Venta.comprobante_moderno', [
             'venta' => $venta,
             'tipoComprobante' => $tipoComprobante,
@@ -235,6 +255,7 @@ class VentaController extends Controller
                     'importe' => number_format((float) $validated['importe'], 2),
                     'vuelto' => number_format((float) $vuelto, 2),
                     'tipo_comprobante' => $venta->pago->comprobante->descripcionCOM ?? 'Comprobante',
+                    'url_ticket' => route('ventas.ticket', ['venta' => $venta->id, 'autoprint' => 1]),
                     'url_pdf' => route('ventas.comprobante', $venta->id),
                 ],
             ]);

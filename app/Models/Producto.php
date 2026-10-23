@@ -19,7 +19,13 @@ class Producto extends Model
         'imagenP',
         'descripcionP',
         'precioP',
+        'costo_compra',
     ];
+
+    public function movimientosInventario()
+    {
+        return $this->hasMany(MovimientoInventario::class);
+    }
 
     public function categoriaProducto()
     {

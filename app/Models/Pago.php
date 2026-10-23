@@ -13,6 +13,8 @@ class Pago extends Model
         'venta_id',
         'compra_id',
         'comprobante_id',
+        'metodo_pago',
+        'referencia_pago',
         'importe',
         'vuelto',
     ];
