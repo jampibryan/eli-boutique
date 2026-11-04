@@ -272,11 +272,15 @@
                     </h5>
                     <div class="form-group">
                         <label for="ruc_factura">RUC de la Empresa (11 dígitos)</label>
-                        <input type="text" class="form-control" name="ruc_factura" id="ruc_factura" placeholder="20123456789" maxlength="11" value="{{ old('ruc_factura') }}">
+                        <input type="text" class="form-control" name="ruc_factura" id="ruc_factura" placeholder="20123456789" maxlength="11" value="{{ old('ruc_factura', $transaction->cliente?->tipo_documento === 'RUC' ? $transaction->cliente->dniCliente : '') }}">
                     </div>
                     <div class="form-group">
                         <label for="razon_social_factura">Razón Social</label>
-                        <input type="text" class="form-control" name="razon_social_factura" id="razon_social_factura" placeholder="Empresa S.A.C." value="{{ old('razon_social_factura') }}">
+                        <input type="text" class="form-control" name="razon_social_factura" id="razon_social_factura" placeholder="Empresa S.A.C." value="{{ old('razon_social_factura', $transaction->cliente?->tipo_documento === 'RUC' ? $transaction->cliente->nombreCliente : '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="direccion_factura">Dirección de facturación</label>
+                        <input type="text" class="form-control" name="direccion_factura" id="direccion_factura" maxlength="255" value="{{ old('direccion_factura', $transaction->cliente?->direccionCliente) }}">
                     </div>
                 </div>
             @endif
@@ -400,6 +404,7 @@
             const facturaFields = document.getElementById('facturaFields');
             const rucInput = document.getElementById('ruc_factura');
             const razonSocialInput = document.getElementById('razon_social_factura');
+            const direccionInput = document.getElementById('direccion_factura');
 
             function toggleFacturaFields() {
                 if (!comprobanteSelect || !facturaFields) return;
@@ -408,8 +413,10 @@
                     facturaFields.style.display = 'block';
                     if (rucInput) rucInput.required = true;
                     if (razonSocialInput) razonSocialInput.required = true;
+                    if (direccionInput) direccionInput.required = true;
                 } else {
                     facturaFields.style.display = 'none';
+                    if (direccionInput) direccionInput.required = false;
                     if (rucInput) {
                         rucInput.required = false;
                     }

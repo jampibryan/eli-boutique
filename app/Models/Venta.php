@@ -24,6 +24,7 @@ class Venta extends Model
         'colaborador_id',
         'ruc_factura',
         'razon_social_factura',
+        'direccion_factura',
     ];
 
     protected static function booted()

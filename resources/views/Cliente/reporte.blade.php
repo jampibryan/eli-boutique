@@ -239,7 +239,7 @@
                 <th width="6%">N°</th>
                 <th width="18%">Nombre</th>
                 <th width="18%">Apellidos</th>
-                <th width="12%">DNI</th>
+                <th width="12%">Documento</th>
                 <th width="26%">Email</th>
                 <th width="12%">Teléfono</th>
             </tr>

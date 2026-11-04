@@ -433,11 +433,11 @@
                 </label>
                 <div class="d-flex gap-2 align-items-center">
                     <select class="form-control select2" id="cliente_id_select" name="cliente_id" required style="flex: 1;">
-                        <option value="">-- Buscar cliente por nombre o DNI --</option>
+                        <option value="">-- Buscar cliente por nombre, DNI o RUC --</option>
                         @foreach ($clientes as $cliente)
-                            <option value="{{ $cliente->id }}"
+                            <option value="{{ $cliente->id }}" data-doc-type="{{ $cliente->tipo_documento ?? 'DNI' }}" data-document="{{ $cliente->dniCliente }}" data-company="{{ $cliente->nombreCliente }}" data-address="{{ $cliente->direccionCliente }}"
                                 {{ (request('cliente_id') ?: $clienteSeleccionado) == $cliente->id ? 'selected' : '' }}>
-                                {{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }} - DNI:
+                                {{ $cliente->nombreCliente }} {{ $cliente->apellidoCliente }} - {{ $cliente->tipo_documento ?? 'DNI' }}:
                                 {{ $cliente->dniCliente }}
                             </option>
                         @endforeach
@@ -560,6 +560,10 @@
                         <input type="text" name="razon_social_factura" id="razon_social_factura" class="form-control"
                             placeholder="Ej: TEXTILES Y MODA SAC" style="height: 45px;">
                     </div>
+                    <div class="col-12">
+                        <label for="direccion_factura" class="form-label fw-bold">Dirección de facturación</label>
+                        <input type="text" name="direccion_factura" id="direccion_factura" class="form-control" maxlength="255" value="{{ old('direccion_factura') }}">
+                    </div>
                 </div>
 
                 <!-- Display de Vuelto en Vivo -->
@@ -644,7 +648,7 @@
     <script>
         $(document).ready(function() {
             $('.select2').select2({
-                placeholder: 'Buscar cliente por nombre o DNI...',
+                placeholder: 'Buscar cliente por nombre, DNI o RUC...',
                 allowClear: true,
                 width: '100%'
             });
@@ -712,6 +716,7 @@
             const seccionFactura = document.getElementById('seccionFactura');
             const rucFactura = document.getElementById('ruc_factura');
             const razonSocialFactura = document.getElementById('razon_social_factura');
+            const direccionFactura = document.getElementById('direccion_factura');
             const inputImporte = document.getElementById('importeRecibido');
             const boxVuelto = document.getElementById('boxVuelto');
             const lblVueltoTitulo = document.getElementById('lblVueltoTitulo');
@@ -737,31 +742,49 @@
             cardCobrar.addEventListener('click', function() {
                 radioCobrar.checked = true;
                 actualizarModo();
+                checkFactura();
             });
 
             cardPendiente.addEventListener('click', function() {
                 radioPendiente.checked = true;
                 actualizarModo();
+                checkFactura();
             });
 
+            let billingClientId = null;
             function checkFactura() {
                 if (!comprobanteSelect) return;
+                const clientOption = document.getElementById('cliente_id_select').selectedOptions[0];
+                const clientChanged = billingClientId !== null && billingClientId !== clientOption?.value;
+                if (clientOption?.dataset.docType === 'RUC' && (billingClientId === null || clientChanged)) {
+                    rucFactura.value = clientOption.dataset.document || '';
+                    razonSocialFactura.value = clientOption.dataset.company || '';
+                    direccionFactura.value = clientOption.dataset.address || '';
+                } else if (clientChanged) {
+                    rucFactura.value = '';
+                    razonSocialFactura.value = '';
+                    direccionFactura.value = '';
+                }
+                billingClientId = clientOption?.value || '';
                 const selectedOpt = comprobanteSelect.options[comprobanteSelect.selectedIndex];
                 const desc = (selectedOpt.text || '').toLowerCase();
                 if (desc.includes('factura')) {
                     seccionFactura.style.display = 'flex';
                     rucFactura.required = radioCobrar.checked;
                     razonSocialFactura.required = radioCobrar.checked;
+                    direccionFactura.required = radioCobrar.checked;
                 } else {
                     seccionFactura.style.display = 'none';
                     rucFactura.required = false;
                     razonSocialFactura.required = false;
+                    direccionFactura.required = false;
                 }
             }
 
             if (comprobanteSelect) {
                 comprobanteSelect.addEventListener('change', checkFactura);
                 checkFactura();
+                $('#cliente_id_select').on('change', checkFactura);
             }
 
             function recalcularVuelto() {

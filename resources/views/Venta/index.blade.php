@@ -30,9 +30,11 @@
                     <i class="fas fa-cart-plus"></i> Ver Carrito
                 </a>
                 
+                {{-- Botón Tiempo de Ventas desactivado temporalmente
                 <a href="{{ route('tiempoVentas.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-clock"></i> Tiempo de Ventas
                 </a>
+                --}}
                 
                 <a href="{{ route('ventas.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
@@ -151,7 +153,7 @@
 
                             <!-- Acciones según estado -->
                             <div class="card-actions d-flex gap-1">
-                                <button type="button" class="btn btn-card-view btn-ver-detalle" data-venta-id="{{ $venta->id }}" title="Ver Detalle en Panel Lateral">
+                                <button type="button" class="btn btn-card-view btn-ver-detalle" data-venta-id="{{ $venta->id }}" data-detail-url="{{ route('ventas.show', $venta) }}" data-print-url="{{ route('ventas.comprobante', $venta) }}" title="Ver Detalle en Panel Lateral">
                                     <i class="fas fa-eye"></i> Detalle
                                 </button>
                                 @if ($estadoDescripcion == 'Pendiente')
@@ -169,13 +171,13 @@
                                         </button>
                                     </form>
                                 @elseif($estadoDescripcion == 'Pagado')
-                                    <div class="d-flex gap-1 w-100">
+                                    <div class="d-flex gap-1 flex-grow-1 align-items-center">
                                         <a href="{{ route('ventas.ticket', $venta) }}" target="_blank"
-                                            class="btn btn-boutique-gold flex-grow-1" title="Imprimir en formato Ticketera">
-                                            <i class="fas fa-print"></i> Ticket ({{ $comprobanteDescripcion }})
+                                            class="btn btn-boutique-gold btn-ticket-action flex-grow-1" title="Imprimir en formato Ticketera">
+                                            <i class="fas fa-print"></i> <span>Ticket ({{ $comprobanteDescripcion }})</span>
                                         </a>
                                         <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank"
-                                            class="btn btn-outline-secondary px-3" title="Descargar PDF 80mm">
+                                            class="btn btn-pdf-action" title="Descargar PDF 80mm">
                                             <i class="fas fa-file-pdf text-danger"></i>
                                         </a>
                                     </div>
@@ -283,10 +285,107 @@
         body {
             background: #f4f6f9;
         }
+
+        /* Acciones de Venta Card */
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.85rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* Botón Detalle */
+        .btn-ver-detalle {
+            min-height: 38px;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #17a2b8;
+            background: #ffffff;
+            color: #17a2b8;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 5px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .btn-ver-detalle:hover {
+            background: #17a2b8;
+            color: #ffffff;
+        }
+
+        /* Botón Ticket Térmico */
+        .btn-ticket-action {
+            min-height: 38px;
+            padding: 0.45rem 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #D4AF37 0%, #F4D03F 100%);
+            border: none;
+            color: #2C2C2C !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            gap: 7px;
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.25);
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            white-space: nowrap;
+        }
+        .btn-ticket-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
+            color: #111111 !important;
+        }
+        .btn-ticket-action i {
+            font-size: 0.95rem;
+            line-height: 1;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Botón Descarga PDF */
+        .btn-pdf-action {
+            width: 38px;
+            min-width: 38px;
+            height: 38px;
+            padding: 0 !important;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            flex-shrink: 0;
+        }
+        .btn-pdf-action:hover {
+            background: #fff1f2;
+            border-color: #f43f5e;
+            transform: translateY(-1px);
+        }
+        .btn-pdf-action i {
+            font-size: 1.15rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
     </style>
 @stop
 
 @section('js')
+    <script src="{{ asset('js/venta-detail.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -348,84 +447,34 @@
             const offcanvasEl = document.getElementById('offcanvasDetalleVenta');
             const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
 
+            let detailRequest;
             document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const ventaId = this.getAttribute('data-venta-id');
+                    if (detailRequest) detailRequest.abort();
+                    detailRequest = new AbortController();
+                    const request = detailRequest;
+                    const printUrl = this.dataset.printUrl;
+                    document.getElementById('drawerLoader').innerHTML = '<div class="spinner-border text-warning" role="status"></div><p>Cargando venta…</p>';
 
                     // Mostrar Loader y abrir Drawer
                     document.getElementById('drawerLoader').style.display = 'block';
                     document.getElementById('drawerData').style.display = 'none';
                     bsOffcanvas.show();
 
-                    fetch(`/api/ventas/${ventaId}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            document.getElementById('drawerCodigoVenta').innerText = '#' + data.codigoVenta;
-                            
-                            const fecha = new Date(data.created_at);
-                            document.getElementById('drawerFechaVenta').innerText = fecha.toLocaleString('es-PE');
-
-                            // Cliente
-                            if (data.cliente) {
-                                document.getElementById('drawerClienteNombre').innerText = `${data.cliente.nombreCliente} ${data.cliente.apellidoCliente}`;
-                                document.getElementById('drawerClienteDni').innerText = `DNI: ${data.cliente.dniCliente || 'Sin DNI'}`;
-                                document.getElementById('drawerAvatar').innerText = data.cliente.nombreCliente.charAt(0).toUpperCase();
-                            } else {
-                                document.getElementById('drawerClienteNombre').innerText = 'Cliente Eliminado';
-                                document.getElementById('drawerClienteDni').innerText = 'DNI: N/A';
-                                document.getElementById('drawerAvatar').innerText = '?';
-                            }
-
-                            // Items
-                            const itemsContainer = document.getElementById('drawerItemsList');
-                            itemsContainer.innerHTML = '';
-
-                            let cantTotal = 0;
-                            if (data.detalles && data.detalles.length > 0) {
-                                data.detalles.forEach(item => {
-                                    cantTotal += item.cantidad;
-                                    const prodNombre = item.producto ? item.producto.descripcionP : 'Producto';
-                                    const tallaNom = item.talla ? item.talla.descripcionTalla : '-';
-                                    
-                                    const card = document.createElement('div');
-                                    card.className = 'receipt-item-card d-flex justify-content-between align-items-center';
-                                    card.innerHTML = `
-                                        <div>
-                                            <strong class="d-block text-dark" style="font-size: 0.95rem;">${prodNombre}</strong>
-                                            <small class="text-muted">Talla: <span class="badge bg-light text-dark border">${tallaNom}</span> | Cant: <strong>${item.cantidad}</strong></small>
-                                        </div>
-                                        <div class="text-end">
-                                            <strong class="text-dark">S/ ${(parseFloat(item.precioUnitario) * item.cantidad).toFixed(2)}</strong>
-                                            <br><small class="text-muted">S/ ${parseFloat(item.precioUnitario).toFixed(2)} c/u</small>
-                                        </div>
-                                    `;
-                                    itemsContainer.appendChild(card);
-                                });
-                            } else {
-                                itemsContainer.innerHTML = '<p class="text-muted small">No hay ítems registrados.</p>';
-                            }
-                            document.getElementById('drawerCantProductos').innerText = cantTotal;
-
-                            // Totales
-                            document.getElementById('drawerSubtotal').innerText = 'S/ ' + parseFloat(data.subTotal).toFixed(2);
-                            document.getElementById('drawerIgv').innerText = 'S/ ' + parseFloat(data.IGV).toFixed(2);
-                            document.getElementById('drawerTotal').innerText = 'S/ ' + parseFloat(data.montoTotal).toFixed(2);
-
-                            // Comprobante
-                            const compTipo = (data.pago && data.pago.comprobante) ? data.pago.comprobante.descripcionCOM : 'Ticket Simple';
-                            document.getElementById('drawerComprobanteTipo').innerText = compTipo;
-
-                            // Imprimir link
-                            document.getElementById('drawerBtnImprimir').href = `/ventas/${data.id}/comprobante`;
-
-                            // Ocultar Loader y mostrar Data
+                    VentaDetail.load(this.dataset.detailUrl, request.signal)
+                        .then(sale => {
+                            if (request.signal.aborted) return;
+                            VentaDetail.render(sale, printUrl, document);
                             document.getElementById('drawerLoader').style.display = 'none';
                             document.getElementById('drawerData').style.display = 'block';
                         })
                         .catch(err => {
-                            console.error('Error al cargar detalle de venta:', err);
-                            document.getElementById('drawerLoader').innerHTML = '<div class="alert alert-danger">Error al cargar información.</div>';
+                            if (request.signal.aborted) return;
+                            const message = document.createElement('div');
+                            message.className = 'alert alert-danger';
+                            message.textContent = err instanceof SyntaxError ? 'No se recibió un detalle válido. Vuelve a iniciar sesión.' : err.message;
+                            document.getElementById('drawerLoader').replaceChildren(message);
                         });
                 });
             });

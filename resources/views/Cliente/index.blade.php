@@ -63,8 +63,8 @@
                                     <div class="d-flex gap-2 align-items-center">
                                         <span class="status-badge status-info">
                                             <i
-                                                class="fas fa-{{ $cliente->tipoGenero->descripcionTG == 'Masculino' ? 'mars' : 'venus' }}"></i>
-                                            {{ $cliente->tipoGenero->descripcionTG }}
+                                                class="fas fa-{{ $cliente->tipo_documento === 'RUC' ? 'building' : ($cliente->tipoGenero->descripcionTG == 'Masculino' ? 'mars' : 'venus') }}"></i>
+                                            {{ $cliente->tipo_documento === 'RUC' ? 'Empresa' : $cliente->tipoGenero->descripcionTG }}
                                         </span>
                                         <small class="text-muted">#{{ str_pad($cliente->id, 4, '0', STR_PAD_LEFT) }}</small>
                                     </div>
@@ -75,7 +75,7 @@
                             <div>
                                 <div class="info-row">
                                     <i class="fas fa-id-card icon"></i>
-                                    <span class="label">DNI:</span>
+                                    <span class="label">{{ $cliente->tipo_documento ?? 'DNI' }}:</span>
                                     <span class="value">{{ $cliente->dniCliente }}</span>
                                 </div>
                                 <div class="info-row">

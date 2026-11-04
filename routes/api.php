@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\AnalyticsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Rutas publicas de solo lectura para consumidores ML (Streamlit)
 Route::get('/obtener-datos-ventas', [ApiController::class, 'ventasDatosML']);
+
+// Contrato analitico versionado, de solo lectura y sin datos personales.
+Route::get('/analitica/v1/snapshot', [AnalyticsController::class, 'snapshot'])
+    ->middleware(['auth:sanctum', 'permission:ver reportes gráficos']);
 
 // Rutas protegidas con Sanctum
 Route::middleware('auth:sanctum')->group(function () {

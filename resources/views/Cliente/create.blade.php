@@ -38,62 +38,7 @@
                         </h5>
                     </div>
 
-                    <!-- Nombre -->
-                    <div class="col-md-6">
-                        <label for="nombreCliente" class="form-label fw-semibold">
-                            <i class="fas fa-signature text-muted"></i> Nombre <span class="text-danger">*</span>
-                        </label>
-                        <input id="nombreCliente" name="nombreCliente" type="text" 
-                               class="form-control @error('nombreCliente') is-invalid @enderror" 
-                               value="{{ old('nombreCliente') }}" placeholder="Ingrese el nombre">
-                        @error('nombreCliente')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Apellidos -->
-                    <div class="col-md-6">
-                        <label for="apellidoCliente" class="form-label fw-semibold">
-                            <i class="fas fa-signature text-muted"></i> Apellidos <span class="text-danger">*</span>
-                        </label>
-                        <input id="apellidoCliente" name="apellidoCliente" type="text" 
-                               class="form-control @error('apellidoCliente') is-invalid @enderror" 
-                               value="{{ old('apellidoCliente') }}" placeholder="Ingrese los apellidos">
-                        @error('apellidoCliente')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Género -->
-                    <div class="col-md-6">
-                        <label for="tipo_genero_id" class="form-label fw-semibold">
-                            <i class="fas fa-venus-mars text-muted"></i> Género <span class="text-danger">*</span>
-                        </label>
-                        <select id="tipo_genero_id" name="tipo_genero_id" 
-                                class="form-select @error('tipo_genero_id') is-invalid @enderror">
-                            <option value="">Seleccionar género</option>
-                            @foreach($generos as $genero)
-                                <option value="{{ $genero->id }}" {{ old('tipo_genero_id') == $genero->id ? 'selected' : '' }}>
-                                    {{ $genero->descripcionTG }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tipo_genero_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <!-- DNI -->
-                    <div class="col-md-6">
-                        <label for="dniCliente" class="form-label fw-semibold">
-                            <i class="fas fa-id-card text-muted"></i> DNI <span class="text-danger">*</span>
-                        </label>
-                        <input id="dniCliente" name="dniCliente" type="text" maxlength="8"
-                               class="form-control @error('dniCliente') is-invalid @enderror" 
-                               value="{{ old('dniCliente') }}" placeholder="DNI (8 dígitos)">
-                        @error('dniCliente')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    @include('Cliente._identity_fields')
 
                     <!-- Información de Contacto -->
                     <div class="col-12 mt-4">

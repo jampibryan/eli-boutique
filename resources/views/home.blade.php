@@ -8,6 +8,12 @@
 
 
 @section('content')
+@if(($demoDataInfo['has_demo_data'] ?? false))
+    <div class="alert alert-info mx-4 mt-3" role="status">
+        Este panel incluye registros de demostración identificados. Las operaciones simuladas
+        no representan actividad comercial real ni mediciones de la investigación.
+    </div>
+@endif
 @php
     $usuarioActual = auth()->user();
     $rolUsuario = $usuarioActual?->roleLabel() ?? 'Usuario';

@@ -120,7 +120,8 @@ class HomeController extends Controller
 
         return view('home', array_merge(
             compact('cajaAbierta', 'cajaCerrada', 'cajaSinIniciar'),
-            $dashboardStats
+            $dashboardStats,
+            ['demoDataInfo' => (new \App\Services\DemoDataProvenance())->summary()]
         ));
     }
 }

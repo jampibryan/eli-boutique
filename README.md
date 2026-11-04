@@ -13,6 +13,11 @@ Sistema web desarrollado con Laravel 10 para la gestion operativa de una boutiqu
 - Reportes PDF con DomPDF.
 - Integracion prevista para Flutter y Streamlit.
 
+La integración de Streamlit dispone de un contrato de lectura versionado para ventas,
+compras, inventario, pagos y caja. Consulta [configuración, auditoría y pruebas aisladas](Documentacion/05-Reportes-y-Auditoria/Integracion-Streamlit.md).
+El [estado actualizado y los pendientes de publicación y Flutter](Documentacion/05-Reportes-y-Auditoria/Estado-y-Pendientes-2026-11-04.md)
+incluyen los doce puntos del plan, clientes empresa y la corrección del detalle de ventas.
+
 ## Modulos principales
 
 - Usuarios, roles y permisos.
@@ -331,6 +336,10 @@ npm run dev
 ```
 
 ## Produccion
+
+Para el alojamiento actual, seguir la [guía de publicación en SmartASP.NET](Documentacion/07-Despliegue/01-smartasp-laravel.md).
+El preparador `scripts/prepare_smartasp.ps1` genera un ZIP aparte con dependencias de producción,
+sin incluir el `.env` real ni los respaldos y planes privados.
 
 Pasos basicos recomendados:
 

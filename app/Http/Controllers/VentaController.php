@@ -124,7 +124,10 @@ class VentaController extends Controller
         // Dimensiones estándar para papel térmico continuo de 80mm
         // 80mm = ~226.77 pt. Alto dinámico proporcional a los productos
         $itemsCount = $venta->detalles->count();
-        $altoPuntos = max(520, 420 + ($itemsCount * 32));
+        $esFactura = strcasecmp($tipoComprobante, 'Factura') === 0;
+        $billingLines = (int) ceil(mb_strlen($venta->razon_social_factura ?? '') / 24)
+            + (int) ceil(mb_strlen($venta->direccion_factura ?? '') / 32);
+        $altoPuntos = max(520, 440 + ($itemsCount * 40) + ($esFactura ? 100 + $billingLines * 14 : 0));
 
         $pdf = App::make('dompdf.wrapper');
         $pdf->setPaper([0, 0, 226.77, $altoPuntos], 'portrait');
@@ -212,6 +215,7 @@ class VentaController extends Controller
             if ($comprobante && strcasecmp($comprobante->descripcionCOM, 'Factura') === 0) {
                 $rules['ruc_factura'] = ['required', 'regex:/^\d{11}$/'];
                 $rules['razon_social_factura'] = ['required', 'string', 'max:255'];
+                $rules['direccion_factura'] = ['required', 'string', 'max:255'];
             }
         }
 
@@ -239,6 +243,9 @@ class VentaController extends Controller
             }
             if (!empty($validated['razon_social_factura'])) {
                 $pagoData['razon_social_factura'] = $validated['razon_social_factura'];
+            }
+            if (!empty($validated['direccion_factura'])) {
+                $pagoData['direccion_factura'] = $validated['direccion_factura'];
             }
 
             $resultado = $ventaService->createAndPay($ventaData, $pagoData, $pagoService);
@@ -271,9 +278,14 @@ class VentaController extends Controller
             ->with('success', 'Venta registrada como Pendiente. Proceda al pago cuando lo desee.');
     }
 
-    public function show(Venta $venta)
+    public function show(Request $request, Venta $venta)
     {
-        $venta->load(['detalles.producto', 'detalles.talla']);
+        $venta->load(['cliente', 'estadoTransaccion', 'detalles.producto', 'detalles.talla', 'pago.comprobante']);
+
+        // The web drawer uses the current session and the same permissions as this page.
+        if ($request->expectsJson()) {
+            return response()->json($venta);
+        }
 
         return view('Venta.show', compact('venta'));
     }

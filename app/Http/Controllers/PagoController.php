@@ -56,6 +56,7 @@ class PagoController extends Controller
                 $facturaData = $request->validate([
                     'ruc_factura' => 'required|regex:/^\d{11}$/',
                     'razon_social_factura' => 'required|string|max:255',
+                    'direccion_factura' => 'required|string|max:255',
                 ], [
                     'ruc_factura.required' => 'El RUC es obligatorio para emitir una Factura.',
                     'ruc_factura.regex' => 'El RUC debe tener exactamente 11 dígitos.',
@@ -64,6 +65,7 @@ class PagoController extends Controller
 
                 $validated['ruc_factura'] = $facturaData['ruc_factura'];
                 $validated['razon_social_factura'] = $facturaData['razon_social_factura'];
+                $validated['direccion_factura'] = $facturaData['direccion_factura'];
             }
         }
 

@@ -74,7 +74,7 @@ class ClienteController extends Controller
      */
     public function store(StoreCliente $request)
     {
-        $cliente = Cliente::create($request->all());
+        $cliente = Cliente::create($request->validated());
 
         // Guardar el cliente en sesión para preseleccionarlo
         session(['venta_cliente' => $cliente->id]);
@@ -121,7 +121,7 @@ class ClienteController extends Controller
      */
     public function update(StoreCliente $request, Cliente $cliente)
     {
-        $cliente->update($request->all());
+        $cliente->update($request->validated());
 
         return redirect()->route('clientes.index');
     }

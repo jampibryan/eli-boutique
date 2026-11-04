@@ -155,17 +155,23 @@
         .col-pu {
             width: 20%;
             text-align: right;
+            white-space: nowrap;
         }
 
         .col-tot {
             width: 20%;
             text-align: right;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .item-talla {
             font-size: 7pt;
             color: #333;
+        }
+
+        .items-table .col-pu {
+            padding-right: 6px;
         }
 
         .totals-table {
@@ -214,7 +220,7 @@
 
         <div class="divider-double"></div>
 
-        <div class="doc-title">{{ $isFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA' }}</div>
+        <div class="doc-title">{{ $isFactura ? 'FACTURA' : 'BOLETA DE VENTA' }}</div>
         <div class="doc-number">{{ $codigoSerie }}</div>
 
         <div class="divider"></div>
@@ -241,6 +247,9 @@
                     <td class="meta-label">RAZÓN SOCIAL:</td>
                     <td><strong>{{ strtoupper($venta->razon_social_factura ?? $clienteNombre) }}</strong></td>
                 </tr>
+                @if($venta->direccion_factura)
+                <tr><td>DIRECCIÓN:</td><td>{{ $venta->direccion_factura }}</td></tr>
+                @endif
             @else
                 <tr>
                     <td class="meta-label">CLIENTE:</td>

@@ -20,7 +20,9 @@ class Cliente extends Model
         'dniCliente',
         'correoCliente',
         'telefonoCliente',
-        'tipo_genero_id'
+        'tipo_genero_id',
+        'tipo_documento',
+        'direccionCliente',
     ];
 
     protected $dates = ['deleted_at'];

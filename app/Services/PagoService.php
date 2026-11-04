@@ -89,6 +89,9 @@ class PagoService
         if (!empty($validated['razon_social_factura'])) {
             $updateData['razon_social_factura'] = $validated['razon_social_factura'];
         }
+        if (!empty($validated['direccion_factura'])) {
+            $updateData['direccion_factura'] = $validated['direccion_factura'];
+        }
 
         $venta->update($updateData);
 

@@ -24,9 +24,11 @@
                     <i class="fas fa-plus"></i> Nueva Orden
                 </a>
                 
+                {{-- Botón Tiempo de Orden de Compras desactivado temporalmente
                 <a href="{{ route('tiempoCompras.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-clock"></i> Tiempo de Orden de Compras
                 </a>
+                --}}
                 
                 <a href="{{ route('compras.pdf', request()->query()) }}" target="_blank" class="btn btn-boutique-dark">
                     <i class="fas fa-file-pdf"></i> Generar Reporte
@@ -259,22 +261,22 @@
                                 {{-- Pagada o Anulada: Solo ver --}}
                                 @elseif($estadoDescripcion == 'Pagada' || $estadoDescripcion == 'Anulada')
                                     <a href="{{ route('ordenCompras.pdf', $compra) }}" target="_blank"
-                                        class="btn btn-card-view" style="flex: 2;">
-                                        <i class="fas fa-file-pdf"></i> Ver Orden
+                                        class="btn btn-card-view btn-ver-orden" style="flex: 2;">
+                                        <i class="fas fa-file-pdf"></i> <span>Ver Orden</span>
                                     </a>
                                     @if($compra->pdf_cotizacion)
                                         <a href="{{ asset('storage/' . $compra->pdf_cotizacion) }}" target="_blank"
                                             class="btn btn-warning" style="flex: 2;">
-                                            <i class="fas fa-file-invoice"></i> Ver Cotización
+                                            <i class="fas fa-file-invoice"></i> <span>Ver Cotización</span>
                                         </a>
                                     @endif
                                     @if($estadoDescripcion == 'Pagada')
-                                        <span class="badge bg-success p-2" style="flex: 1; font-size: 0.9rem;">
-                                            <i class="fas fa-check-circle"></i> Completada
+                                        <span class="badge bg-success btn-badge-completada" style="flex: 1;">
+                                            <i class="fas fa-check-circle"></i> <span>Completada</span>
                                         </span>
                                     @else
-                                        <span class="badge bg-danger p-2" style="flex: 1; font-size: 0.9rem;">
-                                            <i class="fas fa-ban"></i> Anulada
+                                        <span class="badge bg-danger btn-badge-anulada" style="flex: 1;">
+                                            <i class="fas fa-ban"></i> <span>Anulada</span>
                                         </span>
                                     @endif
 
@@ -431,6 +433,92 @@
     <style>
         body {
             background: #f4f6f9;
+        }
+
+        /* Alineación y centrado de botones en cards de compras */
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.85rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* Botón Ver Orden */
+        .btn-ver-orden {
+            min-height: 38px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn-ver-orden i {
+            font-size: 0.95rem;
+            line-height: 1;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Badge Completada: Centrado perfecto horizontal y vertical */
+        .btn-badge-completada {
+            min-height: 38px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            gap: 6px;
+            background-color: #198754 !important;
+            color: #ffffff !important;
+            line-height: 1.2;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .btn-badge-completada i {
+            font-size: 0.95rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        /* Badge Anulada: Centrado perfecto horizontal y vertical */
+        .btn-badge-anulada {
+            min-height: 38px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.45rem 0.85rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            gap: 6px;
+            background-color: #dc3545 !important;
+            color: #ffffff !important;
+            line-height: 1.2;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .btn-badge-anulada i {
+            font-size: 0.95rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
         }
     </style>
 @stop

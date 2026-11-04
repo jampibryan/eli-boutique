@@ -568,7 +568,7 @@
 
         <!-- Identificación del Comprobante -->
         <div class="doc-title">
-            {{ $isFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA' }}
+            {{ $isFactura ? 'FACTURA' : 'BOLETA DE VENTA' }}
         </div>
         <div class="doc-number">
             {{ $codigoSerie }}
@@ -609,6 +609,9 @@
                     <td class="meta-label">RAZÓN SOCIAL:</td>
                     <td class="meta-value"><strong>{{ strtoupper($venta->razon_social_factura ?? $clienteNombre) }}</strong></td>
                 </tr>
+                @if($venta->direccion_factura)
+                <tr><td>DIRECCIÓN:</td><td>{{ $venta->direccion_factura }}</td></tr>
+                @endif
                 <tr>
                     <td class="meta-label">CONTACTO:</td>
                     <td class="meta-value">{{ strtoupper($clienteNombre) }}</td>
