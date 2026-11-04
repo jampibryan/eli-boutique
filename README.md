@@ -23,6 +23,7 @@ Sistema web desarrollado con Laravel 10 para la gestion operativa de una boutiqu
 - Caja diaria.
 - Reportes PDF y graficos.
 - Prediccion de ventas via consumo de API.
+- Asistente Inteligente Eli Boutique (DeepSeek AI Engine con ReAct Agent y RAG en tiempo real).
 
 ## Stack tecnico
 
@@ -58,8 +59,6 @@ Sistema web desarrollado con Laravel 10 para la gestion operativa de una boutiqu
 - Extension PHP `xml`
 - Extension PHP `curl`
 - Extension PHP `zip`
-- Extension PHP `openssl` (requerida por Greenter para firmar digitalmente XMLs)
-- Extension PHP `soap` (requerida por Greenter para transmitir por SOAP a la SUNAT)
 
 ## Instalacion
 
@@ -99,20 +98,13 @@ Además de la base de datos, asegúrate de configurar las siguientes secciones e
 
 - **Conexión API (Sanctum y CORS):** Define `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` si planeas consumir la API desde clientes externos (como Flutter o Streamlit).
 - **Envío de Correos (SMTP):** Configura las variables `MAIL_*` con las credenciales de tu servidor de correo (se recomienda usar contraseñas de aplicación si utilizas Gmail).
-- **Facturación Electrónica (SUNAT / Greenter):**
-  - `SUNAT_MODE`: Indica el ambiente (`beta` para desarrollo/pruebas o `production` para producción).
-  - `SUNAT_RUC`: RUC real de la empresa (solo necesario en modo producción).
-  - `SUNAT_USUARIO`: Usuario SOL real (solo necesario en modo producción).
-  - `SUNAT_CLAVE`: Clave SOL real (solo necesario en modo producción).
-  - `SUNAT_CERTIFICATE_PATH`: Ruta relativa al certificado digital `.crt` en `storage/` (por defecto: `app/certificates/certificate.crt`).
-  - `SUNAT_PRIVATE_KEY_PATH`: Ruta relativa a la llave privada `.key` en `storage/` (por defecto: `app/certificates/private.key`).
+- **Asistente Inteligente DeepSeek (`DEEPSEEK_*`):** Configura `DEEPSEEK_API_KEY=tu_clave_aqui` obtenida desde la plataforma oficial de DeepSeek. Permite definir opcionalmente `DEEPSEEK_MODEL` (por defecto `deepseek-chat`), `DEEPSEEK_TEMPERATURE` (`0.2`) y `DEEPSEEK_TIMEOUT` (`60`).
 
 Notas:
 
 - `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` deben ajustarse si Flutter, Streamlit u otro cliente consume la API desde otra direccion.
 - El registro publico de usuarios esta deshabilitado. Los usuarios deben ser creados por un administrador.
 - Para envio de correos se recomienda usar password de aplicacion.
-- En el ambiente `beta` no es necesario especificar RUC, usuario ni clave en el `.env`, ya que por defecto utiliza las credenciales de prueba oficiales de la SUNAT (`20000000001` / `MODDATOS` / `moddatos`).
 
 ## Autenticacion y seguridad
 
@@ -214,14 +206,21 @@ Incluye:
 - **Seguridad en Cierre de Caja:** El cálculo de saldos y el estado final se procesa de forma interna en el servidor para evitar que el usuario altere los totales de efectivo en el flujo frontend.
 - Reporte detallado de movimientos e informes generales en PDF.
 
-### Facturación Electrónica (SUNAT)
+### Comprobantes de Venta y Facturación Interna
 
-- **Integración con Greenter SDK:** Generación del XML firmado digitalmente en formato UBL 2.1 para Facturas (tipo `01`) y Boletas (tipo `03`).
-- **Transmisión Asíncrona SOAP:** El envío se despacha de forma asíncrona mediante un Laravel Job (`SendVentaToSunatJob`) inmediatamente tras confirmar y pagar un comprobante.
-- **Trazabilidad y CDR:** Guarda los XMLs firmados localmente en `storage/app/invoices/` y las constancias de recepción de SUNAT (CDR zip) en `storage/app/cdrs/`.
-- **Representación Física:** Muestra en el PDF de venta la numeración oficial (ej: `B001-00000001`), el sello digital de aceptación y el código hash de la firma digital (DigestValue).
-- **Monitoreo desde Dashboard:** Estado de transmisión en tiempo real visible con badges en el listado de ventas (`Pendiente`, `Enviando`, `Aceptado`, `Rechazado`, `Error`).
-- **Desacoplamiento de RUC a nivel de Transacción:** Permite que un cliente con DNI compre solicitando Factura. En la pantalla de cobro se solicita el RUC (11 dígitos) y la Razón Social de la empresa de forma obligatoria, guardando estos datos directamente en la tabla `ventas`. Esto permite a un mismo cliente realizar compras asociadas a diferentes empresas.
+- **Emisión en PDF Moderno:** Generación inmediata y descarga de comprobantes en PDF con diseño Boutique elegante para Boletas y Facturas.
+- **Desglose Contable:** Cálculo exacto de Base Imponible, IGV (18%) y Monto Total por cada ítem e importe global.
+- **Desacoplamiento de RUC a nivel de Transacción:** Permite que un cliente con DNI compre solicitando Factura. En la pantalla de cobro se solicita el RUC (11 dígitos) y la Razón Social de la empresa, guardando estos datos directamente en la venta para control fiscal y contable interno.
+
+### Asistente Inteligente Eli Boutique (DeepSeek AI Engine)
+
+- **Motor Agéntico Autónomo (ReAct Loop + SQL Tool Calling):** Capacidad de interpretar preguntas en lenguaje natural y ejecutar consultas analíticas de solo lectura en tiempo real contra la base de datos para responder sobre catálogo de prendas, matriz de tallas (`producto_talla_stock`), ventas, compras y balance de caja diaria.
+- **Inspector RAG en Tiempo Real:** Inyección dinámica de datos del contexto de la tienda (estado de caja de hoy, alertas de prendas con stock crítico menor a 3 unidades y últimas ventas) para garantizar respuestas verídicas y anti-alucinaciones.
+- **Seguridad y Validación Estricta:** Motor de solo lectura que restringe consultas a sentencias `SELECT`, bloquea comandos destructivos (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `TRUNCATE`) y protege tablas de credenciales o autenticación (`users`, `sessions`, `tokens`).
+- **Widget Flotante Draggable Global:** Botón flotante animado con el logo oficial de Eli Boutique disponible en todo el ERP, arrastrable para no obstaculizar interfaces de cobro ni tablas.
+- **Interacción Multimedia y Accesibilidad:** Reconocimiento de voz nativo en español Perú (`es-PE`) con limpiador de muletillas, lectura en voz alta de respuestas ejecutivas (Text-to-Speech) y formateo en tablas Markdown profesionales.
+- **Centro de Control y Pruebas (`/asistente-ia`):** Panel interactivo en AdminLTE organizado en tres áreas: *Eli Copilot* (Chat conversacional con sugerencias rápidas), *Inspector RAG* (pruebas controladas de contexto) y *Consulta Libre* (tendencias y moda general).
+- **Auditoría Transaccional:** Registro completo en base de datos (`chat_histories`) de tokens consumidos (prompt/completion), costo estimado, tiempo de respuesta en milisegundos, IP y usuario.
 
 ## Roles y permisos
 
@@ -306,8 +305,10 @@ public/
 Directorios clave:
 
 - `app/Services`: logica de negocio para ventas, compras y pagos.
+- `app/Services/Ai`: motor agentico ReAct, diccionario semantico, validador SQL de solo lectura y cliente DeepSeek.
 - `app/Http/Controllers/Api`: endpoints para consumo externo.
 - `resources/views`: vistas Blade por modulo.
+- `resources/views/Ai`: centro de control y pruebas de la IA (/asistente-ia).
 - `database/seeders`: datos base del sistema.
 - `tests/Feature`: pruebas funcionales del negocio.
 

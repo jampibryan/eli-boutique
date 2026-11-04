@@ -6,8 +6,12 @@ use App\Models\Caja;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\EstadoTransaccion;
+use App\Models\MovimientoInventario;
+use App\Models\Producto;
 use App\Models\ProductoTallaStock;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class CompraService
@@ -113,25 +117,227 @@ class CompraService
                 ]);
             }
 
+            $kardexHabilitado = Schema::hasTable('movimientos_inventario');
+            $costoHabilitado = Schema::hasTable('productos') && Schema::hasColumn('productos', 'costo_compra');
+
             foreach ($compra->detalles as $detalle) {
                 $tallaStock = ProductoTallaStock::where('producto_id', $detalle->producto_id)
                     ->where('producto_talla_id', $detalle->producto_talla_id)
                     ->lockForUpdate()
                     ->first();
 
+                $stockAnterior = $tallaStock ? $tallaStock->stock : 0;
+
                 if ($tallaStock) {
                     $tallaStock->increment('stock', $detalle->cantidad);
-                    continue;
+                    $stockNuevo = $tallaStock->stock;
+                } else {
+                    $tallaStock = ProductoTallaStock::create([
+                        'producto_id' => $detalle->producto_id,
+                        'producto_talla_id' => $detalle->producto_talla_id,
+                        'stock' => $detalle->cantidad,
+                    ]);
+                    $stockNuevo = $detalle->cantidad;
                 }
 
-                ProductoTallaStock::create([
-                    'producto_id' => $detalle->producto_id,
-                    'producto_talla_id' => $detalle->producto_talla_id,
-                    'stock' => $detalle->cantidad,
+                $costoUnitario = (float) ($detalle->precio_final ?? $detalle->precio_cotizado ?? 0);
+
+                if ($kardexHabilitado) {
+                    MovimientoInventario::create([
+                        'producto_id' => $detalle->producto_id,
+                        'producto_talla_id' => $detalle->producto_talla_id,
+                        'tipo_movimiento' => MovimientoInventario::TIPO_INGRESO_COMPRA,
+                        'cantidad' => $detalle->cantidad,
+                        'costo_unitario' => $costoUnitario,
+                        'precio_unitario' => null,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stockNuevo,
+                        'origen_tipo' => Compra::class,
+                        'origen_id' => $compra->id,
+                        'referencia_documento' => 'Compra ' . $compra->codigoCompra,
+                        'user_id' => auth()->id(),
+                        'motivo' => 'Recepción de mercadería de orden de compra ' . $compra->codigoCompra,
+                    ]);
+                }
+
+                if ($costoHabilitado && $costoUnitario > 0) {
+                    $producto = Producto::find($detalle->producto_id);
+                    if ($producto) {
+                        $producto->update(['costo_compra' => $costoUnitario]);
+                    }
+                }
+            }
+
+            Log::info('Mercadería de orden de compra recibida e ingresada al stock por tallas', [
+                'compra_id' => $compra->id,
+                'codigo_compra' => $compra->codigoCompra,
+                'proveedor_id' => $compra->proveedor_id,
+                'total_prendas' => $compra->detalles->sum('cantidad'),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
+            return $compra;
+        });
+    }
+
+    public function send(int|Compra $compra): Compra
+    {
+        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with(['estadoTransaccion', 'proveedor'])->findOrFail($compra);
+
+        if ($compraModel->estadoTransaccion->descripcionET !== 'Borrador') {
+            throw ValidationException::withMessages([
+                'compra' => 'Solo se pueden enviar ordenes en estado Borrador.',
+            ]);
+        }
+
+        $estadoEnviada = EstadoTransaccion::where('descripcionET', 'Enviada')->first();
+
+        if (!$estadoEnviada) {
+            throw ValidationException::withMessages([
+                'estado' => 'No se encontro el estado Enviada.',
+            ]);
+        }
+
+        $compraModel->update([
+            'estado_transaccion_id' => $estadoEnviada->id,
+            'fecha_envio' => now(),
+        ]);
+
+        // Notificación por correo asíncrona mediante Queue Worker
+        if (!empty($compraModel->proveedor?->correoProveedor)) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($compraModel->proveedor->correoProveedor)
+                    ->queue(new \App\Mail\OrdenCompraEnviada($compraModel));
+            } catch (\Throwable $e) {
+                Log::warning('No se pudo encolar correo de orden de compra al proveedor', [
+                    'compra_id' => $compraModel->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $compraModel;
+    }
+
+    public function saveQuote(int|Compra $compra, array $validated, ?string $pdfPath = null): Compra
+    {
+        return DB::transaction(function () use ($compra, $validated, $pdfPath) {
+            $compraModel = ($compra instanceof Compra) ? $compra : Compra::with(['detalles', 'estadoTransaccion'])->findOrFail($compra);
+
+            if ($compraModel->estadoTransaccion->descripcionET !== 'Enviada') {
+                throw ValidationException::withMessages([
+                    'compra' => 'Solo se pueden cotizar ordenes en estado Enviada.',
                 ]);
             }
 
-            return $compra;
+            $subtotal = 0;
+
+            foreach ($compraModel->detalles as $detalle) {
+                $precioCotizado = $validated['precio_cotizado'][$detalle->id] ?? 0;
+                $subtotalLinea = $precioCotizado * $detalle->cantidad;
+
+                $detalle->update([
+                    'precio_cotizado' => $precioCotizado,
+                    'precio_final' => $precioCotizado,
+                    'subtotal_linea' => $subtotalLinea,
+                ]);
+
+                $subtotal += $subtotalLinea;
+            }
+
+            $descuento = $validated['descuento'] ?? 0;
+            $subtotalConDescuento = max(0, $subtotal - $descuento);
+            $igv = round($subtotalConDescuento * 0.18, 2);
+            $total = round($subtotalConDescuento + $igv, 2);
+            $estadoCotizada = EstadoTransaccion::where('descripcionET', 'Cotizada')->first();
+
+            if (!$estadoCotizada) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Cotizada.',
+                ]);
+            }
+
+            $compraModel->update([
+                'estado_transaccion_id' => $estadoCotizada->id,
+                'fecha_cotizacion' => now(),
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'igv' => $igv,
+                'total' => $total,
+                'condiciones_pago' => 'Pago contra entrega',
+                'notas_proveedor' => $validated['notas_proveedor'] ?? null,
+                'pdf_cotizacion' => $pdfPath ?? $compraModel->pdf_cotizacion,
+            ]);
+
+            return $compraModel;
+        });
+    }
+
+    public function approve(int|Compra $compra): Compra
+    {
+        $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+
+        if ($compraModel->estadoTransaccion->descripcionET !== 'Cotizada') {
+            throw ValidationException::withMessages([
+                'compra' => 'Solo se pueden aprobar ordenes en estado Cotizada.',
+            ]);
+        }
+
+        $estadoAprobada = EstadoTransaccion::where('descripcionET', 'Aprobada')->first();
+
+        if (!$estadoAprobada) {
+            throw ValidationException::withMessages([
+                'estado' => 'No se encontro el estado Aprobada.',
+            ]);
+        }
+
+        $compraModel->update([
+            'estado_transaccion_id' => $estadoAprobada->id,
+            'fecha_aprobacion' => now(),
+        ]);
+
+        return $compraModel;
+    }
+
+    public function anular(int|Compra $compra): Compra
+    {
+        return DB::transaction(function () use ($compra) {
+            $compraModel = ($compra instanceof Compra) ? $compra : Compra::with('estadoTransaccion')->findOrFail($compra);
+
+            if ($compraModel->estadoTransaccion && $compraModel->estadoTransaccion->descripcionET === 'Anulado') {
+                throw ValidationException::withMessages([
+                    'compra' => 'La compra ya esta anulada.',
+                ]);
+            }
+
+            if ($compraModel->estadoTransaccion && in_array($compraModel->estadoTransaccion->descripcionET, ['Recibida', 'Recibido', 'Pagada', 'Pagado'])) {
+                throw ValidationException::withMessages([
+                    'compra' => 'No se puede anular una orden de compra que ya fue recibida o pagada. El stock e importes ya fueron procesados.',
+                ]);
+            }
+
+            $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
+
+            if (!$estadoAnulado) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Anulado.',
+                ]);
+            }
+
+            $compraModel->update([
+                'estado_transaccion_id' => $estadoAnulado->id,
+            ]);
+
+            Log::warning('Orden de compra anulada oficialmente (Trazabilidad SSOT)', [
+                'compra_id' => $compraModel->id,
+                'codigo_compra' => $compraModel->codigoCompra,
+                'proveedor_id' => $compraModel->proveedor_id,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
+            return $compraModel;
         });
     }
 }

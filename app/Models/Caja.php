@@ -19,6 +19,11 @@ class Caja extends Model
         'egresoDiario',
     ];
 
+    protected $casts = [
+        'ingresoDiario' => 'decimal:2',
+        'egresoDiario' => 'decimal:2',
+    ];
+
     protected static function boot()
     {
         parent::boot();
@@ -36,11 +41,45 @@ class Caja extends Model
         return $this->hasMany(Venta::class);
     }
 
+    public function pagos()
+    {
+        return $this->hasManyThrough(Pago::class, Venta::class);
+    }
+
     /**
      * Balance del día: ingresos - egresos
      */
     public function getBalanceDiarioAttribute()
     {
         return $this->ingresoDiario - $this->egresoDiario;
+    }
+
+    /**
+     * Carbon instance segura para la fecha de caja
+     */
+    public function getFechaCarbonAttribute(): \Carbon\Carbon
+    {
+        if (empty($this->fecha)) {
+            return now();
+        }
+
+        try {
+            return \Carbon\Carbon::parse($this->fecha);
+        } catch (\Throwable $e) {
+            $cleaned = preg_replace('/:(AM|PM)$/i', ' $1', trim($this->fecha));
+            try {
+                return \Carbon\Carbon::parse($cleaned);
+            } catch (\Throwable $e2) {
+                return now();
+            }
+        }
+    }
+
+    /**
+     * Fecha formateada (d/m/Y) resistente a formatos SQL Server ("Jun 11 2026 12:00:00:AM")
+     */
+    public function getFechaFormateadaAttribute(): string
+    {
+        return $this->fecha_carbon->format('d/m/Y');
     }
 }

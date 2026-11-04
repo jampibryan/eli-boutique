@@ -23,7 +23,13 @@ class Producto extends Model
         'imagenP',
         'descripcionP',
         'precioP',
+        'costo_compra',
     ];
+
+    public function movimientosInventario()
+    {
+        return $this->hasMany(MovimientoInventario::class);
+    }
 
     public function categoriaProducto()
     {
@@ -54,7 +60,11 @@ class Producto extends Model
     // Helper para obtener stock total del producto (suma de todas las tallas)
     public function getStockTotalAttribute()
     {
-        return $this->tallaStocks()->sum('stock');
+        if ($this->relationLoaded('tallaStocks')) {
+            return (int) $this->tallaStocks->sum('stock');
+        }
+
+        return (int) $this->tallaStocks()->sum('stock');
     }
 
 }

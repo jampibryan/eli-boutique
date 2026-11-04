@@ -49,6 +49,9 @@
             @include('adminlte::partials.sidebar.right-sidebar')
         @endif
 
+        {{-- Widget Flotante Global Asistente IA Eli Boutique --}}
+        @include('components.ai-floating-widget')
+
     </div>
 @stop
 

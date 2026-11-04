@@ -147,26 +147,6 @@
                                     <span class="value" style="color: #D4AF37; font-weight: 700; font-size: 1.1rem;">S/
                                         {{ number_format($venta->montoTotal, 2) }}</span>
                                 </div>
-                                @if ($estadoDescripcion == 'Pagado')
-                                    <div class="info-row">
-                                        <i class="fas fa-cloud-upload-alt icon" style="color: #17a2b8;"></i>
-                                        <span class="label">SUNAT:</span>
-                                        @php
-                                            $docSunat = $venta->documentoSunat;
-                                        @endphp
-                                        @if(!$docSunat)
-                                            <span class="badge-soft badge-soft-dark" style="font-size: 0.75rem;">Pendiente</span>
-                                        @elseif($docSunat->estado_envio == 'aceptado')
-                                            <span class="badge-soft badge-soft-success" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Aceptado</span>
-                                        @elseif($docSunat->estado_envio == 'rechazado')
-                                            <span class="badge-soft badge-soft-danger" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Rechazado</span>
-                                        @elseif($docSunat->estado_envio == 'enviando')
-                                            <span class="badge-soft badge-soft-info" style="font-size: 0.75rem;">Enviando...</span>
-                                        @else
-                                            <span class="badge-soft badge-soft-warning" style="font-size: 0.75rem;" title="{{ $docSunat->descripcion_respuesta_sunat }}">Error</span>
-                                        @endif
-                                    </div>
-                                @endif
                             </div>
 
                             <!-- Acciones según estado -->
@@ -189,10 +169,16 @@
                                         </button>
                                     </form>
                                 @elseif($estadoDescripcion == 'Pagado')
-                                    <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank"
-                                        class="btn btn-boutique-gold" style="flex: 1;">
-                                        <i class="fas fa-print"></i> Ticket
-                                    </a>
+                                    <div class="d-flex gap-1 w-100">
+                                        <a href="{{ route('ventas.ticket', $venta) }}" target="_blank"
+                                            class="btn btn-boutique-gold flex-grow-1" title="Imprimir en formato Ticketera">
+                                            <i class="fas fa-print"></i> Ticket ({{ $comprobanteDescripcion }})
+                                        </a>
+                                        <a href="{{ route('ventas.comprobante', $venta) }}" target="_blank"
+                                            class="btn btn-outline-secondary px-3" title="Descargar PDF 80mm">
+                                            <i class="fas fa-file-pdf text-danger"></i>
+                                        </a>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -305,6 +291,47 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            @if (session('venta_rapida_exito'))
+                @php
+                    $infoVenta = session('venta_rapida_exito');
+                @endphp
+                Swal.fire({
+                    title: '¡Venta Cobrada con Éxito!',
+                    html: `
+                        <div class="text-center py-2">
+                            <div class="badge bg-success fs-6 mb-3 px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> {{ $infoVenta['codigo'] }} &bull; {{ $infoVenta['tipo_comprobante'] }}
+                            </div>
+                            <div class="row g-2 text-start p-3 bg-light rounded-3 mb-3 border" style="font-size: 0.95rem;">
+                                <div class="col-6 text-muted">Total Venta:</div>
+                                <div class="col-6 text-end fw-bold">S/ {{ $infoVenta['total'] }}</div>
+                                <div class="col-6 text-muted">Importe Recibido:</div>
+                                <div class="col-6 text-end fw-bold">S/ {{ $infoVenta['importe'] }}</div>
+                                <div class="col-12"><hr class="my-1"></div>
+                                <div class="col-6 fs-5 fw-bold text-success">VUELTO:</div>
+                                <div class="col-6 fs-5 text-end fw-bold text-success">S/ {{ $infoVenta['vuelto'] }}</div>
+                            </div>
+                            <p class="text-muted small mb-0"><i class="fas fa-cash-register me-1"></i> Registrado en Caja Diaria con éxito.</p>
+                        </div>
+                    `,
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonColor: '#D4AF37',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fas fa-print me-1"></i> Imprimir Ticket (Ticketera)',
+                    cancelButtonText: '<i class="fas fa-check me-1"></i> Listo / Cerrar',
+                    customClass: {
+                        confirmButton: 'btn btn-boutique-gold px-4 py-2 me-2',
+                        cancelButton: 'btn btn-secondary px-4 py-2'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open("{{ $infoVenta['url_ticket'] ?? $infoVenta['url_pdf'] }}", '_blank');
+                    }
+                });
+            @endif
+
             // Búsqueda con debounce
             let searchTimeout;
             const searchInput = document.getElementById('buscarVenta');

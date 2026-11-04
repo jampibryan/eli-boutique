@@ -47,6 +47,8 @@ class CompraPagoFlowTest extends TestCase
 
     public function test_sale_payment_marks_sale_as_paid_and_creates_payment(): void
     {
+        \Illuminate\Support\Facades\Queue::fake();
+
         $context = $this->createVentaContext();
         $venta = $context['venta'];
         $comprobante = $context['comprobante'];

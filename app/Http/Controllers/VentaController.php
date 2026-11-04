@@ -4,14 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Caja;
 use App\Models\Cliente;
+use App\Models\Comprobante;
 use App\Models\EstadoTransaccion;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
 use App\Models\ProductoTallaStock;
 use App\Models\Venta;
+use App\Services\PagoService;
 use App\Services\VentaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
 {
@@ -97,14 +101,34 @@ class VentaController extends Controller
         return $pdf->stream('Reporte de Ventas.pdf');
     }
 
-    public function pdfComprobante($id)
+    public function verTicket($id)
     {
-        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'documentoSunat'])
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'colaborador'])
             ->findOrFail($id);
 
-        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? '';
+        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? 'Boleta';
+
+        return view('Venta.ticket', [
+            'venta' => $venta,
+            'tipoComprobante' => $tipoComprobante,
+        ]);
+    }
+
+    public function pdfComprobante($id)
+    {
+        $venta = Venta::with(['cliente', 'estadoTransaccion', 'detalles.producto.tallas', 'detalles.talla', 'pago.comprobante', 'colaborador'])
+            ->findOrFail($id);
+
+        $tipoComprobante = $venta->pago->comprobante->descripcionCOM ?? 'Boleta';
+
+        // Dimensiones estándar para papel térmico continuo de 80mm
+        // 80mm = ~226.77 pt. Alto dinámico proporcional a los productos
+        $itemsCount = $venta->detalles->count();
+        $altoPuntos = max(520, 420 + ($itemsCount * 32));
 
         $pdf = App::make('dompdf.wrapper');
+        $pdf->setPaper([0, 0, 226.77, $altoPuntos], 'portrait');
+
         $view = view('Venta.comprobante_moderno', [
             'venta' => $venta,
             'tipoComprobante' => $tipoComprobante,
@@ -119,7 +143,7 @@ class VentaController extends Controller
 
     public function index(Request $request)
     {
-        $query = Venta::with(['cliente', 'estadoTransaccion', 'detalles.talla', 'pago']);
+        $query = Venta::with(['cliente', 'estadoTransaccion', 'detalles.talla', 'pago.comprobante']);
 
         if ($request->filled('search')) {
             $query->where('codigoVenta', 'like', "%{$request->search}%");
@@ -162,27 +186,89 @@ class VentaController extends Controller
 
         $clienteSeleccionado = null;
         $generos = \App\Models\TipoGenero::all();
+        $comprobantes = Comprobante::all();
 
-        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado', 'generos'));
+        return view('Venta.create', compact('clientes', 'carrito', 'productos', 'tallas', 'stocksPorTalla', 'clienteSeleccionado', 'comprobantes', 'generos'));
     }
 
-    public function store(Request $request, VentaService $ventaService)
+    public function store(Request $request, VentaService $ventaService, PagoService $pagoService)
     {
-        $validated = $request->validate([
+        $accion = $request->input('accion', 'cobrar');
+
+        $rules = [
             'cliente_id' => 'required|exists:clientes,id',
             'productos' => 'required|array',
             'productos.*.id' => 'required|exists:productos,id',
             'productos.*.talla_id' => 'required|exists:producto_tallas,id',
             'productos.*.cantidad' => 'required|integer|min:1',
             'montoTotal' => 'required|numeric',
+        ];
+
+        if ($accion === 'cobrar') {
+            $rules['comprobante_id'] = 'required|exists:comprobantes,id';
+            $rules['importe'] = 'required|numeric|min:' . (float) $request->input('montoTotal', 0);
+
+            $comprobante = Comprobante::find($request->input('comprobante_id'));
+            if ($comprobante && strcasecmp($comprobante->descripcionCOM, 'Factura') === 0) {
+                $rules['ruc_factura'] = ['required', 'regex:/^\d{11}$/'];
+                $rules['razon_social_factura'] = ['required', 'string', 'max:255'];
+            }
+        }
+
+        $validated = $request->validate($rules, [
+            'importe.min' => 'El importe ingresado debe ser mayor o igual al total a pagar (S/ :min).',
+            'ruc_factura.required' => 'El RUC es obligatorio para emitir Factura.',
+            'ruc_factura.regex' => 'El RUC debe tener exactamente 11 dígitos numéricos.',
+            'razon_social_factura.required' => 'La Razón Social es obligatoria para emitir Factura.',
         ]);
 
+        if ($accion === 'cobrar') {
+            $ventaData = [
+                'cliente_id' => $validated['cliente_id'],
+                'productos' => $validated['productos'],
+                'montoTotal' => $validated['montoTotal'],
+            ];
+
+            $pagoData = [
+                'comprobante_id' => $validated['comprobante_id'],
+                'importe' => (float) $validated['importe'],
+            ];
+
+            if (!empty($validated['ruc_factura'])) {
+                $pagoData['ruc_factura'] = $validated['ruc_factura'];
+            }
+            if (!empty($validated['razon_social_factura'])) {
+                $pagoData['razon_social_factura'] = $validated['razon_social_factura'];
+            }
+
+            $resultado = $ventaService->createAndPay($ventaData, $pagoData, $pagoService);
+            $venta = $resultado['venta'];
+            $vuelto = $resultado['vuelto'];
+
+            session()->forget('carrito');
+
+            return redirect()->route('ventas.index')->with([
+                'success' => "¡Venta {$venta->codigoVenta} cobrada exitosamente!",
+                'venta_rapida_exito' => [
+                    'id' => $venta->id,
+                    'codigo' => $venta->codigoVenta,
+                    'total' => number_format((float) $venta->montoTotal, 2),
+                    'importe' => number_format((float) $validated['importe'], 2),
+                    'vuelto' => number_format((float) $vuelto, 2),
+                    'tipo_comprobante' => $venta->pago->comprobante->descripcionCOM ?? 'Comprobante',
+                    'url_ticket' => route('ventas.ticket', ['venta' => $venta->id, 'autoprint' => 1]),
+                    'url_pdf' => route('ventas.comprobante', $venta->id),
+                ],
+            ]);
+        }
+
+        // Flujo tradicional: Guardar como Pendiente (Apartado)
         $venta = $ventaService->create($validated);
 
         session()->forget('carrito');
 
         return redirect()->route('pagos.create', ['id' => $venta->id, 'type' => 'venta'])
-            ->with('success', 'Venta creada exitosamente. Proceda al pago.');
+            ->with('success', 'Venta registrada como Pendiente. Proceda al pago cuando lo desee.');
     }
 
     public function show(Venta $venta)
@@ -245,7 +331,27 @@ class VentaController extends Controller
 
     public function destroy(Venta $venta)
     {
-        $venta->delete();
+        $venta->loadMissing('estadoTransaccion');
+
+        if ($venta->estadoTransaccion && $venta->estadoTransaccion->descripcionET === 'Pagado') {
+            return redirect()->route('ventas.index')->with('error', 'No se puede eliminar una venta que ya fue pagada. Debe anularse mediante el flujo oficial.');
+        }
+
+        if ($venta->estadoTransaccion && $venta->estadoTransaccion->descripcionET === 'Anulado') {
+            return redirect()->route('ventas.index')->with('error', 'Una venta anulada no puede eliminarse físicamente; debe preservarse en el historial para auditoría contable.');
+        }
+
+        DB::transaction(function () use ($venta) {
+            $codigo = $venta->codigoVenta;
+            $venta->delete();
+
+            Log::info('Venta en estado Pendiente descartada y stock restituido', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $codigo,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+        });
 
         return redirect()->route('ventas.index')->with('success', 'Venta eliminada con exito.');
     }
@@ -270,16 +376,10 @@ class VentaController extends Controller
         ]);
     }
 
-    public function anularVenta($id)
+    public function anularVenta($id, VentaService $ventaService)
     {
-        $venta = Venta::findOrFail($id);
+        $ventaService->anular($id);
 
-        if ($venta->estadoTransaccion->descripcionET !== 'Anulado') {
-            $venta->anular();
-
-            return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
-        }
-
-        return redirect()->route('ventas.index')->with('error', 'La venta ya esta anulada.');
+        return redirect()->route('ventas.index')->with('success', 'Venta anulada correctamente.');
     }
 }

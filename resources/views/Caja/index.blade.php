@@ -79,7 +79,7 @@
                         <!-- Header con fecha -->
                         <div class="boutique-card-header text-center">
                             <h5 class="icon mb-0">
-                                <i class="fas fa-calendar-day"></i> {{ \Carbon\Carbon::parse($caja->fecha)->format('d/m/Y') }}
+                                <i class="fas fa-calendar-day"></i> {{ $caja->fecha_formateada }}
                             </h5>
                             <small>Caja #{{ $caja->codigoCaja }}</small>
                         </div>

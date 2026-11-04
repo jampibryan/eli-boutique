@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ColaboradorController;
@@ -45,7 +46,7 @@ Route::middleware([
 });
 
 
-Auth::routes(['register' => false]);
+Auth::routes(['register' => false, 'reset' => false, 'confirm' => false]);
 
 Route::middleware([
     'auth',
@@ -79,6 +80,7 @@ Route::middleware([
 
     // PRODUCTOS
     Route::get('productos/reporte', [ProductoController::class, 'pdfProductos'])->name('productos.pdf');
+    Route::get('productos/excel', [ProductoController::class, 'excelProductos'])->name('productos.excel');
     Route::resource('productos', ProductoController::class);
 
     // CARRITO
@@ -90,6 +92,7 @@ Route::middleware([
     Route::post('/carrito/duplicar/{index}', [ProductoController::class, 'duplicarItemCarrito'])->name('carrito.duplicar');
 
     // VENTAS (API movida a routes/api.php → GET /api/ventas, /api/ventas/{id})
+    Route::get('/ventas/{venta}/ticket', [VentaController::class, 'verTicket'])->name('ventas.ticket');
     Route::get('/ventas/{venta}/comprobante', [VentaController::class, 'pdfComprobante'])->name('ventas.comprobante');
     Route::get('/ventas/reporte', [VentaController::class, 'pdfVentas'])->name('ventas.pdf');
     Route::post('/ventas/{id}/anular', [VentaController::class, 'anularVenta'])->name('ventas.anular');
@@ -131,6 +134,15 @@ Route::middleware([
 
     // Predicción
     Route::get('/prediccion', [PrediccionController::class, 'index'])->name('prediccion.index');
+
+    // ASISTENTE INTELIGENTE ELI BOUTIQUE (DEEPSEEK AI)
+    Route::get('/asistente-ia', [AiController::class, 'index'])->name('ai.index');
+    Route::get('/ai/ping', [AiController::class, 'ping'])->name('ai.ping');
+    Route::get('/ai/contexto-actual', [AiController::class, 'contextoActual'])->name('ai.contexto');
+    Route::post('/ai/consultar', [AiController::class, 'consultar'])->name('ai.consultar');
+    Route::post('/ai/consultar-con-contexto', [AiController::class, 'consultarConContexto'])->name('ai.consultarConContexto');
+    Route::get('/ai/historial', [AiController::class, 'historial'])->name('ai.historial');
+    Route::get('/ai/metricas', [AiController::class, 'metricas'])->name('ai.metricas');
 
     Route::get('/guiaventas', function () {
         return redirect(asset('guiaventas/index.htm'));

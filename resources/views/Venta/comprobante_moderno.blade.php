@@ -1,511 +1,322 @@
 @php
     use Illuminate\Support\Facades\Auth;
 
-    $isFactura = $tipoComprobante === 'Factura';
+    $isFactura = (strcasecmp($tipoComprobante, 'Factura') === 0);
     $usuario = Auth::user();
     $clienteNombre = trim(($venta->cliente->nombreCliente ?? '') . ' ' . ($venta->cliente->apellidoCliente ?? ''));
+    if (empty($clienteNombre)) {
+        $clienteNombre = 'CLIENTE VARIOS';
+    }
     $baseImponible = $venta->detalles->sum(fn($d) => $d->cantidad * $d->base_imponible);
     $igvTotal = $venta->detalles->sum(fn($d) => $d->cantidad * $d->igv);
-@endphp
+    $cajero = $venta->colaborador->nombreColab ?? ($usuario->name ?? 'Caja Central');
+    $importe = $venta->pago ? (float) $venta->pago->importe : (float) $venta->montoTotal;
+    $vuelto = $venta->pago ? (float) $venta->pago->vuelto : 0.00;
+    $rucEmpresa = '20608976543';
+    $codigoSerie = ($isFactura ? 'F001-' : 'B001-') . $venta->codigoVenta;
 
+    // Logo en base64 para evitar bloqueos de red en DomPDF
+    $logoBase64 = '';
+    $logoPath = public_path('img/logo_eli_boutique.png');
+    if (file_exists($logoPath)) {
+        $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{ $isFactura ? 'Factura' : 'Boleta' }} {{ $venta->codigoVenta }}</title>
     <style>
         @page {
-            margin: 24px;
+            margin: 3mm 3mm;
+            size: 80mm auto;
         }
 
         body {
-            font-family: DejaVu Sans, sans-serif;
-            color: #1f2937;
-            font-size: 12px;
+            font-family: DejaVu Sans, monospace;
+            color: #000000;
+            font-size: 8.5pt;
+            line-height: 1.3;
             margin: 0;
+            padding: 0;
             background: #ffffff;
         }
 
-        .page {
-            border: 1px solid #d9dee8;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .topbar {
-            height: 10px;
-            background: linear-gradient(90deg, #2C2C2C 0%, #D4AF37 100%);
-        }
-
-        .shell {
-            padding: 24px 26px 18px 26px;
-        }
-
-        .company-header {
+        .ticket-wrapper {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 22px;
-        }
-
-        .company-header td {
-            vertical-align: top;
-        }
-
-        .brand {
-            width: 60%;
-        }
-
-        .brand table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .brand td {
-            vertical-align: middle;
-        }
-
-        .logo-box {
-            width: 86px;
+            margin: 0 auto;
+            text-align: center;
         }
 
         .logo {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            border: 4px solid #D4AF37;
-            background: #fdfcf7;
+            max-width: 60px;
+            height: auto;
+            margin: 0 auto 4px auto;
+            display: block;
         }
 
-        .brand-name {
-            font-size: 28px;
-            font-weight: 800;
+        .brand-title {
+            font-size: 12.5pt;
+            font-weight: bold;
             letter-spacing: 0.5px;
-            color: #2C2C2C;
-            margin: 0 0 4px 0;
-        }
-
-        .brand-copy {
-            color: #5b6472;
-            line-height: 1.5;
-            font-size: 11px;
-            margin: 0;
-        }
-
-        .doc-box {
-            width: 40%;
-            text-align: right;
-        }
-
-        .doc-card {
-            display: inline-block;
-            width: 215px;
-            border: 2px solid #2C2C2C;
-            border-radius: 14px;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        .doc-card .label {
-            background: #2C2C2C;
-            color: #ffffff;
-            padding: 10px 12px;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1px;
             text-transform: uppercase;
+            margin: 2px 0;
         }
 
-        .doc-card .series {
-            padding: 16px 12px;
-            color: #D4AF37;
-            font-size: 22px;
-            font-weight: 800;
+        .brand-slogan {
+            font-size: 7.5pt;
+            font-weight: normal;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .brand-info {
+            font-size: 7.5pt;
+            line-height: 1.25;
+            margin-bottom: 5px;
+        }
+
+        .divider {
+            border-bottom: 1px dashed #000000;
+            margin: 4px 0;
+        }
+
+        .divider-double {
+            border-bottom: 2px dashed #000000;
+            margin: 5px 0;
+        }
+
+        .doc-title {
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 2px 0;
+        }
+
+        .doc-number {
+            font-size: 10.5pt;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
         .meta-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 12px 0;
-            margin: 0 -12px 18px -12px;
+            font-size: 7.8pt;
+            text-align: left;
+            margin: 3px 0;
         }
 
         .meta-table td {
-            width: 50%;
+            padding: 1.5px 0;
             vertical-align: top;
         }
 
-        .panel {
-            border: 1px solid #d9dee8;
-            border-radius: 14px;
-            overflow: hidden;
-            min-height: 118px;
+        .meta-label {
+            font-weight: bold;
+            width: 40%;
         }
 
-        .panel-title {
-            background: #f7f9fc;
-            color: #2C2C2C;
-            padding: 10px 14px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            border-bottom: 1px solid #d9dee8;
-        }
-
-        .panel-body {
-            padding: 12px 14px;
-        }
-
-        .field {
-            margin-bottom: 8px;
-        }
-
-        .field:last-child {
-            margin-bottom: 0;
-        }
-
-        .field-label {
-            display: block;
-            color: #6b7280;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin-bottom: 2px;
-        }
-
-        .field-value {
-            color: #111827;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .items {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 18px;
-        }
-
-        .items thead th {
-            background: #2C2C2C;
-            color: #ffffff;
-            padding: 10px 8px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            border: 0;
-        }
-
-        .items tbody td {
-            border-bottom: 1px solid #e6eaf0;
-            padding: 10px 8px;
-            vertical-align: top;
-            font-size: 11px;
-        }
-
-        .items tbody tr:nth-child(even) {
-            background: #fbfcfe;
-        }
-
-        .text-left {
+        .items-table {
+            font-size: 7.5pt;
+            margin: 4px 0;
             text-align: left;
         }
 
-        .text-center {
+        .items-table th {
+            font-weight: bold;
+            border-bottom: 1px dashed #000000;
+            padding: 3px 0;
+            text-transform: uppercase;
+            font-size: 7.5pt;
+        }
+
+        .items-table td {
+            padding: 3px 0;
+            vertical-align: top;
+            border-bottom: 1px dotted #bbb;
+        }
+
+        .col-cant {
+            width: 12%;
             text-align: center;
         }
 
-        .text-right {
+        .col-desc {
+            width: 48%;
+            padding-right: 3px;
+        }
+
+        .col-pu {
+            width: 20%;
             text-align: right;
         }
 
-        .product-name {
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 2px;
-        }
-
-        .product-meta {
-            color: #6b7280;
-            font-size: 10px;
-        }
-
-        .summary-wrap {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .summary-wrap td {
-            vertical-align: top;
-        }
-
-        .summary-note {
-            width: 56%;
-            padding-right: 16px;
-        }
-
-        .summary-note .note-card {
-            border: 1px solid #d9dee8;
-            border-radius: 14px;
-            padding: 14px 16px;
-            background: #fbfcfe;
-        }
-
-        .note-title {
-            color: #2C2C2C;
-            font-weight: 700;
-            margin: 0 0 8px 0;
-            font-size: 12px;
-        }
-
-        .note-copy {
-            color: #5b6472;
-            font-size: 11px;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .summary-box {
-            width: 44%;
-        }
-
-        .totals {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #d9dee8;
-            border-radius: 14px;
-            overflow: hidden;
-        }
-
-        .totals td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #e6eaf0;
-            font-size: 11px;
-        }
-
-        .totals tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .totals .label {
-            color: #5b6472;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .totals .value {
+        .col-tot {
+            width: 20%;
             text-align: right;
-            font-weight: 700;
-            color: #111827;
+            font-weight: bold;
         }
 
-        .totals .grand td {
-            background: #2C2C2C;
-            color: #D4AF37;
-            font-size: 13px;
-            font-weight: 800;
+        .item-talla {
+            font-size: 7pt;
+            color: #333;
+        }
+
+        .totals-table {
+            font-size: 8pt;
+            text-align: right;
+            margin: 4px 0;
+        }
+
+        .totals-table td {
+            padding: 2px 0;
+        }
+
+        .grand-total {
+            font-size: 10.5pt;
+            font-weight: bold;
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+        }
+
+        .grand-total td {
+            padding: 4px 0;
         }
 
         .footer {
-            margin-top: 18px;
-            padding-top: 12px;
-            border-top: 1px solid #d9dee8;
-            color: #6b7280;
-            font-size: 10px;
             text-align: center;
-            line-height: 1.6;
+            font-size: 7pt;
+            line-height: 1.3;
+            margin-top: 8px;
         }
     </style>
 </head>
 
 <body>
-    <div class="page">
-        <div class="topbar"></div>
-        <div class="shell">
-            <table class="company-header">
+    <div class="ticket-wrapper">
+        @if (!empty($logoBase64))
+            <img src="{{ $logoBase64 }}" alt="Eli Boutique" class="logo">
+        @endif
+
+        <div class="brand-title">ELI BOUTIQUE</div>
+        <div class="brand-slogan">Exclusividad, Moda y Elegancia</div>
+        <div class="brand-info">
+            R.U.C.: {{ $rucEmpresa }}<br>
+            Jr. Comercio N° 456 - Huánuco, Perú<br>
+            Tel: (062) 512345 &bull; Cel: 987 654 321
+        </div>
+
+        <div class="divider-double"></div>
+
+        <div class="doc-title">{{ $isFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA' }}</div>
+        <div class="doc-number">{{ $codigoSerie }}</div>
+
+        <div class="divider"></div>
+
+        <table class="meta-table">
+            <tr>
+                <td class="meta-label">FECHA EMISIÓN:</td>
+                <td>{{ $venta->created_at->format('d/m/Y h:i A') }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">CAJERO/EMISOR:</td>
+                <td>{{ strtoupper($cajero) }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">ESTADO:</td>
+                <td><strong>{{ strtoupper($venta->estadoTransaccion->descripcionET ?? 'PAGADO') }}</strong></td>
+            </tr>
+            @if ($isFactura)
                 <tr>
-                    <td class="brand">
-                        <table>
-                            <tr>
-                                <td class="logo-box">
-                                    <img class="logo" src="{{ public_path('img/logo_eli_boutique.png') }}" alt="Logo Eli Boutique">
-                                </td>
-                                <td>
-                                    <div class="brand-name">Eli Boutique</div>
-                                    <p class="brand-copy">
-                                        Boutique de ropa y accesorios<br>
-                                         RUC: 20276544711 | Celular: 922 070 116<br>
-                                         Calle Ayacucho 624, Pacanga
-                                    </p>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td class="doc-box">
-                        <div class="doc-card">
-                            <div class="label">{{ $isFactura ? 'Factura Electrónica' : 'Boleta de Venta Electrónica' }}</div>
-                            <div class="series">{{ $isFactura ? 'F001' : 'B001' }}-{{ str_pad($venta->codigoVenta, 8, '0', STR_PAD_LEFT) }}</div>
-                        </div>
-                    </td>
+                    <td class="meta-label">R.U.C.:</td>
+                    <td><strong>{{ $venta->ruc_factura ?? ($venta->cliente->dniCliente ?? '-') }}</strong></td>
                 </tr>
-            </table>
-
-            <table class="meta-table">
                 <tr>
-                    <td>
-                        <div class="panel">
-                            <div class="panel-title">Datos del cliente</div>
-                            <div class="panel-body">
-                                <div class="field">
-                                    <span class="field-label">{{ $isFactura ? 'Razón Social' : 'Cliente' }}</span>
-                                    <span class="field-value">
-                                        @if ($isFactura && !empty($venta->ruc_factura))
-                                            {{ $venta->razon_social_factura }}
-                                        @else
-                                            {{ $clienteNombre !== '' ? $clienteNombre : 'Cliente no disponible' }}
-                                        @endif
-                                    </span>
-                                </div>
-                                <div class="field">
-                                    <span class="field-label">{{ $isFactura ? 'RUC' : 'Documento' }}</span>
-                                    <span class="field-value">
-                                        @if ($isFactura && !empty($venta->ruc_factura))
-                                            {{ $venta->ruc_factura }}
-                                        @else
-                                            {{ $venta->cliente->dniCliente ?? 'No registrado' }}
-                                        @endif
-                                    </span>
-                                </div>
-                                @if ($isFactura && !empty($venta->ruc_factura))
-                                    <div class="field">
-                                        <span class="field-label">Contacto Adquiriente</span>
-                                        <span class="field-value">{{ $clienteNombre }} (DNI: {{ $venta->cliente->dniCliente ?? '-' }})</span>
-                                    </div>
-                                @endif
-                                <div class="field">
-                                    <span class="field-label">Estado</span>
-                                    <span class="field-value">{{ $venta->estadoTransaccion->descripcionET ?? 'No definido' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="panel">
-                            <div class="panel-title">Datos de emision</div>
-                            <div class="panel-body">
-                                <div class="field">
-                                    <span class="field-label">Fecha</span>
-                                    <span class="field-value">{{ $venta->created_at->format('d/m/Y') }}</span>
-                                </div>
-                                <div class="field">
-                                    <span class="field-label">Hora</span>
-                                    <span class="field-value">{{ $venta->created_at->format('h:i A') }}</span>
-                                </div>
-                                <div class="field">
-                                    <span class="field-label">Generado por</span>
-                                    <span class="field-value">{{ $venta->colaborador->nombreColab ?? ($usuario->name ?? 'Sistema') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
+                    <td class="meta-label">RAZÓN SOCIAL:</td>
+                    <td><strong>{{ strtoupper($venta->razon_social_factura ?? $clienteNombre) }}</strong></td>
                 </tr>
-            </table>
-
-            <table class="items">
-                <thead>
-                    <tr>
-                        <th style="width: 7%;">#</th>
-                        <th style="width: 39%;" class="text-left">Descripcion</th>
-                        <th style="width: 12%;">Talla</th>
-                        <th style="width: 10%;">Cant.</th>
-                        <th style="width: 16%;">P. Unit.</th>
-                        <th style="width: 16%;">Importe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($venta->detalles as $index => $detalle)
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-left">
-                                <div class="product-name">
-                                    {{ $detalle->producto->descripcionP ?? 'Producto eliminado' }}
-                                </div>
-                                <div class="product-meta">
-                                    Codigo interno: {{ $detalle->producto_id }}
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                {{ $detalle->talla->descripcion ?? ($detalle->producto->tallas->first()->descripcion ?? '-') }}
-                            </td>
-                            <td class="text-center">{{ $detalle->cantidad }}</td>
-                            <td class="text-right">S/. {{ number_format($detalle->precio_unitario, 2) }}</td>
-                            <td class="text-right">S/. {{ number_format($detalle->subtotal, 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <table class="summary-wrap">
+            @else
                 <tr>
-                    <td class="summary-note">
-                        <div class="note-card">
-                            <p class="note-title">Observaciones</p>
-                            <p class="note-copy">
-                                Este comprobante resume los productos entregados y los importes cobrados en la operacion.
-                                @if ($isFactura)
-                                    Los valores mostrados consideran base imponible e IGV segun el detalle registrado.
-                                @else
-                                    Los importes consignados corresponden al precio final cobrado al cliente.
-                                @endif
-                            </p>
-                        </div>
-                    </td>
-                    <td class="summary-box">
-                        <table class="totals">
-                            @if ($isFactura)
-                                <tr>
-                                    <td class="label">Base imponible</td>
-                                    <td class="value">S/. {{ number_format($baseImponible, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="label">IGV</td>
-                                    <td class="value">S/. {{ number_format($igvTotal, 2) }}</td>
-                                </tr>
-                            @endif
-                            <tr class="grand">
-                                <td>Total</td>
-                                <td class="text-right">S/. {{ number_format($venta->montoTotal, 2) }}</td>
-                            </tr>
-                        </table>
-                    </td>
+                    <td class="meta-label">CLIENTE:</td>
+                    <td><strong>{{ strtoupper($clienteNombre) }}</strong></td>
                 </tr>
-            </table>
-
-            @if ($venta->documentoSunat && $venta->documentoSunat->signature_hash)
-                <div style="margin-top: 15px; border: 1px dashed #d9dee8; padding: 10px; border-radius: 8px; font-size: 10px; color: #5b6472;">
-                    <table style="width: 100%; border-collapse: collapse; border: none;">
-                        <tr style="border: none;">
-                            <td style="vertical-align: middle; width: 80%; border: none; padding: 0;">
-                                <strong>Código Hash:</strong> {{ $venta->documentoSunat->signature_hash }}<br>
-                                <span style="font-size: 9px; line-height: 1.3;">Representación impresa de la {{ $isFactura ? 'Factura Electrónica' : 'Boleta de Venta Electrónica' }}.<br>
-                                Autorizado mediante resolución de SUNAT. Consulte su validez en el portal oficial.</span>
-                            </td>
-                            <td style="vertical-align: middle; text-align: right; width: 20%; border: none; padding: 0;">
-                                <div style="font-weight: bold; border: 1px solid #D4AF37; color: #D4AF37; display: inline-block; padding: 5px 8px; border-radius: 4px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    SUNAT ACEPTADO
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                <tr>
+                    <td class="meta-label">DNI / DOC:</td>
+                    <td>{{ $venta->cliente->dniCliente ?? 'SIN DOCUMENTO' }}</td>
+                </tr>
             @endif
+        </table>
 
-            <div class="footer">
-                Gracias por su preferencia.<br>
-                Eli Boutique - comprobante emitido desde el sistema interno.
-            </div>
+        <div class="divider"></div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-cant">CNT</th>
+                    <th class="col-desc">DESCRIPCIÓN</th>
+                    <th class="col-pu">P.U.</th>
+                    <th class="col-tot">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($venta->detalles as $detalle)
+                    @php
+                        $tallaNombre = $detalle->talla->descripcion ?? ($detalle->producto->tallas->first()->descripcion ?? '-');
+                        $prodNombre = $detalle->producto->descripcionP ?? 'Prenda';
+                    @endphp
+                    <tr>
+                        <td class="col-cant">{{ $detalle->cantidad }}</td>
+                        <td class="col-desc">
+                            {{ $prodNombre }}<br>
+                            <span class="item-talla">[Talla: {{ $tallaNombre }}]</span>
+                        </td>
+                        <td class="col-pu">S/. {{ number_format($detalle->precio_unitario, 2) }}</td>
+                        <td class="col-tot">S/. {{ number_format($detalle->subtotal, 2) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <table class="totals-table">
+            @if ($isFactura)
+                <tr>
+                    <td>OP. GRAVADA:</td>
+                    <td style="width: 35%;">S/. {{ number_format($baseImponible, 2) }}</td>
+                </tr>
+                <tr>
+                    <td>I.G.V. (18%):</td>
+                    <td>S/. {{ number_format($igvTotal, 2) }}</td>
+                </tr>
+            @endif
+            <tr class="grand-total">
+                <td>TOTAL A PAGAR:</td>
+                <td>S/. {{ number_format($venta->montoTotal, 2) }}</td>
+            </tr>
+            <tr>
+                <td>IMPORTE RECIBIDO:</td>
+                <td>S/. {{ number_format($importe, 2) }}</td>
+            </tr>
+            <tr>
+                <td><strong>VUELTO:</strong></td>
+                <td><strong>S/. {{ number_format($vuelto, 2) }}</strong></td>
+            </tr>
+        </table>
+
+        <div class="divider-double"></div>
+
+        <div class="footer">
+            <strong>¡GRACIAS POR SU PREFERENCIA!</strong><br>
+            ELI BOUTIQUE &bull; EXCLUSIVIDAD Y ESTILO<br>
+            Conserve este comprobante para cualquier cambio dentro de 7 días.<br>
+            Comprobante emitido desde el sistema interno.
         </div>
     </div>
 </body>

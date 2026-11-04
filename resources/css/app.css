@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+    zoom: 0.9;
+}
+
 [x-cloak] {
     display: none;
 }
+

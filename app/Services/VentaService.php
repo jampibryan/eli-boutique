@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Models\Caja;
 use App\Models\EstadoTransaccion;
+use App\Models\MovimientoInventario;
 use App\Models\Producto;
 use App\Models\ProductoTalla;
 use App\Models\ProductoTallaStock;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
+use App\Services\PagoService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class VentaService
@@ -102,12 +106,17 @@ class VentaService
                 'colaborador_id' => $colaboradorId,
             ]);
 
+            $kardexHabilitado = Schema::hasTable('movimientos_inventario');
+            $costoDetalleHabilitado = Schema::hasTable('venta_detalles') && Schema::hasColumn('venta_detalles', 'costo_unitario');
+
             foreach ($detallesVenta as $detalleVenta) {
                 $precioConIGV = $detalleVenta['producto']->precioP;
+                $costoUnitario = (float) ($detalleVenta['producto']->costo_compra ?? 0.00);
                 $baseImponible = round($precioConIGV / 1.18, 2);
                 $igv = round($precioConIGV - $baseImponible, 2);
+                $stockAnterior = $detalleVenta['talla_stock']->stock;
 
-                VentaDetalle::create([
+                $detalleData = [
                     'venta_id' => $venta->id,
                     'producto_id' => $detalleVenta['producto']->id,
                     'producto_talla_id' => $detalleVenta['talla_id'],
@@ -116,12 +125,78 @@ class VentaService
                     'base_imponible' => $baseImponible,
                     'igv' => $igv,
                     'subtotal' => $detalleVenta['cantidad'] * $precioConIGV,
-                ]);
+                ];
+
+                if ($costoDetalleHabilitado) {
+                    $detalleData['costo_unitario'] = $costoUnitario;
+                }
+
+                VentaDetalle::create($detalleData);
 
                 $detalleVenta['talla_stock']->decrement('stock', $detalleVenta['cantidad']);
+                $stockNuevo = $detalleVenta['talla_stock']->stock;
+
+                if ($kardexHabilitado) {
+                    MovimientoInventario::create([
+                        'producto_id' => $detalleVenta['producto']->id,
+                        'producto_talla_id' => $detalleVenta['talla_id'],
+                        'tipo_movimiento' => MovimientoInventario::TIPO_SALIDA_VENTA,
+                        'cantidad' => -$detalleVenta['cantidad'],
+                        'costo_unitario' => $costoUnitario,
+                        'precio_unitario' => $precioConIGV,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stockNuevo,
+                        'origen_tipo' => Venta::class,
+                        'origen_id' => $venta->id,
+                        'referencia_documento' => 'Venta ' . $venta->codigoVenta,
+                        'user_id' => auth()->id(),
+                        'motivo' => 'Venta en POS/Mostrador - Reserva de prenda',
+                    ]);
+                }
             }
 
+            Log::info('Venta creada en estado Pendiente (Reserva de stock por tallas)', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $venta->codigoVenta,
+                'cliente_id' => $venta->cliente_id,
+                'caja_id' => $venta->caja_id,
+                'monto_total' => $venta->montoTotal,
+                'total_lineas' => count($detallesVenta),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
             return $venta;
+        });
+    }
+
+    public function createAndPay(array $validatedVenta, array $validatedPago, PagoService $pagoService): array
+    {
+        return DB::transaction(function () use ($validatedVenta, $validatedPago, $pagoService) {
+            // 1. Crear venta (reserva stock de tallas con lockForUpdate, valida caja abierta, crea detalles)
+            $venta = $this->create($validatedVenta);
+
+            // 2. Registrar pago en caja (valida importe, calcula vuelto, actualiza a Pagado y genera registro en pagos)
+            $pagoService->register($venta->id, 'venta', $validatedPago);
+
+            $venta->refresh();
+            $venta->load(['pago.comprobante', 'cliente', 'detalles.producto', 'detalles.talla']);
+
+            Log::info('Venta POS Express creada y pagada atómicamente', [
+                'venta_id' => $venta->id,
+                'codigo_venta' => $venta->codigoVenta,
+                'monto_total' => $venta->montoTotal,
+                'importe' => $validatedPago['importe'] ?? null,
+                'vuelto' => $venta->pago ? $venta->pago->vuelto : 0,
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
+            return [
+                'venta' => $venta,
+                'pago' => $venta->pago,
+                'vuelto' => $venta->pago ? (float) $venta->pago->vuelto : 0.0,
+            ];
         });
     }
 
@@ -242,6 +317,92 @@ class VentaService
             }
 
             return $venta;
+        });
+    }
+
+    public function anular(int|Venta $venta): Venta
+    {
+        return DB::transaction(function () use ($venta) {
+            $ventaModel = ($venta instanceof Venta) ? $venta : Venta::findOrFail($venta);
+            $ventaModel->loadMissing(['estadoTransaccion', 'detalles', 'caja']);
+
+            if ($ventaModel->estadoTransaccion && $ventaModel->estadoTransaccion->descripcionET === 'Anulado') {
+                throw ValidationException::withMessages([
+                    'venta' => 'La venta ya esta anulada.',
+                ]);
+            }
+
+            $estadoAnulado = EstadoTransaccion::where('descripcionET', 'Anulado')->first();
+
+            if (!$estadoAnulado) {
+                throw ValidationException::withMessages([
+                    'estado' => 'No se encontro el estado Anulado.',
+                ]);
+            }
+
+            // Bloquear los registros de ProductoTallaStock de los detalles
+            $detallesConTalla = $ventaModel->detalles->filter(fn ($d) => !empty($d->producto_talla_id));
+            $productoIds = $detallesConTalla->pluck('producto_id')->unique()->values();
+            $tallaIds = $detallesConTalla->pluck('producto_talla_id')->unique()->values();
+
+            $stocksPorTalla = ProductoTallaStock::whereIn('producto_id', $productoIds)
+                ->whereIn('producto_talla_id', $tallaIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy(fn ($stock) => $stock->producto_id . ':' . $stock->producto_talla_id);
+
+            // Si la venta estaba pagada, bloquear la caja correspondiente
+            if ($ventaModel->caja_id && $ventaModel->estadoTransaccion && $ventaModel->estadoTransaccion->descripcionET === 'Pagado') {
+                Caja::where('id', $ventaModel->caja_id)->lockForUpdate()->first();
+            }
+
+            // Cambiar el estado a Anulado (el evento booted updated del modelo Venta ajustará la caja de forma segura dentro de la transacción)
+            $ventaModel->update([
+                'estado_transaccion_id' => $estadoAnulado->id,
+            ]);
+
+            // Restituir el stock de cada talla y registrar movimiento en Kardex
+            $kardexHabilitado = Schema::hasTable('movimientos_inventario');
+
+            foreach ($detallesConTalla as $detalle) {
+                $key = $detalle->producto_id . ':' . $detalle->producto_talla_id;
+                if (isset($stocksPorTalla[$key])) {
+                    $stockTalla = $stocksPorTalla[$key];
+                    $stockAnterior = $stockTalla->stock;
+                    $stockTalla->increment('stock', $detalle->cantidad);
+                    $stockNuevo = $stockTalla->stock;
+
+                    if ($kardexHabilitado) {
+                        MovimientoInventario::create([
+                            'producto_id' => $detalle->producto_id,
+                            'producto_talla_id' => $detalle->producto_talla_id,
+                            'tipo_movimiento' => MovimientoInventario::TIPO_REVERSION_VENTA,
+                            'cantidad' => $detalle->cantidad,
+                            'costo_unitario' => (float) ($detalle->costo_unitario ?? 0),
+                            'precio_unitario' => $detalle->precio_unitario,
+                            'stock_anterior' => $stockAnterior,
+                            'stock_nuevo' => $stockNuevo,
+                            'origen_tipo' => Venta::class,
+                            'origen_id' => $ventaModel->id,
+                            'referencia_documento' => 'Anulación Venta ' . $ventaModel->codigoVenta,
+                            'user_id' => auth()->id(),
+                            'motivo' => 'Restitución de stock por anulación oficial de venta',
+                        ]);
+                    }
+                }
+            }
+
+            Log::warning('Venta anulada oficialmente (Reversión SSOT ejecutada)', [
+                'venta_id' => $ventaModel->id,
+                'codigo_venta' => $ventaModel->codigoVenta,
+                'monto_total' => $ventaModel->montoTotal,
+                'caja_id' => $ventaModel->caja_id,
+                'prendas_restituidas' => $detallesConTalla->sum('cantidad'),
+                'usuario_id' => auth()->id(),
+                'timestamp_pet' => now()->toDateTimeString(),
+            ]);
+
+            return $ventaModel;
         });
     }
 

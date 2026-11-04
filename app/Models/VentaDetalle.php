@@ -15,6 +15,7 @@ class VentaDetalle extends Model
         'producto_talla_id',
         'cantidad',
         'precio_unitario',
+        'costo_unitario',
         'base_imponible',
         'igv',
         'subtotal',
@@ -27,7 +28,7 @@ class VentaDetalle extends Model
 
     public function producto()
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(Producto::class)->withTrashed();
     }
 
     public function talla()
