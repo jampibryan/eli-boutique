@@ -34,21 +34,35 @@
         @enderror
     </div>
 
+    <div class="mb-3">
+        <label for="producto_genero_id" class="form-label">Género</label>
+        <select id="producto_genero_id" name="producto_genero_id" class="form-control" required>
+            @foreach($generos as $genero)
+                <option value="{{ $genero->id }}" {{ old('producto_genero_id', $producto->producto_genero_id) == $genero->id ? 'selected' : '' }}>
+                    {{ $genero->descripcion }}
+                </option>
+            @endforeach
+        </select>
+        @error('producto_genero_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
     <!-- Imagen actual -->
     <div class="mb-3">
         <label for="imagenP" class="form-label">Imagen actual</label><br>
 
-        @if($producto->imagenP)
-            <img src="{{ $producto->imagenP }}" alt="Imagen actual del producto" width="200">
-        @else
-            <p>No hay imagen</p>
-        @endif
+        <x-producto-imagen :src="$producto->imagen_url" :alt="$producto->descripcionP" width="200" />
     </div>
 
     <!-- Subir nueva imagen (opcional) -->
     <div class="mb-3">
         <label for="imagenP" class="form-label">Cambiar Imagen</label>
-        <input id="imagenP" name="imagenP" type="file" class="form-control">
+        <input id="imagenP" name="imagenP" type="file" accept="image/jpeg,image/png,image/webp" class="form-control">
+        <small class="text-muted">JPG, PNG o WEBP. Máximo 2 MB. Deja este campo vacío para conservar la foto actual.</small>
+        @error('imagenP')
+            <small class="text-danger d-block">{{ $message }}</small>
+        @enderror
     </div>
 
     <!-- Descripción -->

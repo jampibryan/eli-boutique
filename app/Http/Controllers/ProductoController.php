@@ -139,7 +139,8 @@ class ProductoController extends Controller
     {
         $categorias = CategoriaProducto::all();
         $tallas = ProductoTalla::all();
-        return view('Producto.edit', compact('producto', 'categorias', 'tallas'));
+        $generos = ProductoGenero::all();
+        return view('Producto.edit', compact('producto', 'categorias', 'tallas', 'generos'));
     }
 
 

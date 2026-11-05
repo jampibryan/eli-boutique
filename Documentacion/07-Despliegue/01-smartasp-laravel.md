@@ -131,6 +131,37 @@ No crear páginas públicas para ejecutar comandos Artisan o consultas SQL.
 6. Enlazar `eliboutique.org` desde Dominios del sitio y DNS de Porkbun, activar SSL para ese dominio y actualizar `APP_URL`.
 7. Configurar después Streamlit Cloud con el contrato `snapshot`, la URL HTTPS y un token dedicado de lectura. Flutter se verifica al final. SUNAT continúa pendiente.
 
+## Error IMSSP al enviar el formulario de login
+
+El registro del primer despliegue mostró `An invalid attribute was designated on the PDO object` en el constructor PDO de Laravel, durante la consulta del usuario. El fallo ocurre antes de comprobar su contraseña. Coincide con la incompatibilidad documentada de ciertas combinaciones de PHP/PDO_SQLSRV con `PDO::ATTR_STRINGIFY_FETCHES`.
+
+`AppServiceProvider::register()` registra ahora `db.connector.sqlsrv` con las opciones normales de Laravel, omitiendo ese atributo. Si la extensión define `PDO::SQLSRV_ATTR_FETCHES_NUMERIC_TYPE`, lo activa para conservar enteros y flotantes; los decimales y tipos monetarios conservan la precisión textual del controlador. No cambia credenciales, cifrado, consultas ni tablas, y no modifica `vendor`.
+
+Para aplicar esta corrección sobre el ZIP inicial ya desplegado, reemplazar solamente `/EliBoutique/app/Providers/AppServiceProvider.php` con la versión local y reciclar el sitio si el proceso PHP conserva código en caché. Mantener `.env` intacto y `APP_DEBUG=false`. Las futuras ejecuciones del preparador incluirán el cambio; el ZIP inicial queda como artefacto anterior y necesita este reemplazo.
+
+La comprobación local pasó tres pruebas del conector (13 aserciones), las diez pruebas aisladas de aplicación (63 aserciones) y una consulta de solo lectura por el conector real de Laravel a SQL Server. La extensión local es PDO_SQLSRV 5.12.0+18005; esa prueba no determina la versión del alojamiento. Debe confirmarse el login en SmartASP después de subir el archivo. No se ejecutaron escrituras de datos ni un nuevo entrenamiento.
+
+Referencia del problema y alternativa de omitir el atributo: [Microsoft PDO_SQLSRV, incidencia 1474](https://github.com/microsoft/msphpsql/issues/1474).
+
+## Actualización de la interfaz operativa
+
+Por solicitud del usuario se retiraron los comunicados de demostración/investigación del inicio de Laravel y de todas las pestañas de Streamlit. La trazabilidad permanece en las tablas de control, en el contrato de lectura y en los metadatos de entrenamiento. Esta actualización no altera las operaciones, los comprobantes históricos ni los artefactos del modelo.
+
+El paquete local `storage/app/releases/20261104-interfaz-empresa/actualizacion-interfaz-laravel.zip` contiene solamente estos cuatro archivos:
+
+```text
+app/Http/Controllers/HomeController.php
+resources/views/home.blade.php
+config/services.php
+resources/views/Predecir/iaventas.blade.php
+```
+
+Para aplicar esta actualización, subir el ZIP a `/EliBoutique` y extraer **en `/EliBoutique`**, reemplazando esos cuatro archivos. No extraer en `public`, no restaurar la base y no reemplazar `.env` ni `vendor`. Si se conserva una vista compilada anterior, ejecutar `php artisan view:clear` en el servidor; sin consola, retirar únicamente los `.php` generados en `/EliBoutique/storage/framework/views`, conservando la carpeta y `.gitignore`. Laravel vuelve a compilarlos al cargar la página.
+
+La vista de Predicción ya no fija `localhost` para un sitio publicado. `STREAMLIT_URL` puede establecer la dirección; sin esa variable, el entorno local usa `http://localhost:8501` y producción usa `https://eliboutique.streamlit.app/?embed=true`. Esto cambia el destino del iframe, pero no publica por sí mismo el código de Python ni configura las credenciales de Cloud.
+
+En Streamlit se actualizaron localmente `app.py` y `README.md`, con respaldo en `storage/app/streamlit-originals/20261104-interfaz-empresa/`. Los módulos, modelos, configuración privada y demás cambios pendientes del repositorio deben publicarse juntos cuando se reanude el despliegue de Cloud. No hubo commit ni push durante esta actualización.
+
 ## Referencias oficiales
 
 - [Despliegue Laravel 10](https://laravel.com/docs/10.x/deployment).

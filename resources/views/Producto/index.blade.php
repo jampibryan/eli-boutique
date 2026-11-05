@@ -113,9 +113,8 @@
 
                     <!-- Imagen del producto -->
                     <div class="producto-imagen-wrapper">
-                        <img src="{{ $producto->imagenP ?? '/img/productos/Producto por defecto.webp' }}"
-                            class="producto-imagen" alt="{{ $producto->descripcionP }}"
-                            onerror="this.src='/img/productos/Producto por defecto.webp'">
+                        <x-producto-imagen :src="$producto->imagen_url" :alt="$producto->descripcionP"
+                            class="producto-imagen" />
                         <div class="producto-overlay">
                             <button type="button" class="btn btn-overlay" data-bs-toggle="modal"
                                 data-bs-target="#modalDetalle{{ $producto->id }}">
@@ -247,10 +246,8 @@
                         <div class="row">
                             <!-- Imagen del producto -->
                             <div class="col-md-5 text-center">
-                                <img src="{{ $producto->imagenP ?? '/img/productos/Producto por defecto.webp' }}"
-                                    class="img-fluid rounded" alt="{{ $producto->descripcionP }}"
-                                    onerror="this.src='/img/productos/Producto por defecto.webp'"
-                                    style="max-height: 300px; object-fit: contain;">
+                                <x-producto-imagen :src="$producto->imagen_url" :alt="$producto->descripcionP"
+                                    class="img-fluid rounded" style="max-height: 300px; object-fit: contain;" />
                             </div>
 
                             <!-- Información del producto -->
@@ -448,13 +445,14 @@
             position: relative;
             height: 280px;
             overflow: hidden;
-            background: linear-gradient(to bottom, #f8f8f8, #fff);
+            background: #fff;
         }
 
         .producto-imagen {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            padding: 12px;
             transition: transform 0.4s ease;
         }
 

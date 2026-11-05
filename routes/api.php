@@ -4,6 +4,21 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\Api\AnalyticsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\MobileController;
+use App\Http\Middleware\MobileReadOnly;
+
+// Contrato móvil: sesión por instalación, lecturas paginadas y permisos del usuario.
+Route::prefix('mobile/v1')->group(function () {
+    Route::post('auth/login', [MobileController::class, 'login'])->middleware('throttle:6,1');
+    Route::middleware(['auth:sanctum', MobileReadOnly::class])->group(function () {
+        Route::get('auth/me', [MobileController::class, 'me']);
+        Route::post('auth/logout', [MobileController::class, 'logout']);
+        Route::get('dashboard', [MobileController::class, 'dashboard']);
+        Route::get('graficos', [MobileController::class, 'charts']);
+        Route::get('{module}', [MobileController::class, 'index'])->where('module', 'clientes|productos|ventas|compras|proveedores|cajas');
+        Route::get('{module}/{id}', [MobileController::class, 'show'])->where('module', 'clientes|productos|ventas|compras|proveedores|cajas')->whereNumber('id');
+    });
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +43,7 @@ Route::get('/analitica/v1/snapshot', [AnalyticsController::class, 'snapshot'])
     ->middleware(['auth:sanctum', 'permission:ver reportes gráficos']);
 
 // Rutas protegidas con Sanctum
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', \App\Http\Middleware\ApiReadPermission::class])->group(function () {
     Route::get('/dashboard', [ApiController::class, 'dashboard']);
 
     // Clientes

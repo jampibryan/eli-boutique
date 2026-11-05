@@ -26,6 +26,20 @@ class Producto extends Model
         'costo_compra',
     ];
 
+    public function getImagenUrlAttribute(): ?string
+    {
+        $path = trim((string) $this->imagenP);
+        $legacyPath = '/'.ltrim($path, '/');
+
+        // New uploads take precedence. Only the retired photos and empty slots
+        // use the replacement catalogue assigned to this product code.
+        if ($path === '' || in_array($legacyPath, config('product_images.replaced_paths', []), true)) {
+            return config('product_images.catalogue.'.$this->codigoP);
+        }
+
+        return $path;
+    }
+
     public function movimientosInventario()
     {
         return $this->hasMany(MovimientoInventario::class);

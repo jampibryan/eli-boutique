@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'streamlit' => [
+        'url' => env('STREAMLIT_URL', env('APP_ENV') === 'local'
+            ? 'http://localhost:8501'
+            : 'https://eliboutique.streamlit.app/?embed=true'),
+    ],
+
 ];

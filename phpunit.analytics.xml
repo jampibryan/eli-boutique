@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php" colors="true" cacheResult="false">
     <testsuites>
-        <testsuite name="Analytics isolated"><file>tests/Feature/AnalyticsSnapshotTest.php</file><file>tests/Feature/SalesDetailAndCompanyTest.php</file></testsuite>
+        <testsuite name="Read-only integrations isolated">
+            <file>tests/Feature/AnalyticsSnapshotTest.php</file>
+            <file>tests/Feature/SalesDetailAndCompanyTest.php</file>
+            <file>tests/Feature/MobileReadTest.php</file>
+            <file>tests/Feature/ApiRouteProtectionTest.php</file>
+            <file>tests/Unit/SqlServerConnectorTest.php</file>
+        </testsuite>
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing" force="true"/>
